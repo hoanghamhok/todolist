@@ -1,23 +1,25 @@
-import api from '../api/client'
+import api from '../../api/client'
+import type { Task } from './types'
+import type { CreateTaskDto,TaskStatus } from './types'
 
 export const tasksAPI = {
     getAll:() =>
         api.get(`/tasks/all`),
 
-    create:(title:string,description:string) =>
-        api.post(`/tasks/create`,{title,description}),
+    create: (data: CreateTaskDto & { order: number }) =>
+        api.post(`/tasks/create`, data),
 
     update:(id:string,data:any) =>
-        api.patch(`/task/${id}`),
+        api.patch(`/tasks/${id}`,data),
 
-    updateStatus:(id:string,status:string) =>
-        api.patch(`/task/${id}/status`),
+    updateStatus:(id:string,data:any) =>
+        api.patch(`/tasks/${id}/status`,data),
 
     delete:(id:string) =>
         api.delete(`/tasks/${id}`),
 
     reorder:(tasks:{id:string,order:number}[])=>
-        api.patch(`/tasks/reorder`,{tasks})
+        api.patch<Task[]>(`/tasks/reorder`,{tasks})
 }
 
 //alias 
