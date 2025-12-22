@@ -1,6 +1,5 @@
 import api from '../../api/client'
-import type { Task } from './types'
-import type { CreateTaskDto,TaskStatus,ReorderTaskPayload } from './types'
+import type { CreateTaskDto,ReorderTaskPayload } from './types'
 
 export const tasksAPI = {
     getAll:() =>
