@@ -75,17 +75,28 @@ export function TaskPage() {
             return clone;
           })();
 
-    for (const s of STATUSES) {
-      const ids =
-        s === activeStatus ? nextFromIds : s === overStatus ? nextToIds : grouped[s].map((t) => t.id);
-      ids.forEach((id, idx) => {
-        const tt = next.find((x) => x.id === id);
-        if (tt) {
-          tt.status = s;
-          tt.order = idx;
-        }
-      });
-    }
+          for (const s of STATUSES) {
+            let ids: string[];
+          
+            if (activeStatus === overStatus && s === activeStatus) {
+              // cùng cột => dùng list đã move
+              ids = nextToIds;
+            } else if (s === activeStatus) {
+              ids = nextFromIds;
+            } else if (s === overStatus) {
+              ids = nextToIds;
+            } else {
+              ids = grouped[s].map((t) => t.id);
+            }
+          
+            ids.forEach((id, idx) => {
+              const tt = next.find((x) => x.id === id);
+              if (tt) {
+                tt.status = s;
+                tt.order = idx;
+              }
+            });
+          }
 
     const normalized = reorderLocal(next);
 
