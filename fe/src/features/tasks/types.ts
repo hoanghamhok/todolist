@@ -1,4 +1,4 @@
-export type TaskStatus = 'TODO' | 'DOING' | 'DONE';
+export type TaskStatus = 'TODO' | 'INPROGRESS' | 'DONE';
 
 export type Task = {
   id: string;
@@ -28,3 +28,5 @@ export type ReorderTaskDto = {
   id: string;
   order: number;
 };
+
+export type ReorderTaskPayload = { id: string; status: TaskStatus; order: number };

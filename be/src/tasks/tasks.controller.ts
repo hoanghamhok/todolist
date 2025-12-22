@@ -5,6 +5,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { UpdateTaskStatusDto } from './dto/update-taskstatus.dto';
 import { ReorderTaskDto } from './dto/reorder-task.dto';
+import { ReorderTasksBodyDto } from './dto/update-taskstatusbody.dto';
 
 @ApiTags('Tasks')
 @Controller('tasks')
@@ -21,6 +22,12 @@ export class TasksController{
     @Post('create')
     create(@Body() createTaskDto:CreateTaskDto){
         return this.tasksService.create(createTaskDto);
+    }
+
+    //Reorder Task
+    @Patch('reorder')
+    reorder(@Body() body: ReorderTasksBodyDto) {
+    return this.tasksService.reorder(body.tasks);
     }
 
     //Update a Task
@@ -41,9 +48,4 @@ export class TasksController{
         return this.tasksService.remove(id);
     }
     
-    //Reorder Task
-    @Patch('reorder')
-    reorder(@Body() body: { tasks: ReorderTaskDto[] }) {
-    return this.tasksService.reorder(body.tasks);
-    }
 }

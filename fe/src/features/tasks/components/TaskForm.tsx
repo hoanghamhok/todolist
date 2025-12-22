@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./task.css";
 
 export function TaskForm({ onSubmit }: { onSubmit: (title: string, description?: string) => void }) {
   const [title, setTitle] = useState("");
@@ -13,14 +14,17 @@ export function TaskForm({ onSubmit }: { onSubmit: (title: string, description?:
   };
 
   return (
-    <form onSubmit={submit} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="title" />
+    <form onSubmit={submit} className="form">
+      <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" />
       <input
+        className="input"
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        placeholder="description"
+        placeholder="Description"
       />
-      <button type="submit">Add</button>
+      <button className="btn primary" type="submit">
+        Add
+      </button>
     </form>
   );
 }
