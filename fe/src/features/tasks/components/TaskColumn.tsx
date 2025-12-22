@@ -15,11 +15,13 @@ export function TaskColumn({
   tasks,
   onDelete,
   onChangeStatus,
+  onEdit,
 }: {
   title: TaskStatus;
   tasks: Task[];
   onDelete: (id: string) => void;
   onChangeStatus: (id: string, status: TaskStatus) => void;
+  onEdit: (id: string, data: Partial<Pick<Task, "title" | "description">>) => Promise<void>;
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: title,
@@ -38,7 +40,13 @@ export function TaskColumn({
       <div ref={setNodeRef} className="cards">
         <SortableContext items={tasks.map((t) => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.map((t) => (
-            <TaskCard key={t.id} task={t} onDelete={onDelete} onChangeStatus={onChangeStatus} />
+            <TaskCard
+              key={t.id}
+              task={t}
+              onDelete={onDelete}
+              onChangeStatus={onChangeStatus}
+              onEdit={onEdit}
+            />
           ))}
         </SortableContext>
 

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Task, TaskStatus,ReorderTaskPayload } from "../types";
-import { createTask, deleteTask, fetchTasks, updateTaskStatus } from "../api";
+import { createTask, deleteTask, fetchTasks, updateTaskStatus,updateTask } from "../api";
 import { reorderTasks} from "../api";
 
 const STATUSES: TaskStatus[] = ["TODO", "INPROGRESS", "DONE"];
@@ -34,6 +34,16 @@ export function useTask() {
     const maxOrder = tasks.filter(t => t.status === "TODO").reduce((m, t) => Math.max(m, t.order), -1);
     const res = await createTask({ title, description, status: "TODO", order: maxOrder + 1 });
     setTasks(prev => [...prev, res.data]);
+  };
+
+  // ✅ edit task (title/description/...)
+  const edit = async (
+    id: string,
+    data: Partial<Pick<Task, "title" | "description" | "status" | "order">> & Record<string, any>
+  ) => {
+    const res = await updateTask(id, data);
+    setTasks(prev => prev.map(t => (t.id === id ? res.data : t)));
+    return res.data;
   };
 
   const remove = async (id: string) => {
@@ -76,5 +86,5 @@ export function useTask() {
     return byStatus;
   }, [tasks]);
 
-  return { tasks, grouped, loading, error, reload: load, add, remove, changeStatus, reorderLocal, reorder };
+  return { tasks, grouped, loading, error, reload: load, add, remove, changeStatus, reorderLocal, reorder,edit };
 }
