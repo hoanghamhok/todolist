@@ -2,8 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 import type { Task, TaskStatus,ReorderTaskPayload } from "../types";
 import { createTask, deleteTask, fetchTasks, updateTaskStatus,updateTask } from "../api";
 import { reorderTasks} from "../api";
+import { json } from "zod";
 
 const STATUSES: TaskStatus[] = ["TODO", "INPROGRESS", "DONE"];
+
+const STORAGE_KEY = "todolist"
+
+//parse Json
+function safeParse<T>(value:string | null ,fallback:T):T{
+  try{
+    return value? (JSON.parse(value) as T) : fallback;
+  }catch{
+    return fallback;
+  }
+}
 
 function normalizeOrders(all: Task[], status: TaskStatus) {
   const col = all.filter(t => t.status === status).sort((a,b)=>a.order-b.order);
@@ -11,7 +23,17 @@ function normalizeOrders(all: Task[], status: TaskStatus) {
 }
 
 export function useTask() {
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    if (typeof window == "undefined") return [];
+    return safeParse<Task[]>(localStorage.getItem(STORAGE_KEY),[])
+  });
+
+  //save when task changed
+  useEffect(() =>{
+    if (typeof window == "undefined") return;
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(tasks))
+  },[tasks]);
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
