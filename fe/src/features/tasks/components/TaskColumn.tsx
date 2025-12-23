@@ -23,6 +23,7 @@ export function TaskColumn({
   onChangeStatus: (id: string, status: TaskStatus) => void;
   onEdit: (id: string, data: Partial<Pick<Task, "title" | "description">>) => Promise<void>;
 }) {
+  //Make the column a droppable area
   const { setNodeRef, isOver } = useDroppable({
     id: title,
     data: { type: "COLUMN", status: title },

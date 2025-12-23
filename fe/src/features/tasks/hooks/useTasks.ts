@@ -7,7 +7,7 @@ const STATUSES: TaskStatus[] = ["TODO", "INPROGRESS", "DONE"];
 
 const STORAGE_KEY = "todolist"
 
-//parse Json
+//Parse Json
 function safeParse<T>(value:string | null ,fallback:T):T{
   try{
     return value? (JSON.parse(value) as T) : fallback;
@@ -16,6 +16,7 @@ function safeParse<T>(value:string | null ,fallback:T):T{
   }
 }
 
+// Filters tasks by status, sorts them by order, reassigns order values
 function normalizeOrders(all: Task[], status: TaskStatus) {
   const col = all.filter(t => t.status === status).sort((a,b)=>a.order-b.order);
   return col.map((t, idx) => ({ ...t, order: idx }));
@@ -27,7 +28,7 @@ export function useTask() {
     return safeParse<Task[]>(localStorage.getItem(STORAGE_KEY),[])
   });
 
-  //save when task changed
+  //Save when task changed
   useEffect(() =>{
     if (typeof window == "undefined") return;
     localStorage.setItem(STORAGE_KEY,JSON.stringify(tasks))
@@ -57,7 +58,7 @@ export function useTask() {
     setTasks(prev => [...prev, res.data]);
   };
 
-  // ✅ edit task (title/description/...)
+  //Edit task (title/description/...)
   const edit = async (
     id: string,
     data: Partial<Pick<Task, "title" | "description" | "status" | "order">> & Record<string, any>
@@ -67,17 +68,19 @@ export function useTask() {
     return res.data;
   };
 
+  //Delete task
   const remove = async (id: string) => {
     await deleteTask(id);
     setTasks(prev => prev.filter(t => t.id !== id));
   };
 
+  //Change status
   const changeStatus = async (id: string, status: TaskStatus) => {
     const res = await updateTaskStatus(id, { status });
     setTasks(prev => prev.map(t => (t.id === id ? res.data : t)));
   };
 
-  // ✅ local reorder (optimistic)
+  //local reorder (optimistic)
   const reorderLocal = (next: Task[]) => {
     // normalize order per column so UI + payload clean
     let normalized = next;
@@ -90,7 +93,7 @@ export function useTask() {
     return normalized;
   };
 
-  // ✅ call backend /reorder
+  //call backend /reorder
   const reorder = async (nextTasks: Task[]) => {
     const payload: ReorderTaskPayload[] = nextTasks.map(t => ({
       id: t.id,
@@ -100,6 +103,7 @@ export function useTask() {
     await reorderTasks(payload);
   };
 
+  // Group tasks by status and sort each group by order
   const grouped = useMemo(() => {
     const byStatus: Record<TaskStatus, Task[]> = { TODO: [], INPROGRESS: [], DONE: [] };
     for (const t of tasks) byStatus[t.status].push(t);

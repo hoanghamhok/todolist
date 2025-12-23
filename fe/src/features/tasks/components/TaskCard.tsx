@@ -54,19 +54,18 @@ export function TaskCard({
   const [description, setDescription] = useState(task.description ?? "");
   const [saving, setSaving] = useState(false);
 
-  // đồng bộ khi task đổi từ bên ngoài
+  // Synchronizer when tasks changed from outside
   useMemo(() => {
     if (!isEditing) {
       setTitle(task.title);
       setDescription(task.description ?? "");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [task.title, task.description, isEditing]);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: task.id,
     data: { type: "TASK", task },
-    disabled: isEditing || saving, // ✅ đang edit thì không drag
+    disabled: isEditing || saving, //Cant drag when editting
   });
 
   const style: React.CSSProperties = {
@@ -109,7 +108,7 @@ export function TaskCard({
       style={style}
       className={`card ${isDragging ? "cardDragging" : ""}`}
       {...attributes}
-      {...(!isEditing ? listeners : {})} // ✅ chỉ drag khi không edit
+      {...(!isEditing ? listeners : {})}
     >
       <div className="cardTop">
         <div className="cardTitleWrap">
@@ -121,7 +120,7 @@ export function TaskCard({
           ) : (
             <div
               style={{ display: "flex", flexDirection: "column", gap: 8, width: "100%" }}
-              onPointerDown={(e) => e.stopPropagation()} // ✅ tránh kéo khi focus input
+              onPointerDown={(e) => e.stopPropagation()} // Cant drag when input focusing
             >
               <input className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Title" />
               <input
