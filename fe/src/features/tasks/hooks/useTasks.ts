@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import type { Task, TaskStatus,ReorderTaskPayload } from "../types";
 import { createTask, deleteTask, fetchTasks, updateTaskStatus,updateTask } from "../api";
 import { reorderTasks} from "../api";
-import { json } from "zod";
 
 const STATUSES: TaskStatus[] = ["TODO", "INPROGRESS", "DONE"];
 
@@ -33,7 +32,7 @@ export function useTask() {
     if (typeof window == "undefined") return;
     localStorage.setItem(STORAGE_KEY,JSON.stringify(tasks))
   },[tasks]);
-  
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
