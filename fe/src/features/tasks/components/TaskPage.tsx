@@ -21,8 +21,7 @@
   }
 
   export function TaskPage() {
-    const { tasks, grouped, loading, error, add, remove, changeStatus, reload, reorderLocal, reorder, edit } =
-      useTask();
+    const { tasks, grouped, loading, error, add, remove, changeStatus, reload, reorderLocal, reorder, edit } = useTask();
 
     const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 

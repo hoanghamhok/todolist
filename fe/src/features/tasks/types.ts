@@ -15,7 +15,7 @@ export type Task = {
 export type CreateTaskDto = {
   title: string;
   description?: string;
-  status?: TaskStatus; // nếu backend cho phép gửi
+  status?: TaskStatus;
 };
 
 export type UpdateTaskDto = Partial<CreateTaskDto>;
@@ -29,4 +29,8 @@ export type ReorderTaskDto = {
   order: number;
 };
 
-export type ReorderTaskPayload = { id: string; status: TaskStatus; order: number };
+export type ReorderTaskPayload = { 
+  id: string; 
+  status: TaskStatus; 
+  order: number 
+};

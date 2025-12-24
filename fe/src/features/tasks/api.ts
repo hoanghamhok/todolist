@@ -16,7 +16,9 @@ export const tasksAPI = {
 
     delete:(id:string) =>
         api.delete(`/tasks/${id}`),
-    
+
+    reorder:(tasks:ReorderTaskPayload[]) => 
+        api.patch(`/tasks/reorder`,{tasks})
 }
 
 //alias 
@@ -25,6 +27,4 @@ export const createTask = tasksAPI.create
 export const updateTask = tasksAPI.update
 export const updateTaskStatus = tasksAPI.updateStatus
 export const deleteTask = tasksAPI.delete
-export function reorderTasks(tasks: ReorderTaskPayload[]) {
-    return api.patch("/tasks/reorder", { tasks }); // body: { tasks: [...] }
-}
+export const reorderTasks = tasksAPI.reorder
