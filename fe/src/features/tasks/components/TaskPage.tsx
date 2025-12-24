@@ -94,7 +94,7 @@ export function TaskPage() {
   return (
     <div className="app-wrapper">
       <div className="app-container">
-        <h1>To Do List</h1>
+        <h1>TO DO LIST</h1>
         <TaskForm onSubmit={add} />
 
         <DndContext
