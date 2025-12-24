@@ -110,6 +110,11 @@ export function useTask() {
     (Object.keys(byStatus) as TaskStatus[]).forEach(s => byStatus[s].sort((a,b)=>a.order-b.order));
     return byStatus;
   }, [tasks]);
-
-  return { tasks, grouped, loading, error, reload: load, add, remove, changeStatus, reorderLocal, reorder,edit };
+ 
+  //Find task s status
+  const findStatusOfTask = (tasks: { id: string; status: TaskStatus }[], taskId: string) =>{
+    return tasks.find((t) => t.id === taskId)?.status;
+  }
+  
+  return { tasks, grouped, loading, error, reload: load, add, remove, changeStatus, reorderLocal, reorder,edit,findStatusOfTask};
 }
