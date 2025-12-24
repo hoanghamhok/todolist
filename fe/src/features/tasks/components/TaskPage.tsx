@@ -15,7 +15,6 @@ import {
   type DragCancelEvent,
 } from "@dnd-kit/core";
 import { handleDrag } from "../drag/onDragEnd";
-import { TaskCard } from "./TaskCard";
 import type { Task } from "../types";
 
 function TaskCardOverlay({ task }: { task: Task }) {

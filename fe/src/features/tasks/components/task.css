@@ -46,7 +46,6 @@ body{
   background-clip: text;
 }
 
-/* ====== Layout Columns ====== */
 .columns{
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -58,7 +57,6 @@ body{
   .columns{ grid-template-columns: 1fr; }
 }
 
-/* ====== Form ====== */
 .form{
   background: rgba(255,255,255,.9);
   border: 1px solid var(--border);
@@ -88,7 +86,6 @@ body{
   box-shadow: 0 0 0 3px var(--accent-light);
 }
 
-/* Buttons */
 .btn{
   border: 1px solid var(--border);
   background: var(--panel);
@@ -115,7 +112,6 @@ body{
   box-shadow: 0 12px 30px rgba(59,130,246,.25);
 }
 
-/* ====== Column ====== */
 .column{
   background: rgba(255,255,255,.86);
   border: 1px solid var(--border);
@@ -142,7 +138,7 @@ body{
 .columnHeaderCenter{
   display:flex;
   align-items:center;
-  justify-content: center; /* ✅ căn giữa cụm title + badge */
+  justify-content: center; 
   gap: 10px;
 }
 
@@ -164,7 +160,6 @@ body{
   border: 1px solid rgba(59,130,246,.2);
 }
 
-/* ====== Cards ====== */
 .cards{
   display:flex;
   flex-direction: column;
@@ -177,7 +172,7 @@ body{
   border-radius: 16px;
   padding: 12px;
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, filter .18s ease;
-  cursor: grab; /* ✅ drag anywhere */
+  cursor: grab; 
   box-shadow: 0 2px 10px rgba(0,0,0,.05);
   position: relative;
   user-select: none;
@@ -225,7 +220,6 @@ body{
   word-break: break-word;
 }
 
-/* Icon delete button */
 .iconBtn{
   border: 1px solid var(--border);
   background: rgba(241,245,249,.6);
@@ -253,10 +247,9 @@ body{
   border-color: #fecaca;
 }
 
-/* Pills centered */
 .cardActions{
   display:flex;
-  justify-content: center; /* ✅ căn giữa */
+  justify-content: center; 
   gap: 8px;
   margin-top: 12px;
   flex-wrap: wrap;
@@ -283,7 +276,6 @@ body{
   cursor:not-allowed;
 }
 
-/* Empty drop */
 .empty{
   margin-top: 8px;
   padding: 16px 12px;
