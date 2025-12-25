@@ -17,6 +17,8 @@ import {
 import { handleDrag } from "../drag/onDragEnd";
 import type { Task } from "../types";
 
+
+//copy of dragging task
 function TaskCardOverlay({ task }: { task: Task }) {
   return (
     <div style={{ width: 320, pointerEvents: "none" }}>

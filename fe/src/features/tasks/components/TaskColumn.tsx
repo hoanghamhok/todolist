@@ -5,8 +5,8 @@ import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
 const LABEL: Record<TaskStatus, string> = {
-  TODO: "TODO",
-  INPROGRESS: "DOING",
+  TODO: "TO DO",
+  INPROGRESS: "IN PROGRESS",
   DONE: "DONE",
 };
 
