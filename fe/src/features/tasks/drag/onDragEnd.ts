@@ -36,7 +36,7 @@ export async function handleDrag({
   const overStatus =
     (STATUSES.includes(overId as TaskStatus)
       ? (overId as TaskStatus)
-      : findStatusOfTask(tasks, overId)) ?? activeStatus;//drop in col => col|task => task's status
+      : findStatusOfTask(tasks, overId)) ?? activeStatus;//drop in col => col||task => task's status
 
   const from = grouped[activeStatus].map((t) => t.id);// tasks in old column
   const to = grouped[overStatus].map((t) => t.id);//task in new column

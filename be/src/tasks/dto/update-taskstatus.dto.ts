@@ -5,6 +5,6 @@ import { ApiProperty } from "@nestjs/swagger";
 export class UpdateTaskStatusDto {
     @ApiProperty()
     @IsEnum(TaskStatus)
-    status: TaskStatus; // enum hoặc string
+    status: TaskStatus; 
   }
   
