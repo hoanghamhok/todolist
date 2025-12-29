@@ -1,5 +1,4 @@
 import { IsEnum, IsInt, IsString } from 'class-validator';
-import { TaskStatus } from '@prisma/client';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ReorderTaskDto {
@@ -7,9 +6,9 @@ export class ReorderTaskDto {
   @ApiProperty()
   id: string;
 
-  @IsEnum(TaskStatus)
+  @IsString()
   @ApiProperty()
-  status: TaskStatus;
+  status: string;
 
   @IsInt()
   @ApiProperty()

@@ -3,7 +3,6 @@ import { PrismaService } from "src/prisma/prisma.service";
 import { CreateTaskDto } from "./dto/create-task.dto";
 import { UpdateTaskDto } from "./dto/update-task.dto";
 import { UpdateTaskStatusDto } from "./dto/update-taskstatus.dto";
-import { TaskStatus } from "@prisma/client";
 
 
 @Injectable()
@@ -22,10 +21,8 @@ export class TasksService{
     
     //Create Task
     async create(createTaskDto:CreateTaskDto){
-        // Find the task that has the biggest order number for status TODO
-        const status = 'TODO';
         const last = await this.prisma.task.findFirst({
-            where: { status },
+            where: { status: createTaskDto.status },
             orderBy: { order: 'desc' },
             select: { order: true },
         });
@@ -36,10 +33,12 @@ export class TasksService{
             data:{
                 title:createTaskDto.title,
                 description:createTaskDto.description,
-                status:'TODO',
+                status: createTaskDto.status,
                 created_at:new Date(),
                 updated_at:new Date(),
                 order: nextOrder,
+                project: { connect: { id: createTaskDto.projectId } },
+                assignee: { connect: { id: createTaskDto.userId } },
             },
         });
     }
@@ -88,7 +87,7 @@ export class TasksService{
     }
 
     //Reorder task
-    async reorder(tasks: { id: string; status: TaskStatus; order: number }[]) {
+    async reorder(tasks: { id: string; status: string; order: number }[]) {
         return this.prisma.$transaction(
           tasks.map(t =>
             this.prisma.task.update({
@@ -101,5 +100,17 @@ export class TasksService{
           ),
         );
     }
+
+    //get task by user id
+    async getTasksByUserId(userId: string) {
+        return this.prisma.task.findMany({
+          where: { assigneeId: userId },
+          orderBy: [
+            { order: 'asc' },
+            { status: 'asc' },
+          ],
+          select: { id: true, title: true, description: true, created_at: true, updated_at: true, status: true, order: true },
+        });
+      }
 
 }

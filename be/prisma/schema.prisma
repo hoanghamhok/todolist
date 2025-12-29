@@ -7,31 +7,83 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum SystemRole {
+  USER
+  SUPER_ADMIN
+}
+
+enum ProjectRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
 model User {
-  id        String    @id @default(cuid())
-  username  String    @unique
-  email     String    @unique
+  id        String          @id @default(cuid())
+  username  String          @unique
+  email     String          @unique
   password  String
-  role      String    
-  createdAt DateTime  @default(now())
-  tasks     Task[]
+  role      SystemRole      @default(USER)
+  createdAt DateTime        @default(now())
+
+  // relation
+  tasks       Task[]
+  memberships ProjectMember[]
+  ownedProjects Project[]   @relation("ProjectOwner")
+}
+
+model Project {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  created_at   DateTime        @default(now())
+  updated_at   DateTime        @updatedAt
+
+  // “role lớn nhất”/người có quyền cao nhất trong project
+  ownerId     String
+  owner       User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // members + tasks
+  members     ProjectMember[]
+  tasks       Task[]
+
+  @@index([ownerId])
+}
+
+model ProjectMember {
+  id        String      @id @default(cuid())
+  projectId String
+  userId    String
+  role      ProjectRole @default(MEMBER)
+  joinedAt  DateTime    @default(now())
+
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId]) // 1 user chỉ xuất hiện 1 lần trong 1 project
+  @@index([userId])
+  @@index([projectId])
 }
 
 model Task {
-  id              String    @id @default(cuid())
-  title           String 
-  description     String?
-  status          TaskStatus
-  order           Int
-  created_at      DateTime
-  updated_at      DateTime
-  userId          String
-  user            User      @relation(fields:[userId],references:[id],onDelete:Cascade)
-  @@index([status,order])
-}
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      String
+  order       Int
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
 
-enum TaskStatus{
-  TODO
-  INPROGRESS
-  DONE
+  // task thuộc về project (thứ bao bọc)
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  // ai được gán task (assignee). có thể null nếu task chưa assign
+  assigneeId  String?
+  assignee    User?    @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+
+  @@index([status, order])
+  @@index([projectId])
+  @@index([assigneeId])
 }

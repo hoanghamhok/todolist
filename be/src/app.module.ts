@@ -1,13 +1,23 @@
+// app.module.ts
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
-import { TasksModule } from './tasks/tasks.module';
-import { UserModule } from './user/user.module';
+import { UsersModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
+import { AppService } from './app.service';
+import { TasksModule } from './tasks/tasks.module';
+import { ProjectsModule } from './projects/projects.module';
 
 @Module({
-  imports: [PrismaModule,TasksModule, UserModule, AuthModule],
+  imports: [
+    // Nạp biến môi trường từ file .env
+    ConfigModule.forRoot({isGlobal: true, }),
+    PrismaModule,
+    UsersModule,
+    AuthModule,
+    TasksModule,
+    ProjectsModule
+  ],
   controllers: [],
   providers: [AppService],
 })

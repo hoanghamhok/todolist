@@ -1,26 +1,65 @@
-import { Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-
+import { SystemRole } from './../../node_modules/.prisma/client/index.d';
+import { Injectable,ConflictException } from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
+import { PrismaService } from '../prisma/prisma.service';
 @Injectable()
-export class UserService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
-  }
+export class UsersService {
+    constructor(private prisma: PrismaService) {}
 
-  findAll() {
-    return `This action returns all user`;
-  }
+    async createUser(email: string, password: string,username:string) {
+        const existemail = await this.prisma.user.findUnique({ where: { email } });
+        const existusername = await this.prisma.user.findUnique({ where: { username } });
+        if (existemail) {
+            throw new ConflictException('Email already in use');
+        }
+        if (existusername) {
+            throw new ConflictException('Username already in use');
+        }
+        const hash = await bcrypt.hash(password, 10);
+        return this.prisma.user.create({
+            data: {
+                email,
+                username,
+                password: hash,
+                role: 'USER',
+            },
+        });
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
+    async findUserByEmail(email:string){
+        return this.prisma.user.findUnique({where:{email}});
+    }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+    async findUserByusername(username:string){
+        return this.prisma.user.findUnique({where:{username}});
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+    async getUserById(id:string){
+        return this.prisma.user.findUnique({where:{id},select:{id:true,email:true,role:true,createdAt:true}});
+    }
+
+    async findAllUsers(){
+        return this.prisma.user.findMany({select:{id:true,email:true,role:true,createdAt:true}});
+    }
+
+    async createAdmin(email: string, password: string,username:string) {
+        const existemail = await this.prisma.user.findUnique({ where: { email } });
+        const existusername = await this.prisma.user.findUnique({ where: { username } });
+        if (existemail) {
+            throw new ConflictException('Email already in use');
+        }
+        if (existusername) {
+            throw new ConflictException('Username already in use');
+        }
+        const hash = await bcrypt.hash(password, 10);
+        return this.prisma.user.create({
+            data: {
+                email,
+                password: hash,
+                username: username,
+                role: 'SUPER_ADMIN',  // Set role là ADMIN
+            },
+        });
+    }
 }
+

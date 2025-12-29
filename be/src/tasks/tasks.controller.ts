@@ -48,4 +48,10 @@ export class TasksController{
         return this.tasksService.remove(id);
     }
     
+    //Get Task by UserId
+    @Get(':id')
+    getByID(@Param('id') id:string){
+        return this.tasksService.getTasksByUserId(id);
+    }
+    
 }

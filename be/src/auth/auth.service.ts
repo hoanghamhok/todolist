@@ -1,26 +1,51 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { UsersService } from '../user/user.service';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
-  }
+    constructor(
+        private usersService: UsersService,
+        private jwtService: JwtService
+    ) {}
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+    async register(email: string, password: string,username:string) {
+        const user = await this.usersService.createUser(email, password,username);
+        const accessToken = await this.jwtService.signAsync({ 
+            sub: user.id, 
+            role: user.role 
+        });
+        return { user, accessToken };
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+    async login(email: string, password: string) {
+        const useremail = await this.usersService.findUserByEmail(email);
+        const userusername = await this.usersService.findUserByusername(email);
+        const user = useremail || userusername;
+        if (!user) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+        
+        const publicUser = await this.usersService.getUserById(user.id);
+        const accessToken = await this.jwtService.signAsync({ 
+            sub: user.id, 
+            role: user.role 
+        });
+        
+        return { user: publicUser, accessToken };
+    }
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
-  }
+    async registerAdmin(email: string, password: string,username:string) {
+        const user = await this.usersService.createAdmin(email, password,username);
+        const accessToken = await this.jwtService.signAsync({
+            sub: user.id,
+            role: user.role,
+        });
+        return { user, accessToken };
+    }
 }

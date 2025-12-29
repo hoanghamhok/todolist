@@ -16,4 +16,19 @@ export class CreateTaskDto{
     @IsInt()
     @ApiProperty()
     order:number
+
+    @IsNotEmpty()
+    @IsString()
+    @ApiProperty()
+    status:string;
+
+    @IsNotEmpty()
+    @IsString()
+    @ApiProperty()
+    userId:string;
+
+    @IsNotEmpty()
+    @IsString()
+    @ApiProperty()
+    projectId:string;
 }
