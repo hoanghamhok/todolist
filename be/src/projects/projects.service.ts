@@ -1,10 +1,10 @@
 import { ProjectRole } from '@prisma/client';
-import { Injectable,NotFoundException  } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TasksService } from 'src/tasks/tasks.service';
 import { UsersService } from 'src/user/user.service';
 import { AuthService } from 'src/auth/auth.service';
-import * as dto from './dto/create-project.dto';
+import { CreateProjectDto } from './dto/create-project.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -25,7 +25,10 @@ export class ProjectsService {
     }
 
     //Create Project
-    async createProject(data:dto.CreateProjectDto) {
+    async createProject(data:CreateProjectDto) {
+        if (!data || !data.ownerId) {
+            throw new BadRequestException('Missing project data or ownerId');
+        }
         const owner = await this.usersService.getUserById(data.ownerId);
         if (!owner) {
             throw new NotFoundException('User not found');
@@ -35,8 +38,8 @@ export class ProjectsService {
                 name: data.name,
                 description: data.description,
                 owner: { connect: { id: owner.id } },
-                createdAt: new Date(),
-                updatedAt: new Date(),
+                created_at: new Date(),
+                updated_at: new Date(),
             },
         });
 
@@ -44,7 +47,7 @@ export class ProjectsService {
             data: {
                 project: { connect: { id: project.id } },
                 user: { connect: { id: owner.id } },
-                role: ProjectRole.MEMBER,
+                role: ProjectRole.OWNER,
                 joinedAt: new Date(),
             },
         });

@@ -18,8 +18,8 @@ async function bootstrap() {
   );
 
   const config = new DocumentBuilder()
-    .setTitle('Ticket Booking API')
-    .setDescription('API for booking tickets')
+    .setTitle('ToDoList API')
+    .setDescription('API for Task and Project Management Application')
     .setVersion('1.0')
     .addBearerAuth(
       {
@@ -27,7 +27,6 @@ async function bootstrap() {
         scheme: 'bearer',
         bearerFormat: 'JWT',
       },
-      'JWT-auth', // 👈 phải trùng @ApiBearerAuth
     )
     .build();
   const document = SwaggerModule.createDocument(app,config);

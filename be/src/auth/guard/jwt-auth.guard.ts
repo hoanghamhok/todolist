@@ -4,6 +4,9 @@ import { AuthGuard } from '@nestjs/passport';
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
   canActivate(context: ExecutionContext) {
+    const req = context.switchToHttp().getRequest();
+    console.log('Authorization header:', req.headers.authorization);
+    console.log('Incoming auth header:', req.headers['authorization']);
     console.log(' Guard triggered');
     return super.canActivate(context);
   }
@@ -11,7 +14,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   handleRequest(err, user, info) {
     console.log(' User:', user);
     console.log(' Error:', err);
-    console.log('ℹ Info:', info);
+    console.log(' Info:', info);
     
     if (err || !user) {
       throw err || new UnauthorizedException('Token invalid');

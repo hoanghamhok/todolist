@@ -9,7 +9,7 @@ export class UsersController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'Returns current user' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
@@ -18,6 +18,8 @@ export class UsersController {
     return this.usersService.getUserById(req.user.userId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Get('all')
   @ApiOperation({ summary: 'Get all users' })
   @ApiResponse({ status: 200, description: 'Returns all users' })
