@@ -11,5 +11,6 @@ import { TasksModule } from '../tasks/tasks.module';
   imports: [PrismaModule, UsersModule, AuthModule, TasksModule],
   controllers: [ProjectsController],
   providers: [ProjectsService],
+  exports:[ProjectsService]
 })
 export class ProjectsModule {}

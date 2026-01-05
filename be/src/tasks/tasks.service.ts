@@ -1,3 +1,4 @@
+// ...existing code...
 import { Injectable,NotFoundException,ConflictException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CreateTaskDto } from "./dto/create-task.dto";
@@ -21,8 +22,21 @@ export class TasksService{
     
     //Create Task
     async create(createTaskDto:CreateTaskDto){
+        // ensure project exists
+        const project = await this.prisma.project.findUnique({ where: { id: createTaskDto.projectId } });
+        if (!project) {
+            throw new NotFoundException('Project not found');
+        }
+        // ensure user is member of project
+        const member = await this.prisma.projectMember.findFirst({
+            where: { projectId: createTaskDto.projectId, userId: createTaskDto.userId },
+        });
+        if (!member) {
+            throw new ConflictException('User is not a member of the project');
+        }
+
         const last = await this.prisma.task.findFirst({
-            where: { status: createTaskDto.status },
+            where: { status: createTaskDto.status, projectId: createTaskDto.projectId },
             orderBy: { order: 'desc' },
             select: { order: true },
         });
@@ -45,13 +59,39 @@ export class TasksService{
     
     //Update Task
     async update(id:string,updateTaskDto:UpdateTaskDto){
-        await this.getTaskByID(id);
+        const task = await this.getTaskByID(id);
+
+        // determine target project id (if changing project, use new one; otherwise existing)
+        const targetProjectId = updateTaskDto.projectId ?? task.projectId;
+
+        // if projectId provided, ensure project exists
+        if (updateTaskDto.projectId) {
+            const project = await this.prisma.project.findUnique({ where: { id: updateTaskDto.projectId }});
+            if (!project) throw new NotFoundException('Project not found');
+        }
+
+        // if userId provided, ensure the user is a member of the target project
+        if (updateTaskDto.userId) {
+            const member = await this.prisma.projectMember.findFirst({
+                where: { projectId: targetProjectId, userId: updateTaskDto.userId },
+            });
+            if (!member) throw new ConflictException('User is not a member of the project');
+        }
+
+        // build data object for update; connect relations when ids provided
+        const data: any = { ...updateTaskDto, updated_at: new Date() };
+        if (updateTaskDto.projectId) {
+            data.project = { connect: { id: updateTaskDto.projectId } };
+            delete data.projectId;
+        }
+        if (updateTaskDto.userId) {
+            data.assignee = { connect: { id: updateTaskDto.userId } };
+            delete data.userId;
+        }
+
         return this.prisma.task.update({
             where:{id},
-            data:{
-                ...updateTaskDto,
-                updated_at:new Date(),
-            },
+            data,
         });
     }
     

@@ -7,6 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import { AppService } from './app.service';
 import { TasksModule } from './tasks/tasks.module';
 import { ProjectsModule } from './projects/projects.module';
+import { InvitesModule } from './invites/invites.module';
+import { ProjectmembersModule } from './projectmembers/projectmembers.module';
 
 @Module({
   imports: [
@@ -16,7 +18,12 @@ import { ProjectsModule } from './projects/projects.module';
     UsersModule,
     AuthModule,
     TasksModule,
-    ProjectsModule
+    ProjectsModule,
+    InvitesModule,
+    ProjectmembersModule
+    ,
+    // Invites module for handling invitation accept/reject
+    require('./invites/invites.module').InvitesModule
   ],
   controllers: [],
   providers: [AppService],

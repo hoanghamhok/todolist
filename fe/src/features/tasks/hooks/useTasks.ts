@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Task, TaskStatus,ReorderTaskPayload } from "../types";
-import { createTask, deleteTask, fetchTasks, updateTaskStatus,updateTask } from "../api";
-import { reorderTasks} from "../api";
+import { createTask, deleteTask, fetchTasks, updateTaskStatus,updateTask } from "../tasks.api";
+import { reorderTasks} from "../tasks.api";
 
 const STATUSES: TaskStatus[] = ["TODO", "INPROGRESS", "DONE"];
 
