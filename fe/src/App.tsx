@@ -1,9 +1,12 @@
-import AuthPage from "./features/auth/components/AuthPage";
-import { TaskPage } from "./features/tasks/components/TaskPage";
-import "./features/tasks/components/task.css"
-
-export default function App() {
+import { Routes, Route } from "react-router-dom";
+import AuthPage from "./features/auth/pages/AuthPage";
+function App() {
   return (
-    <AuthPage/>
-  )
+    <Routes>
+      <Route path="/auth" element={<AuthPage />} />
+    </Routes>
+    
+  );
 }
+
+export default App;
