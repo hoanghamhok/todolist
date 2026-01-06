@@ -1,10 +1,9 @@
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody,ApiOkResponse,ApiCreatedResponse,ApiConflictResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { UsersService } from '../user/user.service';
-import { JwtService } from '@nestjs/jwt';
+import { AuthResponseDto } from './dto/auth-response.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -21,6 +20,10 @@ export class AuthController {
   }
 
   @Post('login')
+   @ApiOkResponse({
+    description: 'Login successful',
+    type: AuthResponseDto,
+  })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login user' })
   @ApiBody({ type: LoginDto })
@@ -31,6 +34,13 @@ export class AuthController {
   }
 
   @Post('register-admin')
+  @ApiCreatedResponse({
+    description: 'User registered successfully',
+    type: AuthResponseDto,
+  })
+  @ApiConflictResponse({
+    description: 'Email already in use',
+  })
   @ApiOperation({ summary: 'Register admin user (for testing)' })
   async registerAdmin(@Body()  registerDto: RegisterDto) {
     return this.authService.registerAdmin(registerDto.email, registerDto.password,registerDto.username);

@@ -1,9 +1,11 @@
 import api from "../../api/client";
+import type { LoginRequest,RegisterRequest } from "./type";
 
-export const authService = {
-  login: (email,username, password) => 
-    api.post('/auth/login', { email, password,username}),
-  
-  register: (email, password,username) => 
-    api.post('/auth/register', { email, password,username}),
+export const authApi ={
+  login:(data:LoginRequest)=>
+    api.post('/auth/login',data),
+  register:(data:RegisterRequest)=>
+    api.post('/auth/register',data),
+  getProfile:()=>
+    api.get('/users/me'),
 };
