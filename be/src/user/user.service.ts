@@ -26,6 +26,17 @@ export class UsersService {
         });
     }
 
+    async findOneByEmailOrUsername(identifier: string) {
+    return this.prisma.user.findFirst({
+        where: {
+        OR: [
+            { email: identifier },
+            { username: identifier },
+        ],
+        },
+    });
+    }
+    
     async findUserByEmail(email:string){
         return this.prisma.user.findUnique({where:{email}});
     }
@@ -35,7 +46,7 @@ export class UsersService {
     }
 
     async getUserById(id:string){
-        return this.prisma.user.findUnique({where:{id},select:{id:true,email:true,role:true,createdAt:true}});
+        return this.prisma.user.findUnique({where:{id},select:{id:true,email:true,role:true,createdAt:true,username:true}});
     }
 
     async findAllUsers(){

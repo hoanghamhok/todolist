@@ -11,6 +11,13 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register')
+  @ApiCreatedResponse({
+    description: 'User registered successfully',
+    type: AuthResponseDto,
+  })
+  @ApiConflictResponse({
+    description: 'Email already in use',
+  })
   @ApiOperation({ summary: 'Register new user' })
   @ApiBody({ type: RegisterDto })
   @ApiResponse({ status: 201, description: 'User registered successfully' })
@@ -30,7 +37,7 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Login successful' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto.email||loginDto.username, loginDto.password);
+    return this.authService.login(loginDto.identifier, loginDto.password);
   }
 
   @Post('register-admin')

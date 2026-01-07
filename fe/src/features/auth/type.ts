@@ -1,5 +1,6 @@
 
 import type { paths } from "../../types/openapi"
+import type { JsonResponse } from "../../types/openapi-helpers";
 
 export type RegisterRequest =
   paths["/auth/register"]["post"]["requestBody"]["content"]["application/json"];
@@ -8,15 +9,15 @@ export type LoginRequest =
   paths["/auth/login"]["post"]["requestBody"]["content"]["application/json"];
 
 export type LoginResult =
-  paths["/auth/login"]["post"]["responses"]["200"]["content"]["application/json"];
+  JsonResponse<"/auth/login", "post", 200>;
 
 export type RegisterResult =
-  paths["/auth/register"]["post"]["responses"]["201"]["content"]["application/json"];
-
+  JsonResponse<"/auth/register", "post", 201>;
 export interface User {
   id: string;
+  username:string;
   email: string;
-  role: 'USER' | 'ADMIN';
+  role: 'USER' | 'SUPER_ADMIN';
   createdAt?: string;
 }
 
@@ -24,7 +25,7 @@ export interface AuthContextType {
   user: User | null;
   token: string | null;
   loading: boolean;
-  login: (data: LoginRequest) => Promise<void>;
-  register: (data: RegisterRequest) => Promise<void>;
+  login: (data: LoginRequest) => Promise<LoginResult>;
+  register: (data: RegisterRequest) => Promise<RegisterResult>;
   logout: () => void;
 }

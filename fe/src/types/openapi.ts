@@ -319,9 +319,26 @@ export interface components {
              */
             password: string;
         };
-        LoginDto: {
+        UserResponseDto: {
+            /** @example cmjs1ns1l0001cnkisqt9i0l5 */
+            id: string;
+            /** @example user1@example.com */
             email: string;
-            username: string;
+            /**
+             * @example USER
+             * @enum {string}
+             */
+            role: "USER" | "ADMIN";
+            /** @example 2025-12-30T03:45:16.473Z */
+            createdAt: string;
+        };
+        AuthResponseDto: {
+            /** @example eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... */
+            accessToken: string;
+            user: components["schemas"]["UserResponseDto"];
+        };
+        LoginDto: {
+            identifier: string;
             password: string;
         };
         CreateProjectDto: {
@@ -436,7 +453,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AuthResponseDto"];
+                };
             };
             /** @description Email already in use */
             409: {
@@ -465,7 +484,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["AuthResponseDto"];
+                };
             };
             /** @description Invalid credentials */
             401: {
@@ -489,7 +510,17 @@ export interface operations {
             };
         };
         responses: {
+            /** @description User registered successfully */
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponseDto"];
+                };
+            };
+            /** @description Email already in use */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { authApi } from '../auth.api';
-import type { AuthContextType, LoginRequest, RegisterRequest, User } from '../../auth/type';
+import type { AuthContextType, LoginRequest, LoginResult, RegisterRequest, RegisterResult, User } from '../../auth/type';
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const login = async (data: LoginRequest) => {
+  const login = async (data: LoginRequest):Promise<LoginResult> => {
   setLoading(true);
   try {
     const { data: res } = await authApi.login(data);
@@ -38,18 +38,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setUser(res.user);
     localStorage.setItem("token", res.accessToken);
 
-    return { success: true };
-  } catch (error: any) {
-    return {
-      success: false,
-      error: error.response?.data?.message || "Login failed",
-    };
+    return res;
   } finally {
     setLoading(false);
   }
  };
 
-  const register = async (data: RegisterRequest) => {
+  const register = async (data: RegisterRequest):Promise<RegisterResult> => {
   setLoading(true);
   try {
     const { data: res } = await authApi.register(data);
@@ -58,12 +53,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setUser(res.user);
     localStorage.setItem("token", res.accessToken);
 
-    return { success: true };
-  } catch (error: any) {
-    return {
-      success: false,
-      error: error.response?.data?.message || "Registration failed",
-    };
+    return res;
   } finally {
     setLoading(false);
   }
@@ -73,6 +63,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
+    
   };
 
   return (
