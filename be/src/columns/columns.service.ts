@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-} from "@nestjs/common";
+import {Injectable,NotFoundException,ConflictException} from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CreateColumnDto } from "./dto/create-column.dto";
 import { UpdateColumnDto } from "./dto/update-column.dto";
@@ -11,9 +7,6 @@ import { UpdateColumnDto } from "./dto/update-column.dto";
 export class ColumnsService {
   constructor(private prisma: PrismaService) {}
 
-  // =====================
-  // Get columns by project
-  // =====================
   async getByProject(projectId: string) {
     return this.prisma.column.findMany({
       where: {
@@ -26,17 +19,11 @@ export class ColumnsService {
     });
   }
 
-  // =====================
-  // Create column
-  // =====================
   async create(dto: CreateColumnDto) {
-    // ensure project exists
     const project = await this.prisma.project.findUnique({
       where: { id: dto.projectId },
     });
     if (!project) throw new NotFoundException("Project not found");
-
-    // get last column position
     const last = await this.prisma.column.findFirst({
       where: { projectId: dto.projectId },
       orderBy: { position: "desc" },
@@ -54,9 +41,6 @@ export class ColumnsService {
     });
   }
 
-  // =====================
-  // Update column (rename / reorder / close)
-  // =====================
   async update(id: string, dto: UpdateColumnDto) {
     const column = await this.prisma.column.findUnique({
       where: { id },
@@ -72,14 +56,7 @@ export class ColumnsService {
     });
   }
 
-  // =====================
-  // Move column (reorder Trello-style)
-  // =====================
-  async move(
-    columnId: string,
-    beforeColumnId?: string,
-    afterColumnId?: string,
-  ) {
+  async move(columnId: string,beforeColumnId?: string,afterColumnId?: string,) {
     let newPosition = 1000;
 
     if (beforeColumnId && afterColumnId) {
@@ -113,9 +90,6 @@ export class ColumnsService {
     });
   }
 
-  // =====================
-  // Soft delete column
-  // =====================
   async close(id: string) {
     const column = await this.prisma.column.findUnique({
       where: { id },

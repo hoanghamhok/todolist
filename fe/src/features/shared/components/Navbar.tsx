@@ -13,8 +13,6 @@ const Navbar = ({ onToggleSidebar, notifications = [] }) => {
   return (
     <nav className="bg-white border-b fixed top-0 left-0 right-0 z-50 h-16">
       <div className="px-4 h-full flex items-center justify-between">
-
-        {/* LEFT */}
         <div className="flex items-center gap-4">
           <button
             onClick={onToggleSidebar}
@@ -23,16 +21,13 @@ const Navbar = ({ onToggleSidebar, notifications = [] }) => {
             ☰
           </button>
 
-          <div className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2">
             <span className="text-2xl">📋</span>
             <h1 className="text-xl font-bold hidden sm:block">TaskBoard</h1>
-          </div>
+          </Link>
         </div>
 
-        {/* RIGHT */}
         <div className="flex items-center gap-6">
-
-          {/* 🔔 Notifications */}
           <div className="relative">
             <button className="p-1 hover:bg-gray-100 rounded-lg relative">
               🔔
@@ -49,7 +44,6 @@ const Navbar = ({ onToggleSidebar, notifications = [] }) => {
             </span>
           )}
 
-          {/* 👤 User / Auth */}
           {user ? (
             <div className="relative">
               <button

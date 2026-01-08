@@ -15,7 +15,6 @@ export class ProjectsService {
         private authService: AuthService,
     ) {}
 
-    // Get Project by ID
     async getProjectByID(id: string) {
         const project = await this.prisma.project.findUnique({ where: { id } });
         if (!project) {
@@ -24,7 +23,6 @@ export class ProjectsService {
         return project;
     }
 
-    //Create Project
     async createProject(data:CreateProjectDto) {
         if (!data || !data.ownerId) {
             throw new BadRequestException('Missing project data or ownerId');
@@ -54,14 +52,14 @@ export class ProjectsService {
 
         return project;
     }
-    //Project that user join in
+
     async getUsersProjects(userId:string){
         return this.prisma.projectMember.findMany({
             where: { userId: userId },
             include: { project: true },
         });
     }
-    //Detail Project
+
     async getProjectDetails(projectId:string){
         return this.prisma.project.findUnique({
             where:{id:projectId},
@@ -69,7 +67,7 @@ export class ProjectsService {
         });
     }
     
-    //Set Role Project Member
+
     async setProjectMemberRole(projectid:string,userId:string,role:ProjectRole){
         const projectmember = await this.prisma.projectMember.findFirst({
             where:{ projectId:projectid, userId:userId }
@@ -82,7 +80,7 @@ export class ProjectsService {
             data: { role }
         });
     }
-    //Delete Project
+
     async deleteProject(projectId:string){
         const project = await this.prisma.project.findUnique({ where: { id: projectId } });
         if (!project) {

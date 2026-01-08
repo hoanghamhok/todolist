@@ -1,13 +1,19 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
+import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcryptjs';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { MailService } from 'src/mail/mail.service';
+
 
 @Injectable()
 export class AuthService {
     constructor(
         private usersService: UsersService,
-        private jwtService: JwtService
+        private jwtService: JwtService,
+        private prisma:PrismaService,
+        private mailService:MailService
     ) {}
 
     async register(email: string, password: string,username:string) {
@@ -24,6 +30,9 @@ export class AuthService {
         
         if (!user) {
             throw new UnauthorizedException('Invalid credentials');
+        }
+        if (!user.password) {
+        throw new UnauthorizedException('Invalid credentials');
         }
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
@@ -46,5 +55,51 @@ export class AuthService {
             role: user.role,
         });
         return { user, accessToken };
+    }
+
+    async forgotPassword(email:string){
+        const user = await this.prisma.user.findUnique({
+            where:{email},
+        });
+
+        if(!user || user.provider !== 'LOCAL'){
+            return;
+        }
+
+        const resetToken = randomUUID();
+
+        await this.prisma.user.update({
+            where:{id:user.id},
+            data:{
+                resetPasswordToken:resetToken,
+                resetPasswordExpires:new Date(Date.now() +15*60*1000)
+            }
+        })
+
+        const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+
+        await this.mailService.sendResetPassword(user.email,resetLink);
+    }
+
+    async resetPassword(token:string,newPassword:string){
+        const user = await this.prisma.user.findFirst({
+            where:{
+                resetPasswordToken:token,
+                resetPasswordExpires:{gt:new Date()}
+            }
+        })
+
+        if(!user) throw new BadRequestException('Token khong hop le')
+
+        const hashed = await bcrypt.hash(newPassword,10);
+
+        await this.prisma.user.update({
+            where:{id:user.id},
+            data:{
+                password:hashed,
+                resetPasswordExpires:null,
+                resetPasswordToken:null,
+            }
+        })
     }
 }

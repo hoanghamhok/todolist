@@ -4,7 +4,6 @@ import type {
   UpdateProjectMemberRoleRequest,
 } from "../types";
 
-//Project
 export const getProjectById = (id: string) =>
   api.get(`/projects/${id}`);
 
@@ -25,4 +24,3 @@ export const updateProjectMemberRole = (
 
 export const removeProjectMember = (projectId: string) =>
   api.delete(`/projects/remove/${projectId}`);
-//Project-member

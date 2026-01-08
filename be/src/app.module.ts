@@ -10,6 +10,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { InvitesModule } from './invites/invites.module';
 import { ColumnsModule } from './columns/columns.module';
 import { ProjectmembersModule } from './projectmembers/projectmembers.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -25,7 +26,8 @@ import { ProjectmembersModule } from './projectmembers/projectmembers.module';
     ColumnsModule
     ,
     // Invites module for handling invitation accept/reject
-    require('./invites/invites.module').InvitesModule
+    require('./invites/invites.module').InvitesModule,
+    MailModule
   ],
   controllers: [],
   providers: [AppService],

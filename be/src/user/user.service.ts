@@ -68,7 +68,7 @@ export class UsersService {
                 email,
                 password: hash,
                 username: username,
-                role: 'SUPER_ADMIN',  // Set role là ADMIN
+                role: 'SUPER_ADMIN',
             },
         });
     }

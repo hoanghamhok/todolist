@@ -14,7 +14,6 @@ export class ProjectmembersService {
         private projectsService:ProjectsService
     ){}
 
-    // Get members of a project
     async getProjectMembers(projectId: string) {
         const project = await this.prisma.project.findUnique({ where: { id: projectId } });
         if (!project) {
@@ -26,7 +25,6 @@ export class ProjectmembersService {
         });
     }
 
-    //Invite 
     async inviteMembers(projectId: string, inviterId: string, body: InviteMemberDto) {
         await this.projectsService.getProjectByID(projectId);
 
@@ -46,7 +44,6 @@ export class ProjectmembersService {
             throw new BadRequestException('Provide userId or email to invite');
         }
         if (!userToInvite) {
-            // create invitation record
             if (!body.email) {
                 throw new BadRequestException('Email is required to invite new users');
             }
@@ -80,7 +77,6 @@ export class ProjectmembersService {
         return member;
     }
 
-    // Remove a member from a project
     async removeMember(projectId: string, requesterId: string, userId: string) {
         await this.projectsService.getProjectByID(projectId);
         const requester = await this.prisma.projectMember.findFirst({ where: { projectId, userId: requesterId } });
@@ -109,7 +105,6 @@ export class ProjectmembersService {
         return { message: 'Member removed' };
     }
 
-    // Leave
     async leaveProject(projectId: string, requesterId: string) {
         const member = await this.prisma.projectMember.findFirst({ where: { projectId, userId: requesterId } });
         if (!member) {

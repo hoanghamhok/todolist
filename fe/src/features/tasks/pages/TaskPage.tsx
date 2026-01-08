@@ -129,8 +129,6 @@ export function TaskPage() {
   if (colError) return <div>Error loading columns</div>;
   return (
     <div className="app-wrapper">
-      <h1>Kanban Board</h1>
-
       <TaskForm columns={columns} onSubmit={handleAddTask} />
 
       <DndContext
