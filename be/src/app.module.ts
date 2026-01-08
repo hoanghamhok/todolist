@@ -8,6 +8,7 @@ import { AppService } from './app.service';
 import { TasksModule } from './tasks/tasks.module';
 import { ProjectsModule } from './projects/projects.module';
 import { InvitesModule } from './invites/invites.module';
+import { ColumnsModule } from './columns/columns.module';
 import { ProjectmembersModule } from './projectmembers/projectmembers.module';
 
 @Module({
@@ -20,7 +21,8 @@ import { ProjectmembersModule } from './projectmembers/projectmembers.module';
     TasksModule,
     ProjectsModule,
     InvitesModule,
-    ProjectmembersModule
+    ProjectmembersModule,
+    ColumnsModule
     ,
     // Invites module for handling invitation accept/reject
     require('./invites/invites.module').InvitesModule

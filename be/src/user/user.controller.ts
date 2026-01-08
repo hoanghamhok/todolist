@@ -2,6 +2,7 @@ import { Controller, Get, Param, UseGuards, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './user.service';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
+
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
@@ -10,9 +11,6 @@ export class UsersController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({ status: 200, description: 'Returns current user' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getMe(@Request() req) {
     console.log('User ID from request:', req.user.userId);
     return this.usersService.getUserById(req.user.userId);
@@ -21,8 +19,6 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Get('all')
-  @ApiOperation({ summary: 'Get all users' })
-  @ApiResponse({ status: 200, description: 'Returns all users' })
   async getAllUsers() {
     return this.usersService.findAllUsers();
   }
@@ -30,9 +26,6 @@ export class UsersController {
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Get user by ID' })
-  @ApiResponse({ status: 200, description: 'Returns user' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getUserById(@Param('id') id: string) {
     return this.usersService.getUserById(id);
   }

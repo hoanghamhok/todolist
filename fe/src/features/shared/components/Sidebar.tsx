@@ -127,8 +127,18 @@ const Sidebar: React.FC<SidebarProps> = ({
                             <div className="flex justify-between items-center">
                               <span>{pm.project.name}</span>
                               {pm.role === "OWNER" && (
-                                <span className="text-xs text-blue-600 font-medium">
+                                <span className="text-xs text-red-600 font-medium">
                                   Owner
+                                </span>
+                              )}
+                              {pm.role === "ADMIN" && (
+                                <span className="text-xs text-blue-600 font-medium">
+                                  Admin
+                                </span>
+                              )}
+                              {pm.role === "MEMBER" && (
+                                <span className="text-xs text-gray-600 font-medium">
+                                  Member
                                 </span>
                               )}
                             </div>

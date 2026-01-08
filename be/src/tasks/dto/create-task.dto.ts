@@ -13,14 +13,9 @@ export class CreateTaskDto{
     description?:string
 
     @IsNotEmpty()
-    @IsInt()
-    @ApiProperty()
-    order:number
-
-    @IsNotEmpty()
     @IsString()
     @ApiProperty()
-    status:string;
+    columnId:string;
 
     @IsNotEmpty()
     @IsString()

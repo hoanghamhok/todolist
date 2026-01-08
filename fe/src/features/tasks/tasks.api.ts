@@ -1,30 +1,21 @@
 import api from '../../api/client'
-import type { CreateTaskDto,ReorderTaskPayload } from './types'
+import type { CreateTaskRequest,UpdateTaskRequest } from './types'
 
 export const tasksAPI = {
     getAll:() =>
         api.get(`/tasks/all`),
-
-    create: (data: CreateTaskDto & { order: number }) =>
+    create: (data: CreateTaskRequest) =>
         api.post(`/tasks/create`, data),
-
-    update:(id:string,data:any) =>
+    update:(id:string,data:UpdateTaskRequest) =>
         api.patch(`/tasks/${id}`,data),
-
-    updateStatus:(id:string,data:any) =>
-        api.patch(`/tasks/${id}/status`,data),
-
     delete:(id:string) =>
         api.delete(`/tasks/${id}`),
-
-    reorder:(tasks:ReorderTaskPayload[]) => 
-        api.patch(`/tasks/reorder`,{tasks})
+    move:(id:string,data:any) =>
+        api.patch(`/tasks/${id}/move`,data)
 }
-
 //alias 
 export const fetchTasks = tasksAPI.getAll
 export const createTask = tasksAPI.create
 export const updateTask = tasksAPI.update
-export const updateTaskStatus = tasksAPI.updateStatus
 export const deleteTask = tasksAPI.delete
-export const reorderTasks = tasksAPI.reorder
+export const moveTask   = tasksAPI.move

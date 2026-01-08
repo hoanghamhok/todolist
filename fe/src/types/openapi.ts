@@ -11,7 +11,6 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get current user profile */
         get: operations["UsersController_getMe"];
         put?: never;
         post?: never;
@@ -28,7 +27,6 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get all users */
         get: operations["UsersController_getAllUsers"];
         put?: never;
         post?: never;
@@ -45,7 +43,6 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get user by ID */
         get: operations["UsersController_getUserById"];
         put?: never;
         post?: never;
@@ -64,7 +61,6 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Register new user */
         post: operations["AuthController_register"];
         delete?: never;
         options?: never;
@@ -81,7 +77,6 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Login user */
         post: operations["AuthController_login"];
         delete?: never;
         options?: never;
@@ -98,12 +93,75 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Register admin user (for testing) */
         post: operations["AuthController_registerAdmin"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/tasks/all": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TasksController_getTask"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tasks/create": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["TasksController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tasks/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TasksController_getByID"];
+        put?: never;
+        post?: never;
+        delete: operations["TasksController_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["TasksController_update"];
+        trace?: never;
+    };
+    "/tasks/{id}/move": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["TasksController_moveTask"];
         trace?: never;
     };
     "/projects/{id}": {
@@ -341,6 +399,25 @@ export interface components {
             identifier: string;
             password: string;
         };
+        CreateTaskDto: {
+            title: string;
+            description: string;
+            columnId: string;
+            userId: string;
+            projectId: string;
+        };
+        UpdateTaskDto: {
+            title?: string;
+            description?: string;
+            columnId?: string;
+            userId?: string;
+            projectId?: string;
+        };
+        MoveTaskDto: {
+            columnId: string;
+            beforeTaskId: string;
+            afterTaskId: string;
+        };
         CreateProjectDto: {
             name: string;
             ownerId: string;
@@ -374,15 +451,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Returns current user */
             200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Unauthorized */
-            401: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -399,7 +468,6 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Returns all users */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -419,15 +487,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Returns user */
             200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description Unauthorized */
-            401: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -488,13 +548,6 @@ export interface operations {
                     "application/json": components["schemas"]["AuthResponseDto"];
                 };
             };
-            /** @description Invalid credentials */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
         };
     };
     AuthController_registerAdmin: {
@@ -521,6 +574,128 @@ export interface operations {
             };
             /** @description Email already in use */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TasksController_getTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TasksController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateTaskDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TasksController_getByID: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TasksController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TasksController_update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateTaskDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TasksController_moveTask: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MoveTaskDto"];
+            };
+        };
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

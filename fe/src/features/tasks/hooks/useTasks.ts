@@ -1,120 +1,122 @@
-import { useEffect, useMemo, useState } from "react";
-import type { Task, TaskStatus,ReorderTaskPayload } from "../types";
-import { createTask, deleteTask, fetchTasks, updateTaskStatus,updateTask } from "../tasks.api";
-import { reorderTasks} from "../tasks.api";
-
-const STATUSES: TaskStatus[] = ["TODO", "INPROGRESS", "DONE"];
-
-const STORAGE_KEY = "todolist"
-
-//Parse Json
-function safeParse<T>(value:string | null ,fallback:T):T{
-  try{
-    return value? (JSON.parse(value) as T) : fallback;
-  }catch{
-    return fallback;
-  }
-}
-
-// Filters tasks by status, sorts them by order, reassigns order values
-function normalizeOrders(all: Task[], status: TaskStatus) {
-  const col = all.filter(t => t.status === status).sort((a,b)=>a.order-b.order);
-  return col.map((t, idx) => ({ ...t, order: idx }));
-}
+import { useMemo } from "react";
+import {useQuery,useMutation,useQueryClient} from "@tanstack/react-query";
+import type { Task } from "../types";
+import {fetchTasks,createTask,updateTask,deleteTask,moveTask} from "../tasks.api";
 
 export function useTask() {
-  const [tasks, setTasks] = useState<Task[]>(() => {
-    if (typeof window == "undefined") return [];
-    return safeParse<Task[]>(localStorage.getItem(STORAGE_KEY),[])
+  const queryClient = useQueryClient();
+
+  const tasksQuery = useQuery<Task[]>({
+    queryKey:["tasks"],
+    queryFn:async() =>{
+      const res = await fetchTasks();
+      return res.data;
+    }
+  })
+
+  const addMutation = useMutation({
+    mutationFn: createTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"],});
+    },
   });
 
-  //Save when task changed
-  useEffect(() =>{
-    if (typeof window == "undefined") return;
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(tasks))
-  },[tasks]);
-
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetchTasks();
-      setTasks(res.data);
-    } catch (e: any) {
-      setError(e?.message ?? "Load Task Failed");
-    } finally {
-      setLoading(false);
-    }
+  const add = (columnId: string,title: string,userId: string,projectId: string,description: string) => {
+    if (!columnId) throw new Error("columnId is required");
+    return addMutation.mutateAsync({title,description,columnId,userId,projectId,});
   };
-
-  useEffect(() => { load(); }, []);
-
-  const add = async (title: string, description?: string) => {
-    const maxOrder = tasks.filter(t => t.status === "TODO").reduce((m, t) => Math.max(m, t.order), -1);
-    const res = await createTask({ title, description, status: "TODO", order: maxOrder + 1 });
-    setTasks(prev => [...prev, res.data]);
-  };
-
-  //Edit task (title/description/...)
-  const edit = async (
-    id: string,
-    data: Partial<Pick<Task, "title" | "description" | "status" | "order">> & Record<string, any>
-  ) => {
-    const res = await updateTask(id, data);
-    setTasks(prev => prev.map(t => (t.id === id ? res.data : t)));
-    return res.data;
-  };
-
-  //Delete task
-  const remove = async (id: string) => {
-    await deleteTask(id);
-    setTasks(prev => prev.filter(t => t.id !== id));
-  };
-
-  //Change status
-  const changeStatus = async (id: string, status: TaskStatus) => {
-    const res = await updateTaskStatus(id, { status });
-    setTasks(prev => prev.map(t => (t.id === id ? res.data : t)));
-  };
-
-  //local reorder (optimistic)
-  const reorderLocal = (next: Task[]) => {
-    // normalize order per column so UI + payload clean
-    let normalized = next;
-    for (const s of STATUSES) {
-      const updatedCol = normalizeOrders(normalized, s);
-      const others = normalized.filter(t => t.status !== s);
-      normalized = [...others, ...updatedCol];
-    }
-    setTasks(normalized);
-    return normalized;
-  };
-
-  //call backend /reorder
-  const reorder = async (nextTasks: Task[]) => {
-    const payload: ReorderTaskPayload[] = nextTasks.map(t => ({
-      id: t.id,
-      status: t.status,
-      order: t.order,
-    }));
-    await reorderTasks(payload);
-  };
-
-  // Group tasks by status and sort each group by order
-  const grouped = useMemo(() => {
-    const byStatus: Record<TaskStatus, Task[]> = { TODO: [], INPROGRESS: [], DONE: [] };
-    for (const t of tasks) byStatus[t.status].push(t);
-    (Object.keys(byStatus) as TaskStatus[]).forEach(s => byStatus[s].sort((a,b)=>a.order-b.order));
-    return byStatus;
-  }, [tasks]);
- 
-  //Find task s status
-  const findStatusOfTask = (tasks: { id: string; status: TaskStatus }[], taskId: string) =>{
-    return tasks.find((t) => t.id === taskId)?.status;
-  }
   
-  return { tasks, grouped, loading, error, reload: load, add, remove, changeStatus, reorderLocal, reorder,edit,findStatusOfTask};
+
+  const editMutation = useMutation({
+    mutationFn: ({ id, data }: any) => updateTask(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey:["tasks"]});
+    },
+  });
+
+  const edit = (id: string, data: Partial<Task>) => {
+    return editMutation.mutateAsync({ id, data });
+  };
+
+  const removeMutation = useMutation({
+    mutationFn: deleteTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({queryKey:["tasks"]});
+    },
+  });
+
+  const remove = (id: string) => {
+    return removeMutation.mutateAsync(id);
+  };
+
+  const moveMutation = useMutation({
+    mutationFn: ({ taskId, payload }: any) =>
+      moveTask(taskId, payload),
+
+    onMutate: async ({ taskId, columnId }) => {
+      await queryClient.cancelQueries({queryKey:["tasks"]});
+
+      const prevTasks =
+        queryClient.getQueryData<Task[]>(["tasks"]);
+
+      queryClient.setQueryData<Task[]>(["tasks"], old =>
+        old?.map(t =>
+          t.id === taskId ? { ...t, columnId } : t
+        )
+      );
+
+      return { prevTasks };
+    },
+
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prevTasks) {
+        queryClient.setQueryData(["tasks"], ctx.prevTasks);
+      }
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({queryKey:["tasks"]});
+    },
+  });
+
+  const move = (
+    taskId: string,
+    columnId: string,
+    beforeTaskId?: string,
+    afterTaskId?: string
+  ) => {
+    return moveMutation.mutateAsync({
+      taskId,
+      payload: { columnId, beforeTaskId, afterTaskId },
+    });
+  };
+
+  // Group tasks by column
+  const byColumn = useMemo(() => {
+    const map: Record<string, Task[]> = {};
+    const tasks = tasksQuery.data ?? [];
+
+    for (const t of tasks) {
+      if (!map[t.columnId]) map[t.columnId] = [];
+      map[t.columnId].push(t);
+    }
+
+    Object.values(map).forEach(col =>
+      col.sort((a, b) => a.position - b.position)
+    );
+
+    return map;
+  }, [tasksQuery.data]);
+
+   return {
+    tasks: tasksQuery.data ?? [],
+    byColumn,
+    loading: tasksQuery.isLoading,
+    error: tasksQuery.error,
+    reload: tasksQuery.refetch,
+    add,
+    edit,
+    remove,
+    move,
+  };
 }
