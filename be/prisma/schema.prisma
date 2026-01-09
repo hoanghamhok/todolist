@@ -97,7 +97,7 @@ model ProjectMember {
   project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([projectId, userId]) // 1 user chỉ xuất hiện 1 lần trong 1 project
+  @@unique([projectId, userId]) 
   @@index([userId])
   @@index([projectId])
 }

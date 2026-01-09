@@ -1,61 +1,88 @@
-// import { useState } from 'react';
-// import { useAuth } from '../hooks/useAuth';
+import { useState } from "react";
+import type { ForgotPasswordRequest, ForgotPasswordResponse } from "../type";
+import { authApi } from "../auth.api";
 
-// const ForgotPasswordPage = () => {
-//   const { loading } = useAuth();
-//   const [email, setEmail] = useState('');
-//   const [message, setMessage] = useState('');
-//   const [error, setError] = useState('');
+export default function ForgotPassword() {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-//   const handleSubmit = async () => {
-//     setError('');
-//     setMessage('');
+  const forgotPassword = async (payload: ForgotPasswordRequest): Promise<ForgotPasswordResponse> => {
+    setLoading(true);
+    setError(null);
+    try {
+        const res = await authApi.forgotPassword(payload);
+        // ✅ backend đã trả message
+        return res.data;
+    } catch (err) {
+        setError("Gửi email thất bại");
+        throw err;
+    } finally {
+        setLoading(false);
+    }
+  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+        const res = await forgotPassword({ email });
+        alert(res.message);
+    } catch {
+    }
+  } ;
 
-//     try {
-//       await forgotPassword(email);
-//       setMessage('Đã gửi email khôi phục mật khẩu');
-//     } catch (err: any) {
-//       setError(err?.message || 'Có lỗi xảy ra');
-//     }
-//   };
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
+        <h1 className="text-2xl font-bold text-center text-gray-800">
+          Quên mật khẩu
+        </h1>
 
-//   return (
-//     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-//       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-//         <h2 className="text-2xl font-bold mb-6 text-center">
-//           Quên mật khẩu
-//         </h2>
+        <p className="text-sm text-gray-500 text-center mt-2">
+          Nhập email của bạn để nhận liên kết đặt lại mật khẩu
+        </p>
 
-//         {error && (
-//           <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
-//             {error}
-//           </div>
-//         )}
+        {success ? (
+          <div className="mt-6 text-green-600 text-center text-sm">
+            ✅ Nếu email tồn tại, chúng tôi đã gửi liên kết đặt lại mật khẩu.
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Email
+              </label>
+              <input
+                type="email"
+                required
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-1 w-full rounded-lg border border-gray-300 px-4 py-2
+                           focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
 
-//         {message && (
-//           <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
-//             {message}
-//           </div>
-//         )}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-lg bg-blue-600 py-2 text-white font-semibold
+                         hover:bg-blue-700 transition disabled:opacity-60"
+            >
+              {loading ? "Đang gửi..." : "Gửi link đặt lại mật khẩu"}
+            </button>
+          </form>
+        )}
 
-//         <input
-//           type="email"
-//           placeholder="Nhập email của bạn"
-//           value={email}
-//           onChange={(e) => setEmail(e.target.value)}
-//           className="w-full px-4 py-3 rounded-lg border focus:border-purple-500 outline-none mb-4"
-//         />
-
-//         <button
-//           onClick={handleSubmit}
-//           disabled={loading}
-//           className="w-full bg-purple-600 text-white py-3 rounded-lg font-semibold hover:bg-purple-700 disabled:opacity-50"
-//         >
-//           {loading ? 'Đang gửi...' : 'Gửi yêu cầu'}
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default ForgotPasswordPage;
+        <div className="mt-6 text-center">
+          <a
+            href="/auth"
+            className="text-sm text-blue-600 hover:underline"
+          >
+            ← Quay lại đăng nhập
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}

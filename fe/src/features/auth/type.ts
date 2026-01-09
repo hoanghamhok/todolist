@@ -9,6 +9,12 @@ export type LoginResult =
   JsonResponse<"/auth/login", "post", 200>;
 export type RegisterResult =
   JsonResponse<"/auth/register", "post", 201>;
+export type ForgotPasswordRequest =
+    paths["/auth/forgot-password"]["post"]["requestBody"]["content"]["application/json"]
+export type ForgotPasswordResponse =
+    JsonResponse<"/auth/forgot-password","post",201>
+export type ResetPasswordRequest =
+    paths["/auth/reset-password"]["post"]["requestBody"]['content']["application/json"]
 export interface User {
   id: string;
   username:string;

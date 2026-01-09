@@ -1,10 +1,13 @@
 import { Controller, Post, Body, HttpCode, HttpStatus, Param } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody,ApiOkResponse,ApiCreatedResponse,ApiConflictResponse } from '@nestjs/swagger';
+import { ApiTags,ApiBody,ApiOkResponse,ApiCreatedResponse,ApiConflictResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { ForgotPasswordDto } from 'src/mail/dto/forgotpassword.dto';
+import { ResetPasswordDto } from 'src/mail/dto/resetpassword.dto';
+import { ForgotPassWordResponseDto } from './dto/fw-response.dto';
+import { ResetPassWordResponseDto } from './dto/rs-response.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -32,12 +35,20 @@ export class AuthController {
   }
 
   @Post('forgot-password')
+  @ApiCreatedResponse({ type: ForgotPassWordResponseDto })
   forgot(@Body() data:ForgotPasswordDto) {
-    return this.authService.forgotPassword(data.email);
+    this.authService.forgotPassword(data.email);
+    return {
+      message:"Vui long kiem tra thu duoc gui den tai khoan email cua ban"
+    }
   }
 
   @Post('reset-password')
-  reset(@Body('token') token: string,@Body('password') password: string,) {
-  return this.authService.resetPassword(token, password);
+  @ApiCreatedResponse({type:ResetPassWordResponseDto})
+  reset(@Body() data:ResetPasswordDto) {
+   this.authService.resetPassword(data.token,data.password);
+   return {
+    message:"Dat lai mat khau thanh cong"
+   }
   }
 }

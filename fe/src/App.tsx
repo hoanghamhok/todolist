@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import AuthPage from "./features/auth/pages/AuthPage";
 import HomePage from "./features/homepage/pages/HomePage";
 import { TaskPage } from "./features/tasks/pages/TaskPage";
+import ForgotPassword from "./features/auth/pages/ForgotPasswordPage";
 // import ForgotPasswordPage from "./features/auth/pages/ForgotPasswordPage";
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       {/* <Route path="/forgot-password" element={<ForgotPasswordPage />} /> */}
       <Route path="/" element={<HomePage />} />
       <Route path="task" element={<TaskPage />} />
+      <Route path="forgot-password" element={<ForgotPassword/>}/>
 
     </Routes>
     
