@@ -13,7 +13,6 @@ export default function ForgotPassword() {
     setError(null);
     try {
         const res = await authApi.forgotPassword(payload);
-        // ✅ backend đã trả message
         return res.data;
     } catch (err) {
         setError("Gửi email thất bại");

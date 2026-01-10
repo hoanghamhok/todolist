@@ -36,8 +36,8 @@ export class AuthController {
 
   @Post('forgot-password')
   @ApiCreatedResponse({ type: ForgotPassWordResponseDto })
-  forgot(@Body() data:ForgotPasswordDto) {
-    this.authService.forgotPassword(data.email);
+  async forgot(@Body() data:ForgotPasswordDto) {
+    await this.authService.forgotPassword(data.email);
     return {
       message:"Vui long kiem tra thu duoc gui den tai khoan email cua ban"
     }
@@ -45,8 +45,8 @@ export class AuthController {
 
   @Post('reset-password')
   @ApiCreatedResponse({type:ResetPassWordResponseDto})
-  reset(@Body() data:ResetPasswordDto) {
-   this.authService.resetPassword(data.token,data.password);
+  async reset(@Body() data:ResetPasswordDto) {
+   await this.authService.resetPassword(data.token,data.password);
    return {
     message:"Dat lai mat khau thanh cong"
    }

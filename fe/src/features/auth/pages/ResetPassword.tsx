@@ -1,18 +1,32 @@
 import { useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import { useSearchParams,useNavigate} from "react-router-dom";
+import { authApi } from "../auth.api";
+import type { ResetPasswordResponse, ResetPasswordRequest } from "../type";
 
 export default function ResetPassword() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-
   const token = searchParams.get("token");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
+  
+  const resetPassword = async (payload:ResetPasswordRequest):Promise<ResetPasswordResponse> => {
+    setLoading(true);
+    setError(null);
+    try{
+      const res = await authApi.resetPassword(payload);
+      return res.data;
+    }catch(err){
+      setError("Dat lai mat khau khong thanh cong")
+      throw err;
+    }finally{
+      setLoading(false);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,27 +40,20 @@ export default function ResetPassword() {
     if (password !== confirmPassword) {
       return setError("Mật khẩu xác nhận không khớp");
     }
+    if(!token){
+      return setError("Token không tồn tại")
+    }
 
     try {
-      setLoading(true);
-
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/auth/reset-password`,
-        {
-          token,
-          newPassword: password,
-        }
-      );
-
-      setSuccess("Đặt lại mật khẩu thành công!");
-      setTimeout(() => navigate("/login"), 2000);
+      const res = await resetPassword({token,password});
+      setSuccess(res.message)
+      setTimeout(() => {
+        navigate("/auth");
+      }, 2000);
     } catch (err: any) {
       setError(
         err?.response?.data?.message || "Token không hợp lệ hoặc đã hết hạn"
-      );
-    } finally {
-      setLoading(false);
-    }
+    );}
   };
 
   if (!token) {
