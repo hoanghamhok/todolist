@@ -147,4 +147,11 @@ export class TasksService{
         });
     }
 
+    async getTasksByProjectId(projectId: string) {
+        return this.prisma.task.findMany({
+            where: { projectId },
+            orderBy: [{ position: 'asc' }],
+        });
+    }
+
 }

@@ -8,3 +8,7 @@ export const updateColumn = (id: string, data: { title?: string }) =>
   axios.patch(`/columns/${id}`, data);
 export const deleteColumn = (id: string) =>
   axios.delete(`/columns/${id}`);
+export const moveColumn = (
+  id: string,
+  data: { beforeColumnId?: string; afterColumnId?: string }
+) => axios.patch(`/columns/${id}/move`, data);

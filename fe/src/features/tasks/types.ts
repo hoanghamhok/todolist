@@ -25,6 +25,7 @@ export interface Task {
   createdAt?:string;
   updateAt?:string;
 }
+
 export type Column = {
   id: string;
   title: string;

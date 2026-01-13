@@ -1,4 +1,3 @@
-import { ProjectRole } from '@prisma/client';
 import {Controller,Get,Patch,Post,Delete,Request,Body, Param, UseGuards} from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';

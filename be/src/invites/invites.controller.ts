@@ -1,22 +1,31 @@
-import { Controller, Post, Param, Request, UseGuards } from '@nestjs/common';
+import { Controller, Post, Param, Request, UseGuards,Body } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { InvitesService } from './invites.service';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { CreateInvitationDto } from './dto/create-invite.dto';
 
 @Controller('invites')
 export class InvitesController {
     constructor(private invitesService: InvitesService) {}
 
     @UseGuards(JwtAuthGuard)
-    @Post(':inviteId/accept')
-    async accept(@Param('inviteId') inviteId: string, @Request() req) {
-        const userId = req.user?.userId;
-        return this.invitesService.acceptInvitation(inviteId, userId);
+    @ApiBearerAuth()
+    @Post('create')
+    async createInvitation(@Body() data: CreateInvitationDto) {
+        return await this.invitesService.createInvite(data.inviterId, data.email,data.projectId);
     }
 
     @UseGuards(JwtAuthGuard)
-    @Post(':inviteId/reject')
-    async reject(@Param('inviteId') inviteId: string, @Request() req) {
-        const userId = req.user?.userId;
-        return this.invitesService.rejectInvitation(inviteId, userId);
+    @ApiBearerAuth()
+    @Post('accept/:token')
+    async acceptInvitation(@Request() req,@Param('token') token: string) {
+        return await this.invitesService.acceptInvite( token,req.user.userId);
+    }
+
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Post('reject/:token')
+    async declineInvitation(@Request() req,@Param('token') token: string) {
+        return await this.invitesService.rejectInvite(req.user.id, token);
     }
 }

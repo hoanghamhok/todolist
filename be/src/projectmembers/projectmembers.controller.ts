@@ -17,18 +17,6 @@ export class ProjectmembersController {
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
-    @Post(':projectId/invite')
-    async invite(
-        @Param('projectId') projectId: string,
-        @Request() req,
-        @Body() body: InviteMemberDto,
-    ) {
-        const inviterId = req.user?.userId;
-        return this.projectmembersService.inviteMembers(projectId, inviterId, body);
-    }
-
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
     @Delete(':projectId/members/:userId')
     async removeMember(
         @Param('projectId') projectId: string,

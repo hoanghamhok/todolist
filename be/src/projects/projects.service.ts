@@ -88,4 +88,11 @@ export class ProjectsService {
         }
         return this.prisma.project.delete({ where: { id: projectId } });
     }
+
+    async isUserInProject(projectId:string,userId:string){
+        const projectmember = await this.prisma.projectMember.findFirst({
+            where:{ projectId:projectId, userId:userId }
+        });
+        return projectmember != null;
+    }
 }

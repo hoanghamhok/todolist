@@ -11,6 +11,9 @@ import { InvitesModule } from './invites/invites.module';
 import { ColumnsModule } from './columns/columns.module';
 import { ProjectmembersModule } from './projectmembers/projectmembers.module';
 import { MailModule } from './mail/mail.module';
+import { NotificationsController } from './notifications/notifications.controller';
+import { NotificationsService } from './notifications/notifications.service';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -23,13 +26,13 @@ import { MailModule } from './mail/mail.module';
     ProjectsModule,
     InvitesModule,
     ProjectmembersModule,
-    ColumnsModule
-    ,
+    ColumnsModule,
     // Invites module for handling invitation accept/reject
     require('./invites/invites.module').InvitesModule,
-    MailModule
+    MailModule,
+    NotificationsModule
   ],
-  controllers: [],
-  providers: [AppService],
+  controllers: [NotificationsController],
+  providers: [AppService, NotificationsService],
 })
 export class AppModule {}

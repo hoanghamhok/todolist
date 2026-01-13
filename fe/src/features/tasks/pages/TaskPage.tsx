@@ -1,9 +1,10 @@
 import { TaskColumn } from "../components/TaskColumn";
 import { TaskForm } from "../components/TaskForm";
 import { useTask } from "../hooks/useTasks";
-import { useColumn } from "../../columns/hooks/useColumn"
+import { useColumn } from "../../columns/hooks/useColumn";
 import { useCallback, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
+import { useAuth } from "../../auth/hooks/useAuth";
 import {
   DndContext,
   PointerSensor,
@@ -30,12 +31,29 @@ function TaskCardOverlay({ task }: { task: Task }) {
 }
 
 export function TaskPage() {
-  const projectId = "abc123"; // 👈 lấy từ router / context
-  const userId = "u123"; // từ auth / context
-  const { tasks, add, remove, edit, move } = useTask();
-  const { columns, loading: colLoading, error: colError } =useColumn(projectId);
+  const projectId = "cmk4sj4q50000waq904ix2eqr"; // TODO: lấy từ router
+  const { user } = useAuth();
+  const userId = user?.id || "";
+
+  const {
+    tasks,
+    byColumn,
+    add,
+    remove,
+    edit,
+    move,
+  } = useTask(projectId);
+
+  const {
+    columns,
+    loading: colLoading,
+    error: colError,
+  } = useColumn(projectId);
+
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 6 },
+    })
   );
 
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -45,17 +63,9 @@ export function TaskPage() {
     [activeId, tasks]
   );
 
-  // group task theo columnId
-  const tasksByColumn = useMemo(() => {
-    const map: Record<string, Task[]> = {};
-    for (const col of columns) map[col.id] = [];
-    for (const t of tasks) map[t.columnId]?.push(t);
-    Object.values(map).forEach(col =>
-      col.sort((a, b) => a.position - b.position)
-    );
-    return map;
-  }, [tasks, columns]);
-
+  /* =======================
+     DND HANDLERS
+  ======================= */
   const onDragStart = useCallback((e: DragStartEvent) => {
     setActiveId(String(e.active.id));
   }, []);
@@ -74,17 +84,18 @@ export function TaskPage() {
       const activeTask = tasks.find(t => t.id === taskId);
       if (!activeTask) return;
 
-      // drop lên column
+      // Drop lên column
       if (over.data.current?.type === "COLUMN") {
         move(taskId, over.data.current.columnId);
         return;
       }
 
-      // drop lên task
+      // Drop lên task
       if (over.data.current?.type === "TASK") {
         const targetColumnId = over.data.current.columnId;
         const targetTaskId = over.data.current.taskId;
-        const colTasks = tasksByColumn[targetColumnId];
+
+        const colTasks = byColumn[targetColumnId] ?? [];
         const idx = colTasks.findIndex(t => t.id === targetTaskId);
 
         move(
@@ -95,15 +106,22 @@ export function TaskPage() {
         );
       }
     },
-    [tasks, tasksByColumn, move]
+    [tasks, byColumn, move]
   );
 
+  /* =======================
+     CRUD HANDLERS
+  ======================= */
   const handleAddTask = useCallback(
-    async ({ title, description, columnId }: {
+    async ({
+      title,
+      description,
+      columnId,
+    }: {
       title: string;
       description?: string;
       columnId: string;
-    }): Promise<void> => {
+    }) => {
       await add(
         columnId,
         title,
@@ -112,21 +130,22 @@ export function TaskPage() {
         description ?? ""
       );
     },
-    [add, projectId, userId]
+    [add, userId, projectId]
   );
-  
+
   const handleEditTask = useCallback(
-  async (
-    id: string,
-    data: Partial<Pick<Task, "title" | "description">>
-  ): Promise<void> => {
-    await edit(id, data);
-  },
-  [edit]
+    async (
+      id: string,
+      data: Partial<Pick<Task, "title" | "description">>
+    ) => {
+      await edit(id, data);
+    },
+    [edit]
   );
 
   if (colLoading) return <div>Loading board...</div>;
   if (colError) return <div>Error loading columns</div>;
+
   return (
     <div className="app-wrapper">
       <TaskForm columns={columns} onSubmit={handleAddTask} />
@@ -143,7 +162,7 @@ export function TaskPage() {
             <TaskColumn
               key={col.id}
               column={col}
-              tasks={tasksByColumn[col.id] ?? []}
+              tasks={byColumn[col.id] ?? []}
               onDelete={remove}
               onEdit={handleEditTask}
             />
@@ -152,7 +171,9 @@ export function TaskPage() {
 
         {createPortal(
           <DragOverlay>
-            {activeTask ? <TaskCardOverlay task={activeTask} /> : null}
+            {activeTask ? (
+              <TaskCardOverlay task={activeTask} />
+            ) : null}
           </DragOverlay>,
           document.body
         )}

@@ -39,5 +39,8 @@ export class TasksController{
     getByID(@Param('id') id:string){
         return this.tasksService.getTasksByUserId(id);
     }
-    
+    @Get('project/:projectId')
+    getByProjectID(@Param('projectId') projectId:string){
+        return this.tasksService.getTasksByProjectId(projectId);
+    }
 }

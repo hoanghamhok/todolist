@@ -1,36 +1,48 @@
 import { useMemo } from "react";
 import {useQuery,useMutation,useQueryClient} from "@tanstack/react-query";
 import type { Task } from "../types";
-import {fetchTasks,createTask,updateTask,deleteTask,moveTask} from "../tasks.api";
+import {fetchTasksByProjectID,createTask,updateTask,deleteTask,moveTask} from "../tasks.api";
 
-export function useTask() {
+export function useTask(projectId: string) {
   const queryClient = useQueryClient();
-
   const tasksQuery = useQuery<Task[]>({
-    queryKey:["tasks"],
-    queryFn:async() =>{
-      const res = await fetchTasks();
+    queryKey: ["tasks", projectId],
+    enabled: !!projectId,
+    queryFn: async () => {
+      const res = await fetchTasksByProjectID(projectId);
       return res.data;
-    }
-  })
+    },
+  });
 
   const addMutation = useMutation({
     mutationFn: createTask,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["tasks"],});
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
     },
   });
 
-  const add = (columnId: string,title: string,userId: string,projectId: string,description: string) => {
+  const add = (
+    columnId: string,
+    title: string,
+    userId: string,
+    projectId: string,
+    description: string
+  ) => {
     if (!columnId) throw new Error("columnId is required");
-    return addMutation.mutateAsync({title,description,columnId,userId,projectId,});
+    return addMutation.mutateAsync({
+      title,
+      description,
+      columnId,
+      userId,
+      projectId,
+    });
   };
-  
 
   const editMutation = useMutation({
-    mutationFn: ({ id, data }: any) => updateTask(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Partial<Task> }) =>
+      updateTask(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey:["tasks"]});
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
     },
   });
 
@@ -41,7 +53,7 @@ export function useTask() {
   const removeMutation = useMutation({
     mutationFn: deleteTask,
     onSuccess: () => {
-      queryClient.invalidateQueries({queryKey:["tasks"]});
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
     },
   });
 
@@ -50,19 +62,34 @@ export function useTask() {
   };
 
   const moveMutation = useMutation({
-    mutationFn: ({ taskId, payload }: any) =>
-      moveTask(taskId, payload),
+    mutationFn: ({
+      taskId,
+      payload,
+    }: {
+      taskId: string;
+      payload: {
+        columnId: string;
+        beforeTaskId?: string;
+        afterTaskId?: string;
+      };
+    }) => moveTask(taskId, payload),
 
-    onMutate: async ({ taskId, columnId }) => {
-      await queryClient.cancelQueries({queryKey:["tasks"]});
+    onMutate: async ({ taskId, payload }) => {
+      await queryClient.cancelQueries({
+        queryKey: ["tasks", projectId],
+      });
 
       const prevTasks =
-        queryClient.getQueryData<Task[]>(["tasks"]);
+        queryClient.getQueryData<Task[]>(["tasks", projectId]);
 
-      queryClient.setQueryData<Task[]>(["tasks"], old =>
-        old?.map(t =>
-          t.id === taskId ? { ...t, columnId } : t
-        )
+      queryClient.setQueryData<Task[]>(
+        ["tasks", projectId],
+        old =>
+          old?.map(t =>
+            t.id === taskId
+              ? { ...t, columnId: payload.columnId }
+              : t
+          )
       );
 
       return { prevTasks };
@@ -70,12 +97,17 @@ export function useTask() {
 
     onError: (_err, _vars, ctx) => {
       if (ctx?.prevTasks) {
-        queryClient.setQueryData(["tasks"], ctx.prevTasks);
+        queryClient.setQueryData(
+          ["tasks", projectId],
+          ctx.prevTasks
+        );
       }
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({queryKey:["tasks"]});
+      queryClient.invalidateQueries({
+        queryKey: ["tasks", projectId],
+      });
     },
   });
 
@@ -91,7 +123,6 @@ export function useTask() {
     });
   };
 
-  // Group tasks by column
   const byColumn = useMemo(() => {
     const map: Record<string, Task[]> = {};
     const tasks = tasksQuery.data ?? [];
@@ -108,7 +139,7 @@ export function useTask() {
     return map;
   }, [tasksQuery.data]);
 
-   return {
+  return {
     tasks: tasksQuery.data ?? [],
     byColumn,
     loading: tasksQuery.isLoading,

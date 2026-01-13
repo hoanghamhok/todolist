@@ -25,58 +25,6 @@ export class ProjectmembersService {
         });
     }
 
-    async inviteMembers(projectId: string, inviterId: string, body: InviteMemberDto) {
-        await this.projectsService.getProjectByID(projectId);
-
-        const inviterMember = await this.prisma.projectMember.findFirst({ where: { projectId, userId: inviterId } });
-        if (!inviterMember) {
-            throw new NotFoundException('Inviter is not a project member');
-        }
-        if (inviterMember.role !== ProjectRole.OWNER && inviterMember.role !== ProjectRole.ADMIN) {
-            throw new ForbiddenException('You do not have permission to invite members');
-        }
-        let userToInvite: any = null;
-        if (body?.userId) {
-            userToInvite = await this.usersService.getUserById(body.userId);
-        } else if (body?.email) {
-            userToInvite = await this.usersService.findUserByEmail(body.email);
-        } else {
-            throw new BadRequestException('Provide userId or email to invite');
-        }
-        if (!userToInvite) {
-            if (!body.email) {
-                throw new BadRequestException('Email is required to invite new users');
-            }
-            const token = require('crypto').randomBytes(16).toString('hex');
-            const invitation = await this.prisma.invitation.create({
-                data: {
-                    email: body.email,
-                    token,
-                    project: { connect: { id: projectId } },
-                    inviter: { connect: { id: inviterId } },
-                    role: body.role ?? ProjectRole.MEMBER,
-                },
-            });
-            return invitation;
-        }
-
-        const existing = await this.prisma.projectMember.findFirst({ where: { projectId, userId: userToInvite.id } });
-        if (existing) {
-            throw new BadRequestException('User is already a project member');
-        }
-
-        const member = await this.prisma.projectMember.create({
-            data: {
-                project: { connect: { id: projectId } },
-                user: { connect: { id: userToInvite.id } },
-                role: body.role ?? ProjectRole.MEMBER,
-                joinedAt: new Date(),
-            },
-        });
-
-        return member;
-    }
-
     async removeMember(projectId: string, requesterId: string, userId: string) {
         await this.projectsService.getProjectByID(projectId);
         const requester = await this.prisma.projectMember.findFirst({ where: { projectId, userId: requesterId } });
