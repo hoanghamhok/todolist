@@ -4,6 +4,54 @@
  */
 
 export interface paths {
+    "/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["NotificationsController_getNotifications"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/mark-read/{notiId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["NotificationsController_markRead"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/notifications/delete/{notiId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["NotificationsController_deleteNoti"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/users/me": {
         parameters: {
             query?: never;
@@ -196,6 +244,22 @@ export interface paths {
         patch: operations["TasksController_moveTask"];
         trace?: never;
     };
+    "/tasks/project/{projectId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TasksController_getByProjectID"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/projects/{id}": {
         parameters: {
             query?: never;
@@ -292,7 +356,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/invites/{inviteId}/accept": {
+    "/invites/create": {
         parameters: {
             query?: never;
             header?: never;
@@ -301,14 +365,14 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["InvitesController_accept"];
+        post: operations["InvitesController_createInvitation"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/invites/{inviteId}/reject": {
+    "/invites/accept/{token}": {
         parameters: {
             query?: never;
             header?: never;
@@ -317,7 +381,23 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["InvitesController_reject"];
+        post: operations["InvitesController_acceptInvitation"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/invites/reject/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["InvitesController_declineInvitation"];
         delete?: never;
         options?: never;
         head?: never;
@@ -334,22 +414,6 @@ export interface paths {
         get: operations["ProjectmembersController_getProjectMembers"];
         put?: never;
         post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/projectmembers/{projectId}/invite": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["ProjectmembersController_invite"];
         delete?: never;
         options?: never;
         head?: never;
@@ -544,12 +608,12 @@ export interface components {
         UpdateProjectMemberRoleDto: {
             userId: string;
             /** @enum {string} */
-            role: "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
+            role: "OWNER" | "ADMIN" | "MEMBER";
         };
-        InviteMemberDto: {
-            userId: string;
+        CreateInvitationDto: {
             email: string;
-            role: string;
+            projectId: string;
+            inviterId: string;
         };
         CreateColumnDto: {
             title: string;
@@ -569,6 +633,59 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    NotificationsController_getNotifications: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_markRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                notiId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_deleteNoti: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     UsersController_getMe: {
         parameters: {
             query?: never;
@@ -859,6 +976,25 @@ export interface operations {
             };
         };
     };
+    TasksController_getByProjectID: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ProjectsController_getProjectByID: {
         parameters: {
             query?: never;
@@ -979,12 +1115,33 @@ export interface operations {
             };
         };
     };
-    InvitesController_accept: {
+    InvitesController_createInvitation: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateInvitationDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    InvitesController_acceptInvitation: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                inviteId: string;
+                token: string;
             };
             cookie?: never;
         };
@@ -998,12 +1155,12 @@ export interface operations {
             };
         };
     };
-    InvitesController_reject: {
+    InvitesController_declineInvitation: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                inviteId: string;
+                token: string;
             };
             cookie?: never;
         };
@@ -1029,29 +1186,6 @@ export interface operations {
         requestBody?: never;
         responses: {
             200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ProjectmembersController_invite: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                projectId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["InviteMemberDto"];
-            };
-        };
-        responses: {
-            201: {
                 headers: {
                     [name: string]: unknown;
                 };

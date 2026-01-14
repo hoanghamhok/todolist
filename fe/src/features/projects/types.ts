@@ -6,9 +6,6 @@ export type CreateProjectRequest =
 export type UpdateProjectMemberRoleRequest =
   paths["/projects/update/{projectId}"]["patch"]["requestBody"]["content"]["application/json"];
 
-export type InviteMemberRequest =
-  paths["/projectmembers/{projectId}/invite"]["post"]["requestBody"]["content"]["application/json"];
-
 export interface Project {
   id: string;
   name: string;

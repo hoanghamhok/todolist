@@ -1,4 +1,4 @@
-import { Controller, UseGuards,Request, Get, Post, Delete, Param} from '@nestjs/common';
+import { Controller, UseGuards,Request, Get, Post, Delete, Param,Patch} from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -14,7 +14,7 @@ export class NotificationsController {
         return await this.notificationsService.getUserNotifications(req.user.userId);
     }
 
-    @Post('mark-read/:notiId')
+    @Patch('mark-read/:notiId')
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     async markRead(@Request() req,@Param('notiId') notiId:string){

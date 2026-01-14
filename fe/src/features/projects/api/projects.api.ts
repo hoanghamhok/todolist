@@ -10,8 +10,8 @@ export const getProjectById = (id: string) =>
 export const createProject = (data: CreateProjectRequest) =>
   api.post("/projects/create", data);
 
-export const getUserProjects = (userId: string) =>
-  api.get(`/projects/user/${userId}`);
+export const getUserProjects = () =>
+  api.get(`/projects/my`);
 
 export const getProjectDetails = (projectId: string) =>
   api.get(`/projects/details/${projectId}`);

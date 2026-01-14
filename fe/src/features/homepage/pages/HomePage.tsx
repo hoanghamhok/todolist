@@ -14,7 +14,7 @@ const HomePage = () => {
     isLoading,
     isError,
   } = useProjects();
-
+  console.log("PROJECTS:", projects);
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar

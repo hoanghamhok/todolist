@@ -9,7 +9,13 @@ import { UpdateProjectMemberRoleDto } from './dto/update-project-member-role.dto
 export class ProjectsController {
     constructor(private projectsService: ProjectsService) {}
 
-    
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
+    @Get('my')
+    getMyProjects(@Request() req) {
+    return this.projectsService.getUsersProjects(req.user.userId)
+    }
+
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
@@ -24,15 +30,7 @@ export class ProjectsController {
     async createProject(@Body() data: CreateProjectDto) {
         return this.projectsService.createProject(data);
     }
-
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    @Get('user/:userId')
-    async getUsersProjects(@Param('userId') userId: string) {
-        return this.projectsService.getUsersProjects(userId);
-    }
-
-
+    
     @Get('details/:projectId')
     async getProjectDetails(@Param('projectId') projectId: string) {
         return this.projectsService.getProjectDetails(projectId);
