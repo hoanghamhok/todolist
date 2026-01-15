@@ -1,21 +1,28 @@
 import { Routes, Route } from "react-router-dom";
 import AuthPage from "./features/auth/pages/AuthPage";
 import HomePage from "./features/homepage/pages/HomePage";
-import { TaskPage } from "./features/tasks/pages/TaskPage";
 import ForgotPassword from "./features/auth/pages/ForgotPasswordPage";
 import ResetPassword from "./features/auth/pages/ResetPassword";
-// import ForgotPasswordPage from "./features/auth/pages/ForgotPasswordPage";
+import ProjectDetailPage from "./features/projects/pages/ProjectDetailPage";
+import DashboardLayout from "./features/shared/layout/DashboardLayout";
+
 function App() {
   return (
     <Routes>
+      {/* Public / Auth */}
       <Route path="/auth" element={<AuthPage />} />
-      {/* <Route path="/forgot-password" element={<ForgotPasswordPage />} /> */}
       <Route path="/" element={<HomePage />} />
-      <Route path="task" element={<TaskPage />} />
-      <Route path="forgot-password" element={<ForgotPassword/>}/>
-      <Route path="reset-password" element={<ResetPassword/>}/>
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* Dashboard */}
+      <Route element={<DashboardLayout />}>
+        <Route
+          path="/projects/:projectId"
+          element={<ProjectDetailPage />}
+        />
+      </Route>
     </Routes>
-    
   );
 }
 

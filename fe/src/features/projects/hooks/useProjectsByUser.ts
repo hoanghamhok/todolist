@@ -3,7 +3,7 @@ import { getUserProjects } from "../api/projects.api";
 import { useAuth } from "../../auth/hooks/useAuth";
 import type { ProjectMember } from "../types";
 
-export const useProjects = () => {
+export const useProjectsByUser = () => {
   const { user } = useAuth();
 
   return useQuery<ProjectMember[]>({

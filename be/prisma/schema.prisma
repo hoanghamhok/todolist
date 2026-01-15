@@ -47,20 +47,20 @@ model User {
   notifitcation Notification[]
 }
 
-model Project {
-  id          String          @id @default(cuid())
-  name        String
-  description String?
-  created_at  DateTime        @default(now())
-  updated_at  DateTime        @updatedAt
-  ownerId     String
-  owner       User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members     ProjectMember[]
-  tasks       Task[]
-  columns     Column[]     
-  invitation  Invitation[]
-  @@index([ownerId])
-}
+  model Project {
+    id          String          @id @default(cuid())
+    name        String
+    description String?
+    created_at  DateTime        @default(now())
+    updated_at  DateTime        @updatedAt
+    ownerId     String
+    owner       User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+    members     ProjectMember[]
+    tasks       Task[]
+    columns     Column[]     
+    invitation  Invitation[]
+    @@index([ownerId])
+  }
 
 model Column {
   id        String   @id @default(cuid())

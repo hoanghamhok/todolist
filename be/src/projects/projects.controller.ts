@@ -31,6 +31,8 @@ export class ProjectsController {
         return this.projectsService.createProject(data);
     }
     
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth()
     @Get('details/:projectId')
     async getProjectDetails(@Param('projectId') projectId: string) {
         return this.projectsService.getProjectDetails(projectId);
