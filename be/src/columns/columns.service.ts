@@ -101,4 +101,20 @@ export class ColumnsService {
       data: { closed: true },
     });
   }
+
+  async getColumnByID(id:string){
+        const column = await this.prisma.column.findUnique({where:{id}})
+        if(!column){
+            throw new NotFoundException();
+        }
+        return column;
+  }
+
+  async remove(id:string){
+    await this.getColumnByID(id)
+    return this.prisma.column.delete({
+      where:{id}
+    })
+  }
+
 }

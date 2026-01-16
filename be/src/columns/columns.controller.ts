@@ -1,4 +1,4 @@
-import {Controller,Get,Post,Patch,Param,Body,} from "@nestjs/common";
+import {Controller,Get,Post,Patch,Param,Body,Delete} from "@nestjs/common";
 import { ApiTags} from "@nestjs/swagger";
 import { ColumnsService } from "./columns.service";
 import { CreateColumnDto } from "./dto/create-column.dto";
@@ -40,5 +40,10 @@ export class ColumnsController {
   @Patch(":id/close")
   close(@Param("id") id: string) {
     return this.columnsService.close(id);
+  }
+
+  @Delete(':id')
+      remove(@Param('id') id:string){
+          return this.columnsService.remove(id);
   }
 }

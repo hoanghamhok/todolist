@@ -29,11 +29,11 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["NotificationsController_markRead"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
-        patch?: never;
+        patch: operations["NotificationsController_markRead"];
         trace?: never;
     };
     "/notifications/delete/{notiId}": {
@@ -260,6 +260,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/projects/my": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ProjectsController_getMyProjects"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/projects/{id}": {
         parameters: {
             query?: never;
@@ -286,22 +302,6 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["ProjectsController_createProject"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/projects/user/{userId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["ProjectsController_getUsersProjects"];
-        put?: never;
-        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -356,7 +356,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/invites/create": {
+    "/invites/{projectId}/invite": {
         parameters: {
             query?: never;
             header?: never;
@@ -365,7 +365,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        post: operations["InvitesController_createInvitation"];
+        post: operations["InvitesController_createInvite"];
         delete?: never;
         options?: never;
         head?: never;
@@ -494,7 +494,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete?: never;
+        delete: operations["ColumnsController_remove"];
         options?: never;
         head?: never;
         patch: operations["ColumnsController_update"];
@@ -612,8 +612,6 @@ export interface components {
         };
         CreateInvitationDto: {
             email: string;
-            projectId: string;
-            inviterId: string;
         };
         CreateColumnDto: {
             title: string;
@@ -661,7 +659,7 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            201: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -995,6 +993,23 @@ export interface operations {
             };
         };
     };
+    ProjectsController_getMyProjects: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     ProjectsController_getProjectByID: {
         parameters: {
             query?: never;
@@ -1028,25 +1043,6 @@ export interface operations {
         };
         responses: {
             201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    ProjectsController_getUsersProjects: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                userId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1115,11 +1111,13 @@ export interface operations {
             };
         };
     };
-    InvitesController_createInvitation: {
+    InvitesController_createInvite: {
         parameters: {
             query?: never;
             header?: never;
-            path?: never;
+            path: {
+                projectId: string;
+            };
             cookie?: never;
         };
         requestBody: {
@@ -1265,6 +1263,25 @@ export interface operations {
         };
         responses: {
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ColumnsController_remove: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };

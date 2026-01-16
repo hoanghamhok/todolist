@@ -7,14 +7,5 @@ export class CreateInvitationDto{
     @IsString()
     @ApiProperty()
     email:string;
-
-    @IsNotEmpty()
-    @IsString()
-    @ApiProperty()
-    projectId:string;
     
-    @IsNotEmpty()
-    @IsString()
-    @ApiProperty()
-    inviterId:string;
 }

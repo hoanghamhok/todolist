@@ -10,10 +10,14 @@ export class InvitesController {
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
-    @Post('create')
-    async createInvitation(@Body() data: CreateInvitationDto) {
-        return await this.invitesService.createInvite(data.inviterId, data.email,data.projectId);
-    }
+    @Post(':projectId/invite')
+    createInvite(@Param('projectId') projectId: string,@Body() dto: CreateInvitationDto,@Request() req) {
+    const inviterId = req.user.userId;
+    return this.invitesService.createInvite(
+        inviterId,
+        dto.email,
+        projectId
+    );}
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()

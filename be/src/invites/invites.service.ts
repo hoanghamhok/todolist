@@ -46,6 +46,17 @@ export class InvitesService {
                 data:{ message: `You have received an invitation to join a project.`,}
             }
         });
+        
+        await this.prisma.notification.create({
+            data:{
+                userId: inviterId,
+                type: 'INVITE_SENT',
+                createdAt: new Date(),
+                read: false,
+                data:{ message: `You have sent an invitation to ${receiver.email}.`,}
+            }
+        });
+
 
         return {
             id: invite.inviterId,

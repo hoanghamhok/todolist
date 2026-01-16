@@ -7,8 +7,9 @@ export const getProjectMembers = (projectId: string) =>
 export const inviteMember = (
   projectId: string,
   data: InviteMemberRequest
-) =>
-  api.post(`/projectmembers/${projectId}/invite`, data);
+) => {
+  return api.post(`/invites/${projectId}/invite`, data);
+};
 
 export const removeMember = (projectId: string, userId: string) =>
   api.delete(`/projectmembers/${projectId}/members/${userId}`);

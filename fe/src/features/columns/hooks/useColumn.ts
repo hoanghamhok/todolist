@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient,useMutation } from '@tanstack/react-query';
 import type { Column } from "../type";
-import { fetchColumnsByProject,createColumn, deleteColumn,moveColumn } from "../columns.api";
+import { fetchColumnsByProject,createColumn, deleteColumn,moveColumn,updateColumn } from "../columns.api";
 
 export function useColumn(projectId: string) {
   const queryClient = useQueryClient();
@@ -20,7 +20,7 @@ export function useColumn(projectId: string) {
     },
   })
 
-  const add = (title:string) => addMutation.mutate({ title });
+  const add = (title:string) => addMutation.mutate({ title,projectId});
 
   const removeMutation = useMutation({
     mutationFn:deleteColumn,
@@ -30,6 +30,18 @@ export function useColumn(projectId: string) {
   })
 
   const remove = (id:string) => removeMutation.mutate(id);
+
+  const editMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { title: string } }) =>
+      updateColumn(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["columns", projectId] });
+    },
+  });
+
+  const edit = (id: string, title: string) => {
+    return editMutation.mutateAsync({ id, data: { title } });
+  };
 
   const moveMutation = useMutation({
       mutationFn: ({
@@ -111,6 +123,7 @@ export function useColumn(projectId: string) {
     error:columnsQuery.error,
     add,
     remove,
+    edit,
     move
   }
 }
