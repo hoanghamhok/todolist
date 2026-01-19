@@ -22,12 +22,13 @@ export class TasksService{
         if (!project) {
             throw new NotFoundException('Project not found');
         }
-        const member = await this.prisma.projectMember.findFirst({
-            where: { projectId: createTaskDto.projectId, userId: createTaskDto.userId },
+        const members = await this.prisma.projectMember.findMany({
+        where: {projectId: createTaskDto.projectId,userId: {in: createTaskDto.assigneeIds}},
+        select: { userId: true },
         });
-        if (!member) {
-            throw new ConflictException('User is not a member of the project');
-        }
+
+        if (members.length !== createTaskDto.assigneeIds.length) {
+        throw new ConflictException('One or more assignees are not members of the project')}
 
         const last = await this.prisma.task.findFirst({
             where: { columnId:createTaskDto.columnId },
@@ -44,21 +45,40 @@ export class TasksService{
             position: nextPosition,
             projectId: createTaskDto.projectId,
             columnId: createTaskDto.columnId,
-            assigneeId: createTaskDto.userId,
+            assignees: {
+            create: createTaskDto.assigneeIds.map(userId => ({
+                user: {
+                connect: { id: userId },
+                },
+            })),
             },
-        });
+        },
+});
     }
     
     async update(id: string, dto: UpdateTaskDto) {
         await this.getTaskByID(id);
-
         return this.prisma.task.update({
             where: { id },
             data: {
             title: dto.title,
             description: dto.description,
-            assigneeId: dto.userId,
             updated_at: new Date(),
+            assignees: dto.assigneeIds
+                ? {
+                    deleteMany: {},
+                    create: dto.assigneeIds.map(userId => ({
+                    user: {
+                        connect: { id: userId },
+                    },
+                    })),
+                }
+                : undefined,
+            },
+            include: {
+            assignees: {
+                include: { user: true },
+            },
             },
         });
     }
@@ -142,10 +162,17 @@ export class TasksService{
 
     async getTasksByUserId(userId: string) {
         return this.prisma.task.findMany({
-            where: { assigneeId: userId },
-            orderBy: [{ position: 'asc' }],
+            where: {
+            assignees: {some: {userId: userId}}},
+            orderBy: {position: 'asc'},
+            include: {
+            assignees: {
+                include: {
+                user: true}
+            }},
         });
     }
+
 
     async getTasksByProjectId(projectId: string) {
         return this.prisma.task.findMany({

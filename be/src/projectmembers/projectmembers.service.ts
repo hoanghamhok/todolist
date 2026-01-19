@@ -1,8 +1,6 @@
 import { ProjectsService } from './../projects/projects.service';
-import { AuthService } from './../auth/auth.service';
 import { UsersService } from './../user/user.service';
-import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
-import { InviteMemberDto } from './dto/invite-member.dto';
+import { Injectable, NotFoundException,ForbiddenException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { ProjectRole } from '@prisma/client';
 
@@ -25,31 +23,31 @@ export class ProjectmembersService {
         });
     }
 
-    async removeMember(projectId: string, requesterId: string, userId: string) {
+    async removeMember(projectId: string,requesterId: string,userId: string) {
         await this.projectsService.getProjectByID(projectId);
-        const requester = await this.prisma.projectMember.findFirst({ where: { projectId, userId: requesterId } });
-        if (!requester) {
-                throw new NotFoundException('Requester is not a project member');
-        }
 
-        const member = await this.prisma.projectMember.findFirst({ where: { projectId, userId } });
-        if (!member) {
-                throw new NotFoundException('Project member not found');
-        }
+        const requester = await this.prisma.projectMember.findFirst({
+            where: { projectId, userId: requesterId },
+        });
+        if (!requester) {throw new NotFoundException('Requester is not a project member');}
 
-        if (member.role === ProjectRole.OWNER) {
-            throw new ForbiddenException('Cannot remove project owner. Transfer ownership first.');
-        }
+        const member = await this.prisma.projectMember.findFirst({
+            where: { projectId, userId },
+        });
+        if (!member) {throw new NotFoundException('Project member not found');}
+        if (member.role === ProjectRole.OWNER) {throw new ForbiddenException('Cannot remove project owner. Transfer ownership first.');}
 
         const isSelf = requesterId === userId;
-        if (!isSelf && requester.role !== ProjectRole.OWNER && requester.role !== ProjectRole.ADMIN) {
-                throw new ForbiddenException('You do not have permission to remove this member');
-        }
-
-        await this.prisma.task.updateMany({ where: { projectId, assigneeId: userId }, data: { assigneeId: null } });
-
-        await this.prisma.projectMember.delete({ where: { id: member.id } });
-
+        if (
+            !isSelf &&
+            requester.role !== ProjectRole.OWNER &&
+            requester.role !== ProjectRole.ADMIN
+        ) {throw new ForbiddenException('You do not have permission to remove this member')}
+        
+        await this.prisma.taskAssignee.deleteMany({
+            where: {userId,task: {projectId}}
+        });
+        await this.prisma.projectMember.delete({where: { id: member.id }});
         return { message: 'Member removed' };
     }
 

@@ -30,48 +30,50 @@ enum AuthProvider {
 }
 
 model User {
-  id        String          @id @default(cuid())
-  username  String          @unique
-  email     String          @unique
-  password  String?
-  provider  AuthProvider @default(LOCAL)
-  googleId  String?      @unique
+  id                   String          @id @default(cuid())
+  username             String          @unique
+  email                String          @unique
+  password             String?
+  provider             AuthProvider    @default(LOCAL)
+  googleId             String?         @unique
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
-  role      SystemRole      @default(USER)
-  createdAt DateTime        @default(now())
-  tasks       Task[]
-  memberships ProjectMember[]
-  ownedProjects Project[]   @relation("ProjectOwner")
-  invitation Invitation[]
-  notifitcation Notification[]
+  role                 SystemRole      @default(USER)
+  createdAt            DateTime        @default(now())
+  memberships          ProjectMember[]
+  ownedProjects        Project[]       @relation("ProjectOwner")
+  invitation           Invitation[]
+  notifitcation        Notification[]
+  taskAssignees        TaskAssignee[]
 }
 
-  model Project {
-    id          String          @id @default(cuid())
-    name        String
-    description String?
-    created_at  DateTime        @default(now())
-    updated_at  DateTime        @updatedAt
-    ownerId     String
-    owner       User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-    members     ProjectMember[]
-    tasks       Task[]
-    columns     Column[]     
-    invitation  Invitation[]
-    @@index([ownerId])
-  }
+model Project {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  created_at  DateTime        @default(now())
+  updated_at  DateTime        @updatedAt
+  ownerId     String
+  owner       User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members     ProjectMember[]
+  tasks       Task[]
+  columns     Column[]
+  invitation  Invitation[]
+
+  @@index([ownerId])
+}
 
 model Column {
   id        String   @id @default(cuid())
   title     String
-  position  Float    
+  position  Float
   closed    Boolean  @default(false)
   projectId String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   tasks     Task[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@index([projectId])
   @@index([projectId, position])
 }
@@ -84,42 +86,52 @@ model ProjectMember {
   joinedAt  DateTime    @default(now())
   project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  @@unique([projectId, userId]) 
+
+  @@unique([projectId, userId])
   @@index([userId])
   @@index([projectId])
 }
 
 model Task {
-  id          String   @id @default(cuid())
+  id          String         @id @default(cuid())
   title       String
   description String?
-  position    Float   
+  position    Float
   dueDate     DateTime?
   projectId   String
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
   columnId    String
-  column      Column   @relation(fields: [columnId], references: [id], onDelete: Cascade)
-  assigneeId  String?
-  assignee    User?    @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  column      Column         @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  assignees   TaskAssignee[]
+  created_at  DateTime       @default(now())
+  updated_at  DateTime       @updatedAt
+
   @@index([columnId, position])
   @@index([projectId])
-  @@index([assigneeId])
+}
+
+model TaskAssignee {
+  taskId String
+  userId String
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, userId])
 }
 
 model Invitation {
-  id         String      @id @default(cuid())
-  email      String
-  token      String      @unique
-  projectId  String
-  inviterId  String
-  role       ProjectRole @default(MEMBER)
-  status     InviteStatus @default(PENDING)
-  createdAt  DateTime    @default(now())
-  expiresAt  DateTime
-  project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  inviter    User        @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+  id        String       @id @default(cuid())
+  email     String
+  token     String       @unique
+  projectId String
+  inviterId String
+  role      ProjectRole  @default(MEMBER)
+  status    InviteStatus @default(PENDING)
+  createdAt DateTime     @default(now())
+  expiresAt DateTime
+  project   Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  inviter   User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
+
   @@index([projectId])
   @@index([inviterId])
   @@index([email])
@@ -128,10 +140,11 @@ model Invitation {
 model Notification {
   id        String   @id @default(cuid())
   userId    String
-  type      String   
+  type      String
   data      Json?
   read      Boolean  @default(false)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([userId, read])
 }

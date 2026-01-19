@@ -14,11 +14,12 @@ import { MailModule } from './mail/mail.module';
 import { NotificationsController } from './notifications/notifications.controller';
 import { NotificationsService } from './notifications/notifications.service';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
-    // Nạp biến môi trường từ file .env
     ConfigModule.forRoot({isGlobal: true, }),
+    ScheduleModule.forRoot(),
     PrismaModule,
     UsersModule,
     AuthModule,
@@ -27,7 +28,6 @@ import { NotificationsModule } from './notifications/notifications.module';
     InvitesModule,
     ProjectmembersModule,
     ColumnsModule,
-    // Invites module for handling invitation accept/reject
     require('./invites/invites.module').InvitesModule,
     MailModule,
     NotificationsModule

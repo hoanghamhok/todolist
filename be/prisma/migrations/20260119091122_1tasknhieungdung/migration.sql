@@ -1,0 +1,28 @@
+/*
+  Warnings:
+
+  - You are about to drop the column `assigneeId` on the `Task` table. All the data in the column will be lost.
+
+*/
+-- DropForeignKey
+ALTER TABLE "Task" DROP CONSTRAINT "Task_assigneeId_fkey";
+
+-- DropIndex
+DROP INDEX "Task_assigneeId_idx";
+
+-- AlterTable
+ALTER TABLE "Task" DROP COLUMN "assigneeId";
+
+-- CreateTable
+CREATE TABLE "TaskAssignee" (
+    "taskId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+
+    CONSTRAINT "TaskAssignee_pkey" PRIMARY KEY ("taskId","userId")
+);
+
+-- AddForeignKey
+ALTER TABLE "TaskAssignee" ADD CONSTRAINT "TaskAssignee_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TaskAssignee" ADD CONSTRAINT "TaskAssignee_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
