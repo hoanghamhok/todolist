@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {IsOptional,IsString,IsArray, ArrayNotEmpty,Min} from 'class-validator';
+import {IsOptional,IsString,IsArray, ArrayNotEmpty,Min, IsISO8601} from 'class-validator';
 
 export class CreateTaskDto {
   @ApiProperty()
@@ -24,4 +24,9 @@ export class CreateTaskDto {
   @ArrayNotEmpty()
   @IsString({each:true})
   assigneeIds: string[];
+
+  @ApiProperty()
+  @IsOptional()
+  @IsISO8601()
+  dueDate?: string;
 }

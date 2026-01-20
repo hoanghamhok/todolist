@@ -3,7 +3,8 @@ import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { UpdateProjectMemberRoleDto } from './dto/update-project-member-role.dto';
+import { SetMemberRoleDto } from './dto/setmember-role';
+import { UpdateProjectDto } from './dto/update-project.dto';
 
 @Controller('projects')
 export class ProjectsController {
@@ -39,19 +40,22 @@ export class ProjectsController {
     }
 
     @UseGuards(JwtAuthGuard)
+    @Patch(':projectId/members/:targetUserId/role')
+    setMemberRole(@Param('projectId') projectId: string,@Param('targetUserId') targetUserId: string,@Body() body:SetMemberRoleDto,@Request() req) {
+        return this.projectsService.setProjectMemberRole(projectId,targetUserId,body.role,req.user.userId
+    )}
+
+    @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
-    @Patch('update/:projectId')
-    async setProjectMemberRole(
-        @Param('projectId') projectId: string,
-        @Body() body: UpdateProjectMemberRoleDto,
-    ) {
-        return this.projectsService.setProjectMemberRole(projectId, body.userId, body.role);
+    @Patch(':projectId/update')
+    async updateProject(@Param('projectId') projectId:string,@Request() req,@Body() dto:UpdateProjectDto){
+        return this.projectsService.updateProject(projectId,req.user.userId,dto)
     }
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Delete('remove/:projectId')
-    async removeProjectMember(@Param('projectId') projectId: string) {
-        return this.projectsService.deleteProject(projectId);
+    async deleteProject(@Param('projectId') projectId: string,@Request() req) {
+        return this.projectsService.deleteProject(projectId,req.user.userId);
     }
 }

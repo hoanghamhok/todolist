@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient,useMutation } from '@tanstack/react-query';
 import type { Column } from "../type";
-import { fetchColumnsByProject,createColumn, deleteColumn,moveColumn,updateColumn } from "../columns.api";
+import { fetchColumnsByProject,createColumn, deleteColumn,moveColumn,updateColumn,markColumnAsDone } from "../columns.api";
 
 export function useColumn(projectId: string) {
   const queryClient = useQueryClient();
@@ -117,6 +117,17 @@ export function useColumn(projectId: string) {
     });
   };
 
+  const markDoneMutation = useMutation({
+    mutationFn: markColumnAsDone,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["columns", projectId] });
+    },
+  });
+
+  const markAsDone = (id: string) => {
+    return markDoneMutation.mutateAsync(id);
+  };
+
   return {
     columns:columnsQuery.data || [],
     loading:columnsQuery.isLoading,
@@ -124,6 +135,7 @@ export function useColumn(projectId: string) {
     add,
     remove,
     edit,
-    move
+    move,
+    markAsDone
   }
 }

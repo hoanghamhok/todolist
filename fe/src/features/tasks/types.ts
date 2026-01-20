@@ -24,6 +24,9 @@ export interface Task {
   position:number;
   createdAt?:string;
   updateAt?:string;
+  assigneeIds: string[];
+  dueDate?: string;
+  completedAt?: string;
 }
 
 export type Column = {

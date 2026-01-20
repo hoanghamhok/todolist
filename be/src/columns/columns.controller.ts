@@ -21,6 +21,10 @@ export class ColumnsController {
 
   @Patch(":id")
   update(@Param("id") id: string,@Body() dto: UpdateColumnDto,) {
+    // If closed is being set to true, call close method for validation
+    if (dto.closed === true) {
+      return this.columnsService.close(id);
+    }
     return this.columnsService.update(id, dto);
   }
 

@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from "class-validator";
+import { IsOptional, IsString, IsBoolean } from "class-validator";
 import { ApiProperty } from "@nestjs/swagger";
 
 export class UpdateColumnDto {
@@ -13,5 +13,6 @@ export class UpdateColumnDto {
   
   @ApiProperty()
   @IsOptional()
+  @IsBoolean()
   closed?: boolean;
 }

@@ -324,7 +324,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/projects/update/{projectId}": {
+    "/projects/{projectId}/members/{targetUserId}/role": {
         parameters: {
             query?: never;
             header?: never;
@@ -337,7 +337,23 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        patch: operations["ProjectsController_setProjectMemberRole"];
+        patch: operations["ProjectsController_setMemberRole"];
+        trace?: never;
+    };
+    "/projects/{projectId}/update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["ProjectsController_updateProject"];
         trace?: never;
     };
     "/projects/remove/{projectId}": {
@@ -350,7 +366,7 @@ export interface paths {
         get?: never;
         put?: never;
         post?: never;
-        delete: operations["ProjectsController_removeProjectMember"];
+        delete: operations["ProjectsController_deleteProject"];
         options?: never;
         head?: never;
         patch?: never;
@@ -584,16 +600,15 @@ export interface components {
         CreateTaskDto: {
             title: string;
             description: string;
-            columnId: string;
-            userId: string;
             projectId: string;
+            columnId: string;
+            assigneeIds: string[];
+            dueDate: string;
         };
         UpdateTaskDto: {
             title?: string;
             description?: string;
-            columnId?: string;
-            userId?: string;
-            projectId?: string;
+            assigneeIds?: string[];
         };
         MoveTaskDto: {
             columnId: string;
@@ -605,10 +620,16 @@ export interface components {
             ownerId: string;
             description: string;
         };
-        UpdateProjectMemberRoleDto: {
-            userId: string;
-            /** @enum {string} */
+        SetMemberRoleDto: {
+            /**
+             * @example ADMIN
+             * @enum {string}
+             */
             role: "OWNER" | "ADMIN" | "MEMBER";
+        };
+        UpdateProjectDto: {
+            title?: string;
+            description?: string;
         };
         CreateInvitationDto: {
             email: string;
@@ -1069,18 +1090,19 @@ export interface operations {
             };
         };
     };
-    ProjectsController_setProjectMemberRole: {
+    ProjectsController_setMemberRole: {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 projectId: string;
+                targetUserId: string;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateProjectMemberRoleDto"];
+                "application/json": components["schemas"]["SetMemberRoleDto"];
             };
         };
         responses: {
@@ -1092,7 +1114,30 @@ export interface operations {
             };
         };
     };
-    ProjectsController_removeProjectMember: {
+    ProjectsController_updateProject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateProjectDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ProjectsController_deleteProject: {
         parameters: {
             query?: never;
             header?: never;

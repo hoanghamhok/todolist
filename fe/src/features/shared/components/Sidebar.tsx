@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import {getUserProjects} from "../../projects/api/projects.api"
 import type {ProjectMember } from "../../projects/types"
+import { NewProjectModal } from "../../projects/components/NewProjectModal";
+import { UpcomingTasks } from "./UpcomingTasks";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -19,8 +21,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   const [expandedMenus, setExpandedMenus] = useState<string[]>(["projects"]);
   const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
+  const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
 
-  // ===== LOAD PROJECTS OF USER =====
   useEffect(() => {
     if (authLoading) return;
     if (!user?.id) return;
@@ -28,7 +30,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     const loadProjects = async () => {
       try {
         setLoadingProjects(true);
-        const res = await getUserProjects(user.id);
+        const res = await getUserProjects();
         setProjectMembers(res.data);
       } catch (error) {
         console.error("Load projects failed:", error);
@@ -50,6 +52,27 @@ const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <>
+      <NewProjectModal
+        isOpen={isNewProjectModalOpen}
+        onClose={() => setIsNewProjectModalOpen(false)}
+        onSuccess={() => {
+          // Reload projects after creating new one
+          if (!user?.id) return;
+          const loadProjects = async () => {
+            try {
+              setLoadingProjects(true);
+              const res = await getUserProjects();
+              setProjectMembers(res.data);
+            } catch (error) {
+              console.error("Load projects failed:", error);
+            } finally {
+              setLoadingProjects(false);
+            }
+          };
+          loadProjects();
+        }}
+      />
+      
       {/* Overlay */}
       {isOpen && (
         <div
@@ -71,7 +94,10 @@ const Sidebar: React.FC<SidebarProps> = ({
 
           {/* HEADER */}
           <div className="p-4 border-b">
-            <button className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg">
+            <button 
+              onClick={() => setIsNewProjectModalOpen(true)}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
               + New Project
             </button>
           </div>
@@ -149,6 +175,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 )}
               </li>
             </ul>
+
+            {/* UPCOMING TASKS */}
+            <UpcomingTasks
+              projectIds={projectMembers.map(pm => pm.project.id)}
+            />
           </nav>
         </div>
       </aside>

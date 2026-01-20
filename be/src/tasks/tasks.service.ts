@@ -45,6 +45,7 @@ export class TasksService{
             position: nextPosition,
             projectId: createTaskDto.projectId,
             columnId: createTaskDto.columnId,
+            dueDate: createTaskDto.dueDate ? new Date(createTaskDto.dueDate) : null,
             assignees: {
             create: createTaskDto.assigneeIds.map(userId => ({
                 user: {
@@ -64,6 +65,7 @@ export class TasksService{
             title: dto.title,
             description: dto.description,
             updated_at: new Date(),
+            dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
             assignees: dto.assigneeIds
                 ? {
                     deleteMany: {},
@@ -98,7 +100,7 @@ export class TasksService{
             ],
         });
     }
-    
+    //note:di chuyển task vào cột DONE->set close:true->set completedAt=Date
     async moveTask(
         taskId: string,
         columnId: string,
@@ -108,6 +110,11 @@ export class TasksService{
         const GAP = 1000;
 
         await this.getTaskByID(taskId);
+
+        // Check if the target column is marked as done
+        const targetColumn = await this.prisma.column.findUnique({
+            where: { id: columnId },
+        });
 
         let newPosition: number;
 
@@ -156,6 +163,7 @@ export class TasksService{
             columnId,
             position: newPosition,
             updated_at: new Date(),
+            completedAt: targetColumn?.closed ? new Date() : null,
             },
         });
     }
@@ -175,10 +183,28 @@ export class TasksService{
 
 
     async getTasksByProjectId(projectId: string) {
-        return this.prisma.task.findMany({
-            where: { projectId },
-            orderBy: [{ position: 'asc' }],
+        const tasks = await this.prisma.task.findMany({
+        where: { projectId },
+        include: {
+            assignees: {
+            select: {
+                userId: true,
+            },
+            },
+        },
         });
+        return tasks.map(task => ({
+            id: task.id,
+            title: task.title,
+            description: task.description,
+            position: task.position,
+            dueDate: task.dueDate,
+            completedAt: task.completedAt,
+            projectId: task.projectId,
+            columnId: task.columnId,
+            created_at: task.created_at,
+            updated_at: task.updated_at,
+            assigneeIds: task.assignees.map(a => a.userId),
+        }));
     }
-
 }

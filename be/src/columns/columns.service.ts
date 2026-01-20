@@ -8,10 +8,10 @@ export class ColumnsService {
   constructor(private prisma: PrismaService) {}
 
   async getByProject(projectId: string) {
+    // Return all columns including closed ones - frontend handles visibility
     return this.prisma.column.findMany({
       where: {
         projectId,
-        closed: false,
       },
       orderBy: {
         position: "asc",
@@ -95,6 +95,18 @@ export class ColumnsService {
       where: { id },
     });
     if (!column) throw new NotFoundException("Column not found");
+
+    // Check if there's already a DONE column in this project
+    const existingDoneColumn = await this.prisma.column.findFirst({
+      where: {
+        projectId: column.projectId,
+        closed: true,
+      },
+    });
+
+    if (existingDoneColumn) {
+      throw new ConflictException("Only one column can be marked as DONE per project");
+    }
 
     return this.prisma.column.update({
       where: { id },

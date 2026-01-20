@@ -24,18 +24,23 @@ export function useTask(projectId: string) {
   const add = (
     columnId: string,
     title: string,
-    userId: string,
     projectId: string,
-    description: string
+    description: string,
+    assigneeIds: string[],
+    dueDate?: string,
   ) => {
     if (!columnId) throw new Error("columnId is required");
+    if (!assigneeIds || assigneeIds.length === 0) {
+      throw new Error("assigneeIds is required and must not be empty");
+    }
     return addMutation.mutateAsync({
       title,
       description,
       columnId,
-      userId,
       projectId,
-    });
+      assigneeIds,
+      dueDate,
+    } as any);
   };
 
   const editMutation = useMutation({

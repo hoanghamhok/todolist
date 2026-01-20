@@ -1,20 +1,26 @@
-import {IsOptional,IsString,IsArray} from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import {IsOptional,IsString,IsArray,IsISO8601} from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateTaskDto {
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   title?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
   description?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
-  @IsString({each:true})
+  @IsString({ each: true })
   assigneeIds?: string[];
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsISO8601()
+  dueDate?: string;
 }
+

@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException, BadRequestException 
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UsersService } from 'src/user/user.service';
 import { ProjectsService } from 'src/projects/projects.service';
+import { ProjectRole } from '@prisma/client';
 import * as crypto from 'crypto';
 
 @Injectable()
@@ -17,14 +18,31 @@ export class InvitesService {
     //từ chối lời mời:cập nhật trạng thái,gửi thông báo đến người gửi
 
     async createInvite(inviterId:string,receiverEmail:string,projectId:string){
+        const inviterMember = await this.prisma.projectMember.findFirst({
+            where: {projectId,userId:inviterId}
+        });
+
+        if (!inviterMember) {
+            throw new ForbiddenException('You are not a member of this project');
+        }
+
+        if (
+            inviterMember.role !== ProjectRole.OWNER &&
+            inviterMember.role !== ProjectRole.ADMIN
+        ) {
+            throw new ForbiddenException('You do not have permission to invite members');
+        }
+
         const receiver = await this.usersService.findUserByEmail(receiverEmail);
         if(!receiver){
             throw new NotFoundException('Receiver not found');
         }
+
         const projectmember = await this.projectsService.isUserInProject(projectId,receiver.id);
         if(projectmember){
             throw new BadRequestException('User is already a member of the project');
         }
+
         const token = crypto.randomBytes(16).toString('hex');
         const invite = await this.prisma.invitation.create({
             data:{
@@ -37,6 +55,7 @@ export class InvitesService {
                 expiresAt: new Date(Date.now() + 7*24*60*60*1000)
             }
         })
+
         await this.prisma.notification.create({
             data:{
                 userId: receiver.id,
@@ -56,7 +75,6 @@ export class InvitesService {
                 data:{ message: `You have sent an invitation to ${receiver.email}.`,}
             }
         });
-
 
         return {
             id: invite.inviterId,

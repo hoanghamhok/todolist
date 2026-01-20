@@ -63,6 +63,20 @@ model Project {
   @@index([ownerId])
 }
 
+model ProjectMember {
+  id        String      @id @default(cuid())
+  projectId String
+  userId    String
+  role      ProjectRole @default(MEMBER)
+  joinedAt  DateTime    @default(now())
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([userId])
+  @@index([projectId])
+}
+
 model Column {
   id        String   @id @default(cuid())
   title     String
@@ -78,19 +92,7 @@ model Column {
   @@index([projectId, position])
 }
 
-model ProjectMember {
-  id        String      @id @default(cuid())
-  projectId String
-  userId    String
-  role      ProjectRole @default(MEMBER)
-  joinedAt  DateTime    @default(now())
-  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([projectId, userId])
-  @@index([userId])
-  @@index([projectId])
-}
 
 model Task {
   id          String         @id @default(cuid())
@@ -105,6 +107,7 @@ model Task {
   assignees   TaskAssignee[]
   created_at  DateTime       @default(now())
   updated_at  DateTime       @updatedAt
+  completedAt DateTime?
 
   @@index([columnId, position])
   @@index([projectId])

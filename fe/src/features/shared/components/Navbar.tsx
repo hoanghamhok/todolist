@@ -16,11 +16,11 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotiMenu, setShowNotiMenu] = useState(false);
   const {
-    data: notifications = [],
+    data: notifications = [],markRead
   } = useNotifications();
   console.log("USER:", user);
   console.log("NOTI:", notifications);
-  const unreadCount = notifications.filter(n => !n.read==false).length;
+  const unreadCount = notifications.filter(n => !n.read).length;
   return (
     <nav className="bg-white border-b fixed top-0 left-0 right-0 z-50 h-16">
       <div className="px-4 h-full flex items-center justify-between">
@@ -66,21 +66,26 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
                     </p>
                   )}
 
-                  {notifications.map((noti) => (
-                    <div
-                      key={noti.id}
-                      className={`px-4 py-3 border-b last:border-b-0 cursor-pointer
-                        ${!noti.read ? "bg-blue-50" : "bg-white"}
-                      `}
-                    >
-                      <p className="text-sm">
-                        {noti.data.message}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {new Date(noti.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                  ))}
+                {notifications.map((noti) => (
+                  <div
+                    key={noti.id}
+                    onClick={() => {
+                      if (!noti.read) {
+                        markRead.mutate(noti.id);
+                      }
+                    }}
+                    className={`px-4 py-3 border-b last:border-b-0 cursor-pointer
+                      ${!noti.read ? "bg-blue-50" : "bg-white"}
+                    `}
+                  >
+                    <p className="text-sm">
+                      {noti.data.message}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(noti.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                ))}
                 </div>
               </div>
             )}

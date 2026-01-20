@@ -1,10 +1,11 @@
 import { ProjectRole } from '@prisma/client';
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException,ForbiddenException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { TasksService } from 'src/tasks/tasks.service';
 import { UsersService } from 'src/user/user.service';
 import { AuthService } from 'src/auth/auth.service';
 import { CreateProjectDto } from './dto/create-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -67,21 +68,82 @@ export class ProjectsService {
         });
     }
     
-
-    async setProjectMemberRole(projectid:string,userId:string,role:ProjectRole){
-        const projectmember = await this.prisma.projectMember.findFirst({
-            where:{ projectId:projectid, userId:userId }
+    async updateProject(projectId:string,currentUserId:string,dto:UpdateProjectDto){
+        const currentMember = await this.prisma.projectMember.findFirst({
+            where: {projectId,userId:currentUserId},
         });
-        if (!projectmember) {
+        if(!currentMember){
+            throw new ForbiddenException('You arent a member of this project')
+        }
+
+        if(currentMember.role!== ProjectRole.OWNER){
+            throw new ForbiddenException('You dont have permission')
+        }
+
+        return this.prisma.project.update({
+            where:{id:projectId},
+            data:{
+                name:dto.title,
+                description:dto.description
+            }
+        })
+
+    }
+
+    async setProjectMemberRole(projectId: string,targetUserId: string,role: ProjectRole,currentUserId: string) {
+        const currentMember = await this.prisma.projectMember.findFirst({
+            where: {projectId,userId:currentUserId},
+        });
+
+        if (!currentMember) {
+            throw new ForbiddenException('You are not a member of this project');
+        }
+
+        if (
+            currentMember.role !== ProjectRole.OWNER &&
+            currentMember.role !== ProjectRole.ADMIN
+        ) {
+            throw new ForbiddenException('You do not have permission');
+        }
+
+        const targetMember = await this.prisma.projectMember.findFirst({
+            where: {
+            projectId,
+            userId: targetUserId,
+            },
+        });
+
+        if (!targetMember) {
             throw new NotFoundException('Project member not found');
         }
+
+        if (
+            targetMember.role === ProjectRole.OWNER &&
+            currentMember.role !== ProjectRole.OWNER
+        ) {
+            throw new ForbiddenException('Only owner can change owner role');
+        }
+
         return this.prisma.projectMember.update({
-            where: { id: projectmember.id },
-            data: { role }
+            where: { id: targetMember.id },
+            data: { role },
         });
     }
 
-    async deleteProject(projectId:string){
+
+    async deleteProject(projectId:string,currentUserId:string){
+        
+        const currentMember = await this.prisma.projectMember.findFirst({
+            where: {projectId,userId:currentUserId},
+        });
+        if(!currentMember){
+            throw new ForbiddenException('You arent a member of this project')
+        }
+
+        if(currentMember.role!== ProjectRole.OWNER){
+            throw new ForbiddenException('You dont have permission')
+        }
+
         const project = await this.prisma.project.findUnique({ where: { id: projectId } });
         if (!project) {
             throw new NotFoundException('Project not found');

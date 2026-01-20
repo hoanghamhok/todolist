@@ -12,3 +12,5 @@ export const moveColumn = (
   id: string,
   data: { beforeColumnId?: string; afterColumnId?: string }
 ) => api.patch(`/columns/${id}/move`, data);
+export const markColumnAsDone = (id: string) =>
+  api.patch(`/columns/${id}`, { closed: true });
