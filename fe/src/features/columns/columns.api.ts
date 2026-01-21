@@ -1,3 +1,4 @@
+import type { Axios, AxiosResponse } from "axios";
 import api from "../../api/client"
 
 // export const fetchColumns = () => api.get("/columns");
@@ -12,5 +13,5 @@ export const moveColumn = (
   id: string,
   data: { beforeColumnId?: string; afterColumnId?: string }
 ) => api.patch(`/columns/${id}/move`, data);
-export const markColumnAsDone = (id: string) =>
+export const markColumnAsDone = (id: string):Promise<void> =>
   api.patch(`/columns/${id}`, { closed: true });

@@ -2,7 +2,6 @@ import { useMemo } from "react";
 import {useQuery,useMutation,useQueryClient} from "@tanstack/react-query";
 import type { Task } from "../types";
 import {fetchTasksByProjectID,createTask,updateTask,deleteTask,moveTask} from "../tasks.api";
-
 export function useTask(projectId: string) {
   const queryClient = useQueryClient();
   const tasksQuery = useQuery<Task[]>({
