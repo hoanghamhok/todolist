@@ -1,4 +1,3 @@
-import type { Axios, AxiosResponse } from "axios";
 import api from "../../api/client"
 
 // export const fetchColumns = () => api.get("/columns");

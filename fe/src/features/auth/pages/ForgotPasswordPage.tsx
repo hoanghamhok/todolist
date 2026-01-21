@@ -8,27 +8,34 @@ export default function ForgotPassword() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const forgotPassword = async (payload: ForgotPasswordRequest): Promise<ForgotPasswordResponse> => {
+  const forgotPassword = async (
+    payload: ForgotPasswordRequest
+  ): Promise<ForgotPasswordResponse> => {
     setLoading(true);
     setError(null);
+
     try {
-        const res = await authApi.forgotPassword(payload);
-        return res.data;
+      const res = await authApi.forgotPassword(payload);
+      return res.data;
     } catch (err) {
-        setError("Gửi email thất bại");
-        throw err;
+      setError("Gửi email thất bại. Vui lòng thử lại.");
+      throw err;
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSuccess(false);
+
     try {
-        const res = await forgotPassword({ email });
-        alert(res.message);
+      await forgotPassword({ email });
+      setSuccess(true);
     } catch {
+      // lỗi đã được set trong forgotPassword
     }
-  } ;
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
@@ -43,10 +50,16 @@ export default function ForgotPassword() {
 
         {success ? (
           <div className="mt-6 text-green-600 text-center text-sm">
-            ✅ Nếu email tồn tại, chúng tôi đã gửi liên kết đặt lại mật khẩu.
+            Nếu email tồn tại, chúng tôi đã gửi liên kết đặt lại mật khẩu.
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+            {error && (
+              <div className="text-sm text-red-600 text-center">
+                {error}
+              </div>
+            )}
+
             <div>
               <label className="block text-sm font-medium text-gray-700">
                 Email
@@ -74,10 +87,7 @@ export default function ForgotPassword() {
         )}
 
         <div className="mt-6 text-center">
-          <a
-            href="/auth"
-            className="text-sm text-blue-600 hover:underline"
-          >
+          <a href="/auth" className="text-sm text-blue-600 hover:underline">
             ← Quay lại đăng nhập
           </a>
         </div>
