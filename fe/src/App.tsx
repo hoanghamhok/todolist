@@ -9,18 +9,12 @@ import DashboardLayout from "./features/shared/layout/DashboardLayout";
 function App() {
   return (
     <Routes>
-      {/* Public / Auth */}
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/" element={<HomePage />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-
-      {/* Dashboard */}
       <Route element={<DashboardLayout />}>
-        <Route
-          path="/projects/:projectId"
-          element={<ProjectDetailPage />}
-        />
+        <Route path="/projects/:projectId"element={<ProjectDetailPage />}/>
       </Route>
     </Routes>
   );

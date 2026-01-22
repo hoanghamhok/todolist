@@ -13,7 +13,7 @@ export function TaskCard({ task, assignees = [], onEdit, onDelete }: TaskCardPro
     id: task.id,
   });
 
-  // Get assignee details for this task
+  // Get assignee for tasks
   const taskAssignees = assignees.filter(a => task.assigneeIds.includes(a.userId));
 
   const getInitials = (member: any) => {
@@ -84,7 +84,7 @@ export function TaskCard({ task, assignees = [], onEdit, onDelete }: TaskCardPro
           </button>
         </div>
 
-        {/* Assignees Avatars - Bottom Right */}
+        {/*assignees'task avatars*/}
         {taskAssignees.length > 0 && (
           <div className="flex -space-x-2">
             {taskAssignees.map((assignee, index) => (

@@ -23,16 +23,16 @@ export class MailService {
       await this.transporter.sendMail({
         from: process.env.MAIL_FROM,
         to: email,
-        subject: 'Reset mật khẩu',
+        subject: 'Reset your password',
         html: `
-          <h2>Yêu cầu đặt lại mật khẩu</h2>
-          <p>Click vào link bên dưới để đổi mật khẩu:</p>
+          <h2>Password Reset Request</h2>
+          <p>Click the link below to reset your password:</p>
           <a href="${resetLink}">${resetLink}</a>
-          <p>Link sẽ hết hạn sau 15 phút.</p>
+          <p>The link will expire in 15 minutes.</p>
         `,
       });
     } catch (error) {
-      throw new InternalServerErrorException('Không thể gửi email');
+      throw new InternalServerErrorException('Failed to send email');
     }
   }
 
@@ -40,10 +40,10 @@ export class MailService {
     await this.transporter.sendMail({
       from: process.env.MAIL_FROM,
       to: email,
-      subject: 'Bạn được mời tham gia dự án',
+      subject: 'You are invited to join a project',
       html: `
-        <p>Bạn được mời tham gia project.</p>
-        <a href="${link}">Tham gia</a>
+        <p>You have been invited to join a project.</p>
+        <a href="${link}">Join</a>
       `,
     });
   }

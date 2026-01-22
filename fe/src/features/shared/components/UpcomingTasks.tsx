@@ -16,7 +16,7 @@ export function UpcomingTasks({ projectIds }: UpcomingTasksProps) {
     const loadTasks = async () => {
       setIsLoading(true);
       try {
-        // Fetch tasks từ tất cả projects
+        // Fetch all task
         const allTasks: Task[] = [];
         
         for (const projectId of projectIds) {
@@ -28,7 +28,7 @@ export function UpcomingTasks({ projectIds }: UpcomingTasksProps) {
           }
         }
 
-        // Filter tasks có dueDate trong 7 ngày tới
+        // Filter tasks have dueDate in the next 7 day
         const now = new Date();
         const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
@@ -42,7 +42,7 @@ export function UpcomingTasks({ projectIds }: UpcomingTasksProps) {
             if (!a.dueDate || !b.dueDate) return 0;
             return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
           })
-          .slice(0, 5); // Chỉ lấy 5 tasks gần nhất
+          .slice(0, 5); // get 5 task nearest
 
         setTasks(upcomingTasks);
       } catch (error) {

@@ -16,7 +16,7 @@ export const useNotifications = () =>{
     })
 
     const markRead = useMutation({
-        mutationFn:(notiId:string) =>{ console.log("CALL API markRead:", notiId);return notificationsAPI.markRead(notiId)},
+        mutationFn:(notiId:string) =>{ return notificationsAPI.markRead(notiId)},
         onSuccess:()=>{
             queryClient.invalidateQueries({queryKey:["notifications"]})
         }

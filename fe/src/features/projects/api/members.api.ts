@@ -4,10 +4,7 @@ import type { InviteMemberRequest } from "../types";
 export const getProjectMembers = (projectId: string) =>
   api.get(`/projectmembers/${projectId}/members`);
 
-export const inviteMember = (
-  projectId: string,
-  data: InviteMemberRequest
-) => {
+export const inviteMember = (projectId: string,data: InviteMemberRequest) => {
   return api.post(`/invites/${projectId}/invite`, data);
 };
 

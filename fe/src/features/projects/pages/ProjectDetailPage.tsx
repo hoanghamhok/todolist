@@ -51,7 +51,7 @@ export default function ProjectDetailPage() {
 
   const project = projectRes.data;
   
-  // Check if current user is admin/owner
+  // Check role current user
   const members = membersRes?.data ?? [];
 
   const { isAdmin } = useProjectRole(members, user?.id);
@@ -73,7 +73,7 @@ export default function ProjectDetailPage() {
     }
   };
 
-  const handleDragEnd = useDnd({
+  const handleDragEnd = useDnd({  
     columns,
     byColumn,
     move,
@@ -107,7 +107,7 @@ export default function ProjectDetailPage() {
         onSuccess={() => refetchMembers()}
       />
       
-      {/* ===== Header ===== */}
+      {/*Header*/}
       <header className="px-6 py-4 bg-white border-b flex justify-between items-start">
         <div className="flex-1">
           <h1 className="text-2xl font-semibold">{project.name}</h1>
@@ -120,7 +120,7 @@ export default function ProjectDetailPage() {
         />
       </header>
 
-      {/* Error Message */}
+      {/*Error*/}
       {errorMessage && (
         <div className="px-6 py-3 bg-red-50 border-b border-red-200 flex justify-between items-center">
           <span className="text-red-700 text-sm">{errorMessage}</span>
@@ -133,7 +133,7 @@ export default function ProjectDetailPage() {
         </div>
       )}
 
-      {/* ===== Board ===== */}
+      {/* Board*/}
       <main className="flex-1 overflow-x-auto">
         <div className="flex gap-4 p-6 ">
           {columns.map(column => (

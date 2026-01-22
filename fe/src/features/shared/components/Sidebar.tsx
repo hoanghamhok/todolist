@@ -56,7 +56,6 @@ const Sidebar: React.FC<SidebarProps> = ({
         isOpen={isNewProjectModalOpen}
         onClose={() => setIsNewProjectModalOpen(false)}
         onSuccess={() => {
-          // Reload projects after creating new one
           if (!user?.id) return;
           const loadProjects = async () => {
             try {

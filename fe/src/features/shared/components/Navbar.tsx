@@ -15,11 +15,8 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   const { user, loading, logout } = useAuth();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotiMenu, setShowNotiMenu] = useState(false);
-  const {
-    data: notifications = [],markRead
-  } = useNotifications();
-  console.log("USER:", user);
-  console.log("NOTI:", notifications);
+  const {data: notifications = [],markRead} = useNotifications();
+
   const unreadCount = notifications.filter(n => !n.read).length;
   return (
     <nav className="bg-white border-b fixed top-0 left-0 right-0 z-50 h-16">

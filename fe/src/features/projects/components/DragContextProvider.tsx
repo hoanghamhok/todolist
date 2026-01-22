@@ -37,7 +37,6 @@ export function DragContextProvider({ children, onDragEnd }: DragContextProvider
       <DragOverlay>
         {activeId ? (
           <div className="bg-blue-100 border-2 border-blue-500 rounded-2xl p-2.5 shadow-xl opacity-90">
-            {/* Placeholder during drag */}
             Dragging...
           </div>
         ) : null}

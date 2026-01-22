@@ -1,7 +1,4 @@
-export type NotificationType =
-  | "INVITE_RECEIVED"
-  | "PROJECT_UPDATED"
-  | "TASK_ASSIGNED";
+export type NotificationType =|"INVITE_RECEIVED"| "PROJECT_UPDATED"|"TASK_ASSIGNED";
 
 export interface Notification {
   id: string;

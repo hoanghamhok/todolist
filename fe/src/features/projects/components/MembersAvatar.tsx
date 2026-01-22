@@ -19,11 +19,9 @@ export function MembersAvatar({
 
   const getInitials = (identifier: string) => {
     if (!identifier) return "?";
-    // Nếu là email (có @), lấy ký tự đầu của phần username
     if (identifier.includes("@")) {
       return identifier.split("@")[0][0]?.toUpperCase() || "?";
     }
-    // Nếu là username, lấy ký tự đầu
     return identifier[0]?.toUpperCase() || "?";
   };
 

@@ -31,11 +31,7 @@ export function ColumnTasksContainer({
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskAssignees, setNewTaskAssignees] = useState<string[]>([]);
-  
-  const { setNodeRef } = useDroppable({
-    id: columnId,
-  });
-
+  const { setNodeRef } = useDroppable({id: columnId});
   return (
     <div
       ref={setNodeRef}

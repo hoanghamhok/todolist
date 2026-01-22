@@ -38,7 +38,7 @@ export function ColumnCard({
 
   return (
     <div className="w-72 shrink-0 bg-gray-100 rounded-2xl p-3">
-      {/* ===== Column Header ===== */}
+      {/*Column Header*/}
       {editingColumn ? (
         <div className="space-y-2 mb-3">
           <input
@@ -114,7 +114,7 @@ export function ColumnCard({
         </div>
       )}
 
-      {/* ===== Tasks ===== */}
+      {/*Tasks*/}
       <ColumnTasksContainer
         columnId={column.id}
         tasks={tasks}

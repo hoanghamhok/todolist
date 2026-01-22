@@ -8,7 +8,6 @@ export class ColumnsService {
   constructor(private prisma: PrismaService) {}
 
   async getByProject(projectId: string) {
-    // Return all columns including closed ones - frontend handles visibility
     return this.prisma.column.findMany({
       where: {
         projectId,
@@ -96,7 +95,6 @@ export class ColumnsService {
     });
     if (!column) throw new NotFoundException("Column not found");
 
-    // Check if there's already a DONE column in this project
     const existingDoneColumn = await this.prisma.column.findFirst({
       where: {
         projectId: column.projectId,

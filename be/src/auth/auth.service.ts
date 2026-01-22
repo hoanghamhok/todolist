@@ -89,7 +89,7 @@ export class AuthService {
             }
         })
 
-        if(!user) throw new BadRequestException('Token khong hop le')
+        if(!user) throw new BadRequestException('Invalid Token')
 
         const hashed = await bcrypt.hash(newPassword,10);
 

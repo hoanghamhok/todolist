@@ -5,7 +5,6 @@ const API_BASE =
     ? "http://localhost:4000"
     : import.meta.env.VITE_API_URL;
 
-//create axios instance
 const api = axios.create({
     baseURL : API_BASE,
     headers:{
@@ -13,7 +12,6 @@ const api = axios.create({
     }
 })
 
-// Request interceptor - tự động thêm token
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -27,12 +25,10 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor - xử lý lỗi chung
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Token hết hạn -> logout
       localStorage.removeItem('token');
       window.location.href = '/';
     }
