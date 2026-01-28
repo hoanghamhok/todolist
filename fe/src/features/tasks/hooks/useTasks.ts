@@ -17,6 +17,8 @@ export function useTask(projectId: string) {
     mutationFn: createTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+      // Also invalidate all upcoming tasks queries
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 
@@ -47,6 +49,8 @@ export function useTask(projectId: string) {
       updateTask(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+      // Also invalidate all upcoming tasks queries
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 
@@ -58,6 +62,8 @@ export function useTask(projectId: string) {
     mutationFn: deleteTask,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+      // Also invalidate all upcoming tasks queries
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 
@@ -112,6 +118,8 @@ export function useTask(projectId: string) {
       queryClient.invalidateQueries({
         queryKey: ["tasks", projectId],
       });
+      // Also invalidate all upcoming tasks queries
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
     },
   });
 

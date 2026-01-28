@@ -1,59 +1,47 @@
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
+import { useQueries } from "@tanstack/react-query";
 import { fetchTasksByProjectID } from "../../tasks/tasks.api";
-import type { Task } from "../../tasks/types";
 
 interface UpcomingTasksProps {
   projectIds: string[];
 }
 
 export function UpcomingTasks({ projectIds }: UpcomingTasksProps) {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // Fetch tasks for all projects in parallel using useQueries
+  const tasksQueries = useQueries({
+    queries: projectIds.map(projectId => ({
+      queryKey: ["tasks", projectId],
+      queryFn: async () => {
+        const res = await fetchTasksByProjectID(projectId);
+        return res.data || [];
+      },
+    })),
+  });
 
-  useEffect(() => {
-    if (projectIds.length === 0) return;
+  const isLoading = tasksQueries.some(query => query.isLoading);
 
-    const loadTasks = async () => {
-      setIsLoading(true);
-      try {
-        // Fetch all task
-        const allTasks: Task[] = [];
-        
-        for (const projectId of projectIds) {
-          try {
-            const res = await fetchTasksByProjectID(projectId);
-            allTasks.push(...(res.data || []));
-          } catch (err) {
-            console.error(`Failed to load tasks for project ${projectId}:`, err);
-          }
-        }
+  // Combine and filter tasks
+  const tasks = useMemo(() => {
+    const allTasks = tasksQueries
+      .filter(query => query.data)
+      .flatMap(query => query.data || []);
 
-        // Filter tasks have dueDate in the next 7 day
-        const now = new Date();
-        const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    // Filter tasks have dueDate in the next 7 day
+    const now = new Date();
+    const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-        const upcomingTasks = allTasks
-          .filter(task => {
-            if (!task.dueDate) return false;
-            const dueDate = new Date(task.dueDate);
-            return dueDate >= now && dueDate <= nextWeek;
-          })
-          .sort((a, b) => {
-            if (!a.dueDate || !b.dueDate) return 0;
-            return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
-          })
-          .slice(0, 5); // get 5 task nearest
-
-        setTasks(upcomingTasks);
-      } catch (error) {
-        console.error("Load tasks failed:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadTasks();
-  }, [projectIds]);
+    return allTasks
+      .filter(task => {
+        if (!task.dueDate) return false;
+        const dueDate = new Date(task.dueDate);
+        return dueDate >= now && dueDate <= nextWeek;
+      })
+      .sort((a, b) => {
+        if (!a.dueDate || !b.dueDate) return 0;
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      })
+      .slice(0, 5); // get 5 task nearest
+  }, [tasksQueries]);
 
   const formatDate = (date: string) => {
     const d = new Date(date);

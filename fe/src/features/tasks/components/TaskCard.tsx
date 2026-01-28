@@ -17,12 +17,10 @@ export function TaskCard({ task, assignees = [], onEdit, onDelete }: TaskCardPro
   const taskAssignees = assignees.filter(a => task.assigneeIds.includes(a.userId));
 
   const getInitials = (member: any) => {
-    const email = member.user?.email || member.email || "";
-    if (!email) return "?";
-    if (email.includes("@")) {
-      return email.split("@")[0][0]?.toUpperCase() || "?";
-    }
-    return email[0]?.toUpperCase() || "?";
+    const username = member.user?.username || "";
+    if (!username) return "?";
+    
+    return username[0]?.toUpperCase() || "?";
   };
 
   const getAvatarColor = (index: number) => {
@@ -40,7 +38,7 @@ export function TaskCard({ task, assignees = [], onEdit, onDelete }: TaskCardPro
   };
 
   const getMemberName = (member: any) => {
-    return member.user?.name || member.name || member.user?.username || "Unknown";
+    return member.user?.username || "Unknown";
   };
 
   return (

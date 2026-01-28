@@ -48,13 +48,12 @@ export function MembersAvatar({
       <div className="flex -space-x-2">
         {displayMembers.map((member: any, index: number) => {
           const username = member.user?.username || member.username || "User";
-          const email = member.user?.email || member.email || "";
           return (
             <div
               key={member.id}
               className={`w-8 h-8 ${getAvatarColor(index)} rounded-full flex items-center justify-center text-white text-xs font-bold border-2 border-white cursor-pointer hover:scale-110 transition-transform relative group`}
             >
-              {getInitials(email)}
+              {getInitials(username)}
               <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap z-10">
                 {username}
               </div>

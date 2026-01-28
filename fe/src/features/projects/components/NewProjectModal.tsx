@@ -95,7 +95,6 @@ export function NewProjectModal({ isOpen, onClose, onSuccess }: NewProjectModalP
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter project title"
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isLoading}
               />
@@ -104,12 +103,11 @@ export function NewProjectModal({ isOpen, onClose, onSuccess }: NewProjectModalP
             {/* Description */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description (Optional)
+                Description
               </label>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter project description"
                 rows={4}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                 disabled={isLoading}

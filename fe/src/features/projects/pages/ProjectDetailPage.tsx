@@ -12,6 +12,7 @@ import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
 import { DragContextProvider } from "../components/DragContextProvider";
 import { ColumnCard } from "../components/ColumnCard";
 import { useDnd } from "../../tasks/hooks/useDnd";
+import { LeaveProject } from "../components/LeaveProject";
 
 
 export default function ProjectDetailPage() {
@@ -108,16 +109,20 @@ export default function ProjectDetailPage() {
       />
       
       {/*Header*/}
-      <header className="px-6 py-4 bg-white border-b flex justify-between items-start">
+      <header className="px-6 py-4 bg-white border-b flex justify-between">
         <div className="flex-1">
           <h1 className="text-2xl font-semibold">{project.name}</h1>
           <p className="text-gray-500 text-sm">{project.description}</p>
         </div>
-        <MembersAvatar 
-          projectId={projectId}
-          isAdmin={isAdmin}
-          onInviteClick={() => setIsInviteModalOpen(true)}
-        />
+
+        <div className="flex items-center gap-3">
+          <MembersAvatar 
+            projectId={projectId}
+            isAdmin={isAdmin}
+            onInviteClick={() => setIsInviteModalOpen(true)}
+          />
+          <LeaveProject projectId={projectId} />
+        </div>
       </header>
 
       {/*Error*/}
@@ -143,13 +148,16 @@ export default function ProjectDetailPage() {
               tasks={byColumn[column.id] ?? []}
               members={members}
               isAdmin={isAdmin}
+              projectId={projectId}
               markColumnAsDone={markColumnAsDone}
               editColumn={editColumn}
               deleteColumn={(id, name) => {
                 setDeleteTarget({ type: "column", id, name });
                 setDeleteConfirmOpen(true);
               }}
-              addTask={(columnId, title, assigneeIds = []) => addTask(columnId, title, projectId, "", assigneeIds)}
+              addTask={async (columnId, title, projId, description, assigneeIds, dueDate) => {
+                await addTask(columnId, title, projId, description, assigneeIds, dueDate);
+              }}
               editTask={editTask}
               deleteTask={(id, title) => {
                 setDeleteTarget({ type: "task", id, name: title });

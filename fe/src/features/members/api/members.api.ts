@@ -1,5 +1,5 @@
 import api from "../../../api/client"
-import type { InviteMemberRequest } from "../types";
+import type { InviteMemberRequest } from "../../projects/types";
 
 export const getProjectMembers = (projectId: string) =>
   api.get(`/projectmembers/${projectId}/members`);

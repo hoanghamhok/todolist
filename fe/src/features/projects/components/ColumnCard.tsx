@@ -6,12 +6,12 @@ interface ColumnCardProps {
   tasks: any[];
   members: any[];
   isAdmin: boolean;
+  projectId: string;
 
   markColumnAsDone: (id: string) => Promise<void>;
   editColumn: (id: string, title: string) => void;
   deleteColumn: (id: string, name: string) => void;
-
-  addTask: (columnId: string, title: string, assigneeIds?: string[]) => void;
+  addTask: (columnId: string, title: string, projectId: string, description: string, assigneeIds: string[], dueDate?: string) => Promise<void>;
   editTask: (id: string, data: any) => void;
   deleteTask: (id: string, title: string) => void;
 }
@@ -21,6 +21,7 @@ export function ColumnCard({
   tasks,
   members,
   isAdmin,
+  projectId,
   markColumnAsDone,
   editColumn,
   deleteColumn,
@@ -95,7 +96,7 @@ export function ColumnCard({
                 onClick={() => markColumnAsDone(column.id)}
                 className="px-2 py-1 text-xs bg-green-500 text-white rounded"
               >
-                ✓ Done
+                Done
               </button>
             )}
             <button
@@ -117,6 +118,7 @@ export function ColumnCard({
       {/*Tasks*/}
       <ColumnTasksContainer
         columnId={column.id}
+        projectId={projectId}
         tasks={tasks}
         editingTaskId={editingTaskId}
         assignees={members}
