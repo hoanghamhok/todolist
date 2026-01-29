@@ -7,5 +7,6 @@ export interface Notification {
   createdAt: string;
   data:{
     message:string;
+    inviteToken:string;
   }
 }

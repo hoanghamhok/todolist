@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { inviteMember } from "../../members/api/members.api";
+import { inviteMember } from "../../invitations/api/invitations.api";
 import { useAuth } from "../../auth/hooks/useAuth";
 
 interface InviteMemberModalProps {

@@ -2,7 +2,6 @@ import type { paths } from "../../types/openapi"
 
 export type CreateProjectRequest =
   paths["/projects/create"]["post"]["requestBody"]["content"]["application/json"];
-export type InviteMemberRequest= paths["/invites/{projectId}/invite"]["post"]["requestBody"]["content"]["application/json"]
 
 export interface Project {
   id: string;

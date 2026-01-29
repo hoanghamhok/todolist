@@ -62,7 +62,9 @@ export class InvitesService {
                 type: 'INVITE_RECEIVED',
                 createdAt: new Date(),
                 read: false,
-                data:{ message: `You have received an invitation to join a project.`,}
+                data:{ message: `You have received an invitation to join a project.`,
+                    inviteToken:token
+                }
             }
         });
         
@@ -89,7 +91,7 @@ export class InvitesService {
         if(!token){
             throw new BadRequestException('Missing token');
         }
-        const invite = await this.prisma.invitation.findUnique({ where:{ token:token } });
+        const invite = await this.prisma.invitation.findFirst({ where:{ token:token } });
         if(!invite){
             throw new NotFoundException('Invite not found');
         }
@@ -99,6 +101,7 @@ export class InvitesService {
         if(invite.status !== 'PENDING'){
             throw new BadRequestException('Invite has already been responded to');
         }
+        
         await this.prisma.$transaction(async()=>{
             await this.prisma.projectMember.create({
                 data:{
@@ -107,17 +110,19 @@ export class InvitesService {
                     role: 'MEMBER'
                 }
             })
-            await this.prisma.invitation.update({
-                where:{ id: invite.id },
-                data:{ status: 'ACCEPTED' }
-            });
+            await this.prisma.invitation.updateMany({
+                where: { id: invite.id, status: 'PENDING' },
+                data: { status: 'ACCEPTED' }
+            })
             await this.prisma.notification.create({
                 data:{
                     userId: invite.inviterId,
                     type: 'INVITE_ACCEPTED',
                     createdAt: new Date(),
                     read: false,
-                    data:{ message: `Your invitation has been accepted.`,}
+                    data:{ message: `Your invitation has been accepted.`,
+                        projectId:invite.projectId,
+                    }
                 }
             });
         });
@@ -152,6 +157,21 @@ export class InvitesService {
             }
         });
         return { success: true };
+    }
+
+     async getInviteByID(id:string){
+        const task = await this.prisma.invitation.findUnique({where:{id}})
+        if(!task){
+            throw new NotFoundException();
+        }
+        return task;
+    }
+
+    async deleteInvite(id:string){
+        await this.getInviteByID(id);
+        return this.prisma.invitation.delete({
+            where:{id}
+        })
     }
 
 }

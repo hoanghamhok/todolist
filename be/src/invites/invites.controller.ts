@@ -1,4 +1,4 @@
-import { Controller, Post, Param, Request, UseGuards,Body } from '@nestjs/common';
+import { Controller, Post, Param, Request, UseGuards,Body,Delete } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { InvitesService } from './invites.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -23,13 +23,18 @@ export class InvitesController {
     @ApiBearerAuth()
     @Post('accept/:token')
     async acceptInvitation(@Request() req,@Param('token') token: string) {
-        return await this.invitesService.acceptInvite( token,req.user.userId);
+        return await this.invitesService.acceptInvite(token, req.user.userId);
     }
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Post('reject/:token')
     async declineInvitation(@Request() req,@Param('token') token: string) {
-        return await this.invitesService.rejectInvite(req.user.id, token);
+        return await this.invitesService.rejectInvite(token, req.user.userId);
+    }
+
+    @Delete(':id')
+    remove(@Param('id') id:string){
+        return this.invitesService.deleteInvite(id);
     }
 }

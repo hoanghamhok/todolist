@@ -4,6 +4,9 @@ import { Link } from "react-router-dom";
 import { useNotifications } from "../../notifications/hooks/useNotifications";
 import type { User } from "../../auth/type";
 import type { Notification} from "../../notifications/type"
+import { InviteModal } from "../../invitations/components/InviteModal";
+import { useInvite } from "../../invitations/hooks/useInvite";
+import { useNavigate } from "react-router-dom";
 
 interface NavbarProps {
     onToggleSidebar?: () => void;
@@ -16,8 +19,26 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotiMenu, setShowNotiMenu] = useState(false);
   const {data: notifications = [],markRead} = useNotifications();
-
+  const [inviteToken,setInviteToken] = useState<string | null>(null);
+  const { acceptMutation, rejectMutation } = useInvite();
   const unreadCount = notifications.filter(n => !n.read).length;
+  const isLoading = acceptMutation.isPending || rejectMutation.isPending;
+  const error = acceptMutation.error || rejectMutation.error;
+  const errorMessage =
+  (error as any)?.response?.data?.message ||
+  (error as Error)?.message ||
+  undefined;
+  const navigate = useNavigate();
+
+  const handleAccept = (token: string) => {
+  acceptMutation.mutate(token, {
+    onSuccess: (data) => {
+      setInviteToken(null);        
+      setShowNotiMenu(false);
+      navigate(`/projects/${data.projectId}`); 
+    }
+  });
+};
   return (
     <nav className="bg-white border-b fixed top-0 left-0 right-0 z-50 h-16">
       <div className="px-4 h-full flex items-center justify-between">
@@ -70,6 +91,9 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
                       if (!noti.read) {
                         markRead.mutate(noti.id);
                       }
+                      if(noti.type == "INVITE_RECEIVED"){
+                        setInviteToken(noti.data.inviteToken)
+                      }
                     }}
                     className={`px-4 py-3 border-b last:border-b-0 cursor-pointer
                       ${!noti.read ? "bg-blue-50" : "bg-white"}
@@ -83,6 +107,18 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
                     </p>
                   </div>
                 ))}
+                  
+                  <InviteModal
+                    isLoading={isLoading}
+                    error={errorMessage}
+                    open={!!inviteToken}
+                    inviteToken={inviteToken ?? ""}
+                    onClose={() => setInviteToken(null)}
+                    onAccept={handleAccept}
+                    onReject={(token) => {
+                       rejectMutation.mutate(token)
+                    }}
+                  />
                 </div>
               </div>
             )}
