@@ -1,4 +1,5 @@
 import { useProjectMembers } from "../hooks/useProjectMembers";
+import { useState} from "react";
 
 interface MembersAvatarProps {
   projectId: string;
@@ -14,8 +15,10 @@ export function MembersAvatar({
   const { data: membersRes, isLoading } = useProjectMembers(projectId);
   const members = Array.isArray(membersRes) ? membersRes : membersRes?.data || [];
 
-  const displayMembers = members.slice(0, 3);
-  const remainingCount = Math.max(0, members.length - 3);
+  const displayMembers = members.slice(0);
+  const [selectedMember, setSelectedMember] = useState<any>(null);
+  const [showMenuFor, setShowMenuFor] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<"ADMIN" | "KICK" | null>(null);
 
   const getInitials = (identifier: string) => {
     if (!identifier) return "?";
@@ -51,6 +54,11 @@ export function MembersAvatar({
           return (
             <div
               key={member.id}
+               onClick={() => {
+                  if (!isAdmin) return;
+                  setSelectedMember(member);
+                  setShowMenuFor(member.id);
+                }}
               className={`w-8 h-8 ${getAvatarColor(index)} rounded-full flex items-center justify-center text-white text-xs font-bold border-2 border-white cursor-pointer hover:scale-110 transition-transform relative group`}
             >
               {getInitials(username)}
@@ -60,12 +68,6 @@ export function MembersAvatar({
             </div>
           );
         })}
-
-        {remainingCount > 0 && (
-          <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center text-white text-xs font-bold border-2 border-white">
-            +{remainingCount}
-          </div>
-        )}
       </div>
 
       {isAdmin && (
@@ -76,6 +78,29 @@ export function MembersAvatar({
         >
           Add
         </button>
+      )}
+      {isAdmin && showMenuFor === members.id && (
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white shadow-lg border rounded-md text-xs z-20 w-36">
+          <button
+            onClick={() => {
+              setConfirmAction("ADMIN");
+              setShowMenuFor(null);
+            }}
+            className="w-full text-left px-3 py-2 hover:bg-gray-100"
+          >
+            Set as Admin
+          </button>
+
+          <button
+            onClick={() => {
+              setConfirmAction("KICK");
+              setShowMenuFor(null);
+            }}
+            className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50"
+          >
+            Kick User
+          </button>
+        </div>
       )}
     </div>
   );

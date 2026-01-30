@@ -1,7 +1,5 @@
 import api from "../../../api/client";
-import type {
-  CreateProjectRequest
-} from "../types";
+import type { CreateProjectRequest } from "../types";
 
 export const getProjectById = (id: string) =>
   api.get(`/projects/${id}`);
@@ -15,5 +13,5 @@ export const getUserProjects = () =>
 export const getProjectDetails = (projectId: string) =>
   api.get(`/projects/details/${projectId}`);
 
-export const removeProjectMember = (projectId: string) =>
+export const removeProject = (projectId: string) =>
   api.delete(`/projects/remove/${projectId}`);

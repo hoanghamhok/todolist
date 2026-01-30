@@ -3,7 +3,7 @@ import { ProjectsService } from './projects.service';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { SetMemberRoleDto } from './dto/setmember-role';
+import { SetMemberRoleDto } from '../projectmembers/dto/setmember-role';
 import { UpdateProjectDto } from './dto/update-project.dto';
 
 @Controller('projects')
@@ -38,12 +38,6 @@ export class ProjectsController {
     async getProjectDetails(@Param('projectId') projectId: string) {
         return this.projectsService.getProjectDetails(projectId);
     }
-
-    @UseGuards(JwtAuthGuard)
-    @Patch(':projectId/members/:targetUserId/role')
-    setMemberRole(@Param('projectId') projectId: string,@Param('targetUserId') targetUserId: string,@Body() body:SetMemberRoleDto,@Request() req) {
-        return this.projectsService.setProjectMemberRole(projectId,targetUserId,body.role,req.user.userId
-    )}
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()

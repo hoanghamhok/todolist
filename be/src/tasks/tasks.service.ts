@@ -108,6 +108,7 @@ export class TasksService{
         afterTaskId?: string,
         ) {
         const GAP = 1000;
+        console.log('moveTask called:', {taskId, columnId, beforeTaskId, afterTaskId});
 
         await this.getTaskByID(taskId);
 
@@ -134,6 +135,33 @@ export class TasksService{
             newPosition = (beforeTask.position + afterTask.position) / 2;
         }
 
+        else if (beforeTaskId) {
+            const beforeTask = await this.prisma.task.findUnique({
+            where: { id: beforeTaskId },
+            });
+
+            if (!beforeTask) {
+            throw new Error('Before task not found');
+            }
+
+            // Find the task before beforeTask to calculate position between them
+            const prevTask = await this.prisma.task.findFirst({
+            where: {
+                columnId,
+                position: { lt: beforeTask.position }
+            },
+            orderBy: { position: 'desc' },
+            });
+
+            if (prevTask) {
+            // Position between prevTask and beforeTask
+            newPosition = (prevTask.position + beforeTask.position) / 2;
+            } else {
+            // No task before, so add at the beginning
+            newPosition = beforeTask.position - GAP;
+            }
+        }
+
         else if (afterTaskId) {
             const afterTask = await this.prisma.task.findUnique({
             where: { id: afterTaskId },
@@ -143,7 +171,22 @@ export class TasksService{
             throw new Error('After task not found');
             }
 
-            newPosition = afterTask.position - GAP;
+            // Find the next task after afterTask to calculate position between them
+            const nextTask = await this.prisma.task.findFirst({
+            where: {
+                columnId,
+                position: { gt: afterTask.position }
+            },
+            orderBy: { position: 'asc' },
+            });
+
+            if (nextTask) {
+            // Position between afterTask and nextTask
+            newPosition = (afterTask.position + nextTask.position) / 2;
+            } else {
+            // No task after, so add at the end
+            newPosition = afterTask.position + GAP;
+            }
         }
 
         else {

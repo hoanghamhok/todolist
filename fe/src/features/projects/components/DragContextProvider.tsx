@@ -3,7 +3,7 @@ import type { DragEndEvent } from "@dnd-kit/core";
 import {
   DndContext,
   DragOverlay,
-  closestCenter,
+  closestCorners,
   PointerSensor,
   useSensor,
   useSensors,
@@ -24,7 +24,7 @@ export function DragContextProvider({ children, onDragEnd }: DragContextProvider
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={closestCorners}
       onDragStart={(event) => {
         setActiveId(String(event.active.id));
       }}

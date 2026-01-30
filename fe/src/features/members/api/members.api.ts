@@ -8,3 +8,6 @@ export const removeMember = (projectId: string, userId: string) =>
 
 export const leaveProject = (projectId: string) =>
   api.post(`/projectmembers/${projectId}/leave`);
+
+export const setRoleMember = (projectId:string,targetUserId:string) => 
+  api.patch(`/projectmembers/${projectId}/members/${targetUserId}/role`)

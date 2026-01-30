@@ -7,6 +7,7 @@ import type { Notification} from "../../notifications/type"
 import { InviteModal } from "../../invitations/components/InviteModal";
 import { useInvite } from "../../invitations/hooks/useInvite";
 import { useNavigate } from "react-router-dom";
+import { DeleteNotification } from "../../notifications/components/DeleteNotification";
 
 interface NavbarProps {
     onToggleSidebar?: () => void;
@@ -91,20 +92,22 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
                       if (!noti.read) {
                         markRead.mutate(noti.id);
                       }
-                      if(noti.type == "INVITE_RECEIVED"){
-                        setInviteToken(noti.data.inviteToken)
+                      if (noti.type === "INVITE_RECEIVED") {
+                        setInviteToken(noti.data.inviteToken);
                       }
                     }}
-                    className={`px-4 py-3 border-b last:border-b-0 cursor-pointer
+                    className={`flex justify-between items-start gap-2
+                      px-4 py-3 border-b last:border-b-0 cursor-pointer
                       ${!noti.read ? "bg-blue-50" : "bg-white"}
                     `}
                   >
-                    <p className="text-sm">
-                      {noti.data.message}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(noti.createdAt).toLocaleString()}
-                    </p>
+                    <div className="flex-1">
+                      <p className="text-sm">{noti.data.message}</p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(noti.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                    <DeleteNotification notiId={noti.id} />
                   </div>
                 ))}
                   

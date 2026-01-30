@@ -4,8 +4,7 @@ import Sidebar from "../../shared/components/Sidebar";
 import { useProjectsByUser } from "../../projects/hooks/useProjectsByUser";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { Clock } from "lucide-react";
-import { Link } from "react-router-dom";
-
+import { ProjectCard } from "../../projects/components/ProjectCard";
 const HomePage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
@@ -50,22 +49,13 @@ const HomePage = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
         {projects?.map((item) => (
-          <Link
+          <ProjectCard
             key={item.project.id}
-            to={`/projects/${item.project.id}`}
-            className="block bg-white p-6 rounded-lg border
-                      hover:shadow-md transition cursor-pointer"
-          >
-            <h3 className="font-semibold">
-              {item.project.name}
-            </h3>
-
-            <p className="text-sm text-gray-600 mb-2">
-              {item.project.description}
-            </p>
-          </Link>
+            item={item}
+          />
         ))}
         </div>
+
       </main>
     </div>
   );

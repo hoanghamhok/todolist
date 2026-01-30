@@ -63,4 +63,45 @@ export class ProjectmembersService {
 
         return this.removeMember(projectId, requesterId, requesterId);
     }
+
+    async setProjectMemberRole(projectId: string,targetUserId: string,role: ProjectRole,currentUserId: string) {
+        const currentMember = await this.prisma.projectMember.findFirst({
+            where: {projectId,userId:currentUserId},
+        });
+
+        if (!currentMember) {
+            throw new ForbiddenException('You are not a member of this project');
+        }
+
+        if (
+            currentMember.role !== ProjectRole.OWNER &&
+            currentMember.role !== ProjectRole.ADMIN
+        ) {
+            throw new ForbiddenException('You do not have permission');
+        }
+
+        const targetMember = await this.prisma.projectMember.findFirst({
+            where: {
+            projectId,
+            userId: targetUserId,
+            },
+        });
+
+        if (!targetMember) {
+            throw new NotFoundException('Project member not found');
+        }
+
+        if (
+            targetMember.role === ProjectRole.OWNER &&
+            currentMember.role !== ProjectRole.OWNER
+        ) {
+            throw new ForbiddenException('Only owner can change owner role');
+        }
+
+        return this.prisma.projectMember.update({
+            where: { id: targetMember.id },
+            data: { role },
+        });
+    }
+
 }

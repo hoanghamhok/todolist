@@ -1,26 +1,50 @@
 import type { Task } from "../types";
-import { useDraggable } from "@dnd-kit/core";
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface TaskCardProps {
   task: Task;
-  assignees?: Array<{ id: string; userId: string; user?: { name?: string; email?: string; username?: string }; name?: string; avatar?: string }>;
+  assignees?: Array<{
+    id: string;
+    userId: string;
+    user?: {
+      username?: string;
+      email?: string;
+    };
+    name?: string;
+    avatar?: string;
+  }>;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-export function TaskCard({ task, assignees = [], onEdit, onDelete }: TaskCardProps) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: task.id,
-  });
+export function TaskCard({
+  task,
+  assignees = [],
+  onEdit,
+  onDelete,
+}: TaskCardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id });
 
-  // Get assignee for tasks
-  const taskAssignees = assignees.filter(a => task.assigneeIds.includes(a.userId));
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const taskAssignees = assignees.filter(a =>
+    task.assigneeIds?.includes(a.userId)
+  );
 
   const getInitials = (member: any) => {
     const username = member.user?.username || "";
-    if (!username) return "?";
-    
-    return username[0]?.toUpperCase() || "?";
+    return username ? username[0].toUpperCase() : "?";
   };
 
   const getAvatarColor = (index: number) => {
@@ -37,33 +61,32 @@ export function TaskCard({ task, assignees = [], onEdit, onDelete }: TaskCardPro
     return colors[index % colors.length];
   };
 
-  const getMemberName = (member: any) => {
-    return member.user?.username || "Unknown";
-  };
+  const getMemberName = (member: any) =>
+    member.user?.username || member.name || "Unknown";
 
   return (
-    <div 
+    <div
       ref={setNodeRef}
-      className={`bg-white p-2.5 rounded-2xl shadow-sm hover:shadow transition flex flex-col justify-between group relative cursor-grab active:cursor-grabbing ${
+      style={style}
+      data-taskid={task.id}
+      className={`bg-white p-2.5 rounded-2xl shadow-sm hover:shadow transition flex flex-col justify-between group cursor-grab active:cursor-grabbing ${
         isDragging ? "opacity-50 ring-2 ring-blue-500" : ""
       }`}
     >
-      <div
-        {...attributes}
-        {...listeners}
-      >
-        <div className="font-medium text-sm flex-1 mb-2">
-          {task.title}
-        </div>
+      <div {...attributes} {...listeners}>
+        <div className="font-medium text-sm mb-2">{task.title}</div>
+
         {task.description && (
-          <p className="text-xs text-gray-600 mb-2 line-clamp-2">{task.description}</p>
+          <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+            {task.description}
+          </p>
         )}
       </div>
 
       <div className="flex justify-between items-end">
         <div className="opacity-0 group-hover:opacity-100 transition flex gap-1">
           <button
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               onEdit();
             }}
@@ -72,7 +95,7 @@ export function TaskCard({ task, assignees = [], onEdit, onDelete }: TaskCardPro
             Edit
           </button>
           <button
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               onDelete();
             }}
@@ -82,15 +105,17 @@ export function TaskCard({ task, assignees = [], onEdit, onDelete }: TaskCardPro
           </button>
         </div>
 
-        {/*assignees'task avatars*/}
         {taskAssignees.length > 0 && (
           <div className="flex -space-x-2">
             {taskAssignees.map((assignee, index) => (
               <div
                 key={assignee.userId}
-                className={`w-6 h-6 ${getAvatarColor(index)} rounded-full flex items-center justify-center text-white text-xs font-bold border-2 border-white cursor-pointer hover:scale-110 transition-transform relative group/avatar`}
+                className={`w-6 h-6 ${getAvatarColor(
+                  index
+                )} rounded-full flex items-center justify-center text-white text-xs font-bold border-2 border-white cursor-pointer hover:scale-110 transition-transform relative group/avatar`}
               >
                 {getInitials(assignee)}
+
                 <div className="hidden group-hover/avatar:block absolute bottom-full right-0 mb-2 bg-gray-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap z-20">
                   {getMemberName(assignee)}
                 </div>

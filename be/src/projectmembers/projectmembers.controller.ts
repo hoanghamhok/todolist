@@ -1,6 +1,6 @@
 import { ProjectmembersService } from './projectmembers.service';
 import {Controller,Get,Patch,Post,Delete,Request,Body, Param, UseGuards} from '@nestjs/common';
-import { InviteMemberDto } from './dto/invite-member.dto';
+import { SetMemberRoleDto } from './dto/setmember-role';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { ApiBearerAuth } from '@nestjs/swagger';
 
@@ -18,11 +18,7 @@ export class ProjectmembersController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Delete(':projectId/members/:userId')
-    async removeMember(
-        @Param('projectId') projectId: string,
-        @Param('userId') userId: string,
-        @Request() req,
-    ) {
+    async removeMember(@Param('projectId') projectId: string,@Param('userId') userId: string,@Request() req) {
         const requesterId = req.user?.userId;
         return this.projectmembersService.removeMember(projectId, requesterId, userId);
     }
@@ -30,11 +26,14 @@ export class ProjectmembersController {
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
     @Post(':projectId/leave')
-    async leaveProject(
-        @Param('projectId') projectId: string,
-        @Request() req,
-    ) {
+    async leaveProject(@Param('projectId') projectId: string,@Request() req) {
         const requesterId = req.user?.userId;
         return this.projectmembersService.leaveProject(projectId, requesterId);
     }
+
+    @UseGuards(JwtAuthGuard)
+    @Patch(':projectId/members/:targetUserId/role')
+    setMemberRole(@Param('projectId') projectId: string,@Param('targetUserId') targetUserId: string,@Body() body:SetMemberRoleDto,@Request() req) {
+            return this.projectmembersService.setProjectMemberRole(projectId,targetUserId,body.role,req.user.userId
+    )}
 }
