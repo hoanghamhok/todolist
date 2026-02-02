@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { useProjectMembers } from "../hooks/useProjectMembers";
-import { useState} from "react";
+import { useRemoveMember } from "../../members/hooks/useRemoveMeber";
+import { useSetRoleMember } from "../../members/hooks/useSetRoleMember";
+import { ConfirmModal } from "../../shared/components/ModalConfirm";
 
 interface MembersAvatarProps {
   projectId: string;
@@ -13,12 +16,29 @@ export function MembersAvatar({
   onInviteClick,
 }: MembersAvatarProps) {
   const { data: membersRes, isLoading } = useProjectMembers(projectId);
-  const members = Array.isArray(membersRes) ? membersRes : membersRes?.data || [];
+  const members = Array.isArray(membersRes)
+    ? membersRes
+    : membersRes?.data || [];
 
-  const displayMembers = members.slice(0);
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showMenuFor, setShowMenuFor] = useState<string | null>(null);
-  const [confirmAction, setConfirmAction] = useState<"ADMIN" | "KICK" | null>(null);
+  const [confirmAction, setConfirmAction] = useState<"ADMIN" | "REMOVE_ADMIN" | "KICK" | null>(null);
+
+  const {
+    removeMember,
+    isLoading: isRemoving,
+    isError: isRemoveError,
+    error: removeError,
+  } = useRemoveMember(projectId);
+
+  const {
+    setRole,
+    isLoading: isSettingRole,
+    isError: isSetRoleError,
+    error: setRoleError,
+  } = useSetRoleMember(projectId);
+
+  const isConfirmLoading = isRemoving || isSettingRole;
 
   const getInitials = (identifier: string) => {
     if (!identifier) return "?";
@@ -42,29 +62,105 @@ export function MembersAvatar({
     return colors[index % colors.length];
   };
 
+  const handleConfirm = () => {
+    if (!selectedMember || !confirmAction) return;
+
+    if (confirmAction === "KICK") {
+      removeMember(selectedMember.user?.id);
+    }
+
+    if (confirmAction === "ADMIN") {
+      setRole({
+        targetUserId: selectedMember.user?.id,
+        role: "ADMIN",
+      });
+    }
+
+    if (confirmAction === "REMOVE_ADMIN") {
+      setRole({
+        targetUserId: selectedMember.user?.id,
+        role: "MEMBER",
+      });
+    }
+
+    setConfirmAction(null);
+    setSelectedMember(null);
+  };
+
   if (isLoading) {
     return <div className="text-xs text-gray-500">Loading...</div>;
   }
 
   return (
-    <div className="flex items-center gap-2 pt-3">
+    <div className="flex items-center gap-2 pt-3 relative">
       <div className="flex -space-x-2">
-        {displayMembers.map((member: any, index: number) => {
-          const username = member.user?.username || member.username || "User";
+        {members.map((member: any, index: number) => {
+          const username =
+            member.user?.username || member.username || "User";
+
           return (
             <div
-              key={member.id}
-               onClick={() => {
-                  if (!isAdmin) return;
-                  setSelectedMember(member);
-                  setShowMenuFor(member.id);
-                }}
-              className={`w-8 h-8 ${getAvatarColor(index)} rounded-full flex items-center justify-center text-white text-xs font-bold border-2 border-white cursor-pointer hover:scale-110 transition-transform relative group`}
+              key={member.userId}
+              onClick={() => {
+                if (!isAdmin) return;
+                setSelectedMember(member);
+                setShowMenuFor(member.id);
+              }}
+              className={`w-8 h-8 ${getAvatarColor(
+                index
+              )} rounded-full flex items-center justify-center
+              text-white text-xs font-bold border-2 border-white
+              cursor-pointer hover:scale-110 transition-transform
+              relative group`}
             >
               {getInitials(username)}
-              <div className="hidden group-hover:block absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white text-xs py-1 px-2 rounded whitespace-nowrap z-10">
-                {username}
+
+              <div className="hidden group-hover:block absolute bottom-full left-1/2
+                -translate-x-1/2 mb-2 bg-gray-900 text-white text-xs
+                py-1 px-2 rounded whitespace-nowrap z-10">
+                {username} ({member.role})
               </div>
+
+              {isAdmin && showMenuFor === member.id && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2
+                  bg-white shadow-lg border rounded-md text-xs z-20 w-40">
+                  {member.role !== "ADMIN" && member.role !== "OWNER" && (
+                    <button
+                      onClick={() => {
+                        setConfirmAction("ADMIN");
+                        setShowMenuFor(null);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 text-black"
+                    >
+                      Set as Admin
+                    </button>
+                  )}
+
+                  {member.role === "ADMIN" && (
+                    <button
+                      onClick={() => {
+                        setConfirmAction("REMOVE_ADMIN");
+                        setShowMenuFor(null);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 text-black"
+                    >
+                      Remove Admin
+                    </button>
+                  )}
+
+                  {member.role !== "OWNER" && (
+                    <button
+                      onClick={() => {
+                        setConfirmAction("KICK");
+                        setShowMenuFor(null);
+                      }}
+                      className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50"
+                    >
+                      Kick User
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           );
         })}
@@ -73,34 +169,51 @@ export function MembersAvatar({
       {isAdmin && (
         <button
           onClick={onInviteClick}
-          className="w-12 h-9 rounded-full bg-blue-500 hover:bg-blue-600 text-white flex items-center justify-center text-sm font-bold transition"
-          title="Invite member"
+          className="w-12 h-9 rounded-full bg-blue-500 hover:bg-blue-600
+          text-white flex items-center justify-center text-sm font-bold transition"
         >
           Add
         </button>
       )}
-      {isAdmin && showMenuFor === members.id && (
-        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-white shadow-lg border rounded-md text-xs z-20 w-36">
-          <button
-            onClick={() => {
-              setConfirmAction("ADMIN");
-              setShowMenuFor(null);
-            }}
-            className="w-full text-left px-3 py-2 hover:bg-gray-100"
-          >
-            Set as Admin
-          </button>
 
-          <button
-            onClick={() => {
-              setConfirmAction("KICK");
-              setShowMenuFor(null);
-            }}
-            className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50"
-          >
-            Kick User
-          </button>
-        </div>
+      {confirmAction && selectedMember && (
+        <ConfirmModal
+          title={
+            confirmAction === "KICK"
+              ? "Kick member"
+              : confirmAction === "ADMIN"
+              ? "Set Admin"
+              : "Remove Admin"
+          }
+          description={
+            confirmAction === "KICK"
+              ? `Bạn có chắc muốn kick ${selectedMember.user?.username || selectedMember.username}?`
+              : confirmAction === "ADMIN"
+              ? `Bạn có chắc muốn set ${selectedMember.user?.username || selectedMember.username} làm Admin?`
+              : `Bạn có chắc muốn gỡ quyền Admin của ${selectedMember.user?.username || selectedMember.username}?`
+          }
+          onCancel={() => {
+            console.log(" onCancel được gọi!");
+            console.log("isConfirmLoading:", isConfirmLoading);
+            
+            if (isConfirmLoading) {
+              console.log("Đang loading, không đóng modal");
+              return;
+            }
+            
+            console.log("✅ Đóng modal");
+            setConfirmAction(null);
+            setSelectedMember(null);
+          }}
+          onConfirm={handleConfirm}
+          loading={isConfirmLoading}
+        />
+      )}
+
+      {(isRemoveError || isSetRoleError) && (
+        <p className="text-xs text-red-500 mt-2">
+          {(removeError || setRoleError)?.message || "Có lỗi xảy ra"}
+        </p>
       )}
     </div>
   );

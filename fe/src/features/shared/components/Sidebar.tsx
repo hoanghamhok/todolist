@@ -4,6 +4,7 @@ import {getUserProjects} from "../../projects/api/projects.api"
 import type {ProjectMember } from "../../projects/types"
 import { NewProjectModal } from "../../projects/components/NewProjectModal";
 import { UpcomingTasks } from "./UpcomingTasks";
+import { useNavigate } from "react-router-dom";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -16,8 +17,8 @@ const Sidebar: React.FC<SidebarProps> = ({
   onClose,
   activeMenu = "dashboard",
 }) => {
+  const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
-
   const [expandedMenus, setExpandedMenus] = useState<string[]>(["projects"]);
   const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
@@ -124,7 +125,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                   onClick={() => toggleMenu("projects")}
                   className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-100"
                 >
-                  <span className="font-medium">Projects</span>
+                  <span className="font-medium uppercase">Projects</span>
                   <span className="text-xs bg-gray-200 px-2 rounded-full">
                     {projectMembers.length}
                   </span>
@@ -148,6 +149,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 ? "bg-blue-50 text-blue-700"
                                 : "hover:bg-gray-100"
                             }`}
+                            onClick={() => navigate(`/projects/${pm.projectId}`)} 
                           >
                             <div className="flex justify-between items-center">
                               <span>{pm.project.name}</span>

@@ -109,13 +109,13 @@ export default function ProjectDetailPage() {
       />
       
       {/*Header*/}
-      <header className="px-6 py-4 bg-white border-b flex justify-between">
-        <div className="flex-1">
-          <h1 className="text-2xl font-semibold">{project.name}</h1>
-          <p className="text-gray-500 text-sm">{project.description}</p>
+      <header className="px-6 py-4 bg-white border-b flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
+        <div className="flex-1 min-w-0">
+          <h1 className="text-2xl font-semibold truncate">{project.name}</h1>
+          <p className="text-gray-500 text-sm truncate">{project.description}</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 ml-auto">
           <MembersAvatar 
             projectId={projectId}
             isAdmin={isAdmin}
@@ -139,34 +139,35 @@ export default function ProjectDetailPage() {
       )}
 
       {/* Board*/}
-      <main className="flex-1 overflow-x-auto">
-        <div className="flex gap-4 p-6 ">
+      <main className="flex-1">
+        <div className="flex gap-4 p-6 overflow-x-auto snap-x snap-mandatory">
           {columns.map(column => (
-            <ColumnCard
-              key={column.id}
-              column={column}
-              tasks={byColumn[column.id] ?? []}
-              members={members}
-              isAdmin={isAdmin}
-              projectId={projectId}
-              markColumnAsDone={markColumnAsDone}
-              editColumn={editColumn}
-              deleteColumn={(id, name) => {
-                setDeleteTarget({ type: "column", id, name });
-                setDeleteConfirmOpen(true);
-              }}
-              addTask={async (columnId, title, projId, description, assigneeIds, dueDate) => {
-                await addTask(columnId, title, projId, description, assigneeIds, dueDate);
-              }}
-              editTask={editTask}
-              deleteTask={(id, title) => {
-                setDeleteTarget({ type: "task", id, name: title });
-                setDeleteConfirmOpen(true);
-              }}
-            />
+            <div key={column.id} className="w-64 sm:w-72 shrink-0 snap-start">
+              <ColumnCard
+                column={column}
+                tasks={byColumn[column.id] ?? []}
+                members={members}
+                isAdmin={isAdmin}
+                projectId={projectId}
+                markColumnAsDone={markColumnAsDone}
+                editColumn={editColumn}
+                deleteColumn={(id, name) => {
+                  setDeleteTarget({ type: "column", id, name });
+                  setDeleteConfirmOpen(true);
+                }}
+                addTask={async (columnId, title, projId, description, assigneeIds, dueDate) => {
+                  await addTask(columnId, title, projId, description, assigneeIds, dueDate);
+                }}
+                editTask={editTask}
+                deleteTask={(id, title) => {
+                  setDeleteTarget({ type: "task", id, name: title });
+                  setDeleteConfirmOpen(true);
+                }}
+              />
+            </div>
           ))}
           {/* Add column */}
-          <div className="w-72 shrink-0">
+          <div className="w-64 sm:w-72 shrink-0 snap-start">
             {isAdding ? (
               <div className="bg-gray-100 p-3 rounded-lg space-y-2">
                 <input

@@ -34,6 +34,7 @@ export class ProjectmembersController {
     @UseGuards(JwtAuthGuard)
     @Patch(':projectId/members/:targetUserId/role')
     setMemberRole(@Param('projectId') projectId: string,@Param('targetUserId') targetUserId: string,@Body() body:SetMemberRoleDto,@Request() req) {
-            return this.projectmembersService.setProjectMemberRole(projectId,targetUserId,body.role,req.user.userId
+        console.log('PATCH ROLE HIT');
+        return this.projectmembersService.setProjectMemberRole(projectId,targetUserId,body.role,req.user.userId
     )}
 }

@@ -5,9 +5,12 @@ import ForgotPassword from "./features/auth/pages/ForgotPasswordPage";
 import ResetPassword from "./features/auth/pages/ResetPassword";
 import ProjectDetailPage from "./features/projects/pages/ProjectDetailPage";
 import DashboardLayout from "./features/shared/layout/DashboardLayout";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   return (
+    <>
+    <Toaster position="top-right" />
     <Routes>
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/" element={<HomePage />} />
@@ -17,6 +20,7 @@ function App() {
         <Route path="/projects/:projectId"element={<ProjectDetailPage />}/>
       </Route>
     </Routes>
+    </>
   );
 }
 

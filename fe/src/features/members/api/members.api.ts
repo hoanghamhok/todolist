@@ -1,4 +1,5 @@
 import api from "../../../api/client"
+export type ProjectRole = "OWNER" | "ADMIN" | "MEMBER";
 
 export const getProjectMembers = (projectId: string) =>
   api.get(`/projectmembers/${projectId}/members`);
@@ -9,5 +10,7 @@ export const removeMember = (projectId: string, userId: string) =>
 export const leaveProject = (projectId: string) =>
   api.post(`/projectmembers/${projectId}/leave`);
 
-export const setRoleMember = (projectId:string,targetUserId:string) => 
-  api.patch(`/projectmembers/${projectId}/members/${targetUserId}/role`)
+export const setRoleMember = (projectId:string,targetUserId:string,role: ProjectRole) => {
+  console.log("PATCH ROLE", projectId, targetUserId, role);
+  api.patch(`/projectmembers/${projectId}/members/${targetUserId}/role`,{role})
+}

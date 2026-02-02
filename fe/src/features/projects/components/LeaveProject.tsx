@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useLeave } from "../../members/hooks/useLeave";
 import { LogOut } from "lucide-react";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
+import { useProjectRole } from "../hooks/useProjectRole";
+import { useProjectMembers } from "../hooks/useProjectMembers";
+import { toast } from "react-hot-toast";
+import { useAuth } from "../../auth/hooks/useAuth";
 
 interface LeaveProjectProps {
     projectId:string;
@@ -11,9 +15,17 @@ export function LeaveProject({
     projectId
 }:LeaveProjectProps){
     const {mutate}= useLeave(projectId);
-    const [open,setOpen] = useState(false)
-
+    const [open,setOpen] = useState(false);
+    const { data: membersRes, refetch: refetchMembers } = useProjectMembers(projectId);
+    const members = membersRes?.data ?? [];
+    const {user} = useAuth();
+    const {isOwner} = useProjectRole(members, user?.id);
+          
     const handleConfirm = () =>{
+        if (isOwner) {
+            toast.error("Bạn là Owner. Hãy chuyển quyền Owner trước khi rời project.");
+            return;
+        }
         mutate(projectId);
         setOpen(false);
         window.location.href = "/";
