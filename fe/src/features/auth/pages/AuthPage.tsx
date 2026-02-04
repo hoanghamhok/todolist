@@ -43,6 +43,9 @@ const AuthPage = () => {
       setError(err?.message || 'Có lỗi xảy ra');
     }
   };
+  const loginWithGoogle = () => {
+    window.location.href = 'http://localhost:4000/auth/google';
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br flex items-center justify-center p-4">
@@ -145,7 +148,7 @@ const AuthPage = () => {
 
           {/* Google Login */}
           <button
-            onClick={handleSubmit}
+            onClick={loginWithGoogle}
             className="w-full flex items-center justify-center gap-3 border py-3 rounded-lg hover:bg-gray-50"
           >
             <FcGoogle className="text-2xl" />

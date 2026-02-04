@@ -44,6 +44,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }
  };
 
+  const loginWithToken = async (accessToken: string) => {
+    setToken(accessToken);
+    localStorage.setItem('token', accessToken);
+    await fetchProfile();
+  };
+
   const register = async (data: RegisterRequest):Promise<RegisterResult> => {
   setLoading(true);
   try {
@@ -63,11 +69,12 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setToken(null);
     setUser(null);
     localStorage.removeItem('token');
+    localStorage.removeItem('access_token');
     window.location.href = "/";
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, logout,login,register }}>
+    <AuthContext.Provider value={{ user, token, loading, logout,login,loginWithToken,register }}>
       {children}
     </AuthContext.Provider>
   );

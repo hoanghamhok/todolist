@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Request,Patch,Body} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './user.service';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
@@ -6,7 +6,7 @@ import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 @ApiTags('Users')
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService) { }
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
@@ -30,5 +30,11 @@ export class UsersController {
     return this.usersService.getUserById(id);
   }
 
-  
+
+  @Patch(':id/role')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async updateUserRole(@Param('id') id: string, @Body('role') role: any) { // Using any for simplicity, but should be SystemRole
+    return this.usersService.updateUserRole(id, role);
+  }
 }

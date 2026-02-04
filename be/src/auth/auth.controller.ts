@@ -1,5 +1,6 @@
-import { Controller, Post, Body} from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards,Request,Response } from '@nestjs/common';
 import { ApiTags,ApiBody,ApiOkResponse,ApiCreatedResponse } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -39,7 +40,7 @@ export class AuthController {
   async forgot(@Body() data:ForgotPasswordDto) {
     await this.authService.forgotPassword(data.email);
     return {
-      message:"Vui long kiem tra thu duoc gui den tai khoan email cua ban"
+      message:"Check a message sent to your email"
     }
   }
 
@@ -48,7 +49,23 @@ export class AuthController {
   async reset(@Body() data:ResetPasswordDto) {
    await this.authService.resetPassword(data.token,data.password);
    return {
-    message:"Dat lai mat khau thanh cong"
+    message:"Reset password successful"
    }
   }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Request() req, @Response() res) {
+    const { accessToken } = await this.authService.loginWithGoogle(req.user);
+
+    res.redirect(
+      `http://localhost:5173/auth/google/callback?token=${accessToken}`,
+    );
+  }
+
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth() {
+  }
+  
 }

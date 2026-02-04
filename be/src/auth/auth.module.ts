@@ -7,6 +7,7 @@ import { AuthController } from './auth.controller';
 import { UsersModule } from '../user/user.module';
 import { JwtStrategy } from './guard/jwt.strategy';
 import { MailModule } from 'src/mail/mail.module';
+import { GoogleStrategy } from './guard/google.strategy';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { MailModule } from 'src/mail/mail.module';
       inject: [ConfigService],
     }),
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy,GoogleStrategy],
   controllers: [AuthController],
   exports: [AuthService, JwtStrategy],
 })

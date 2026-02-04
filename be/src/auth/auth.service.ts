@@ -5,6 +5,7 @@ import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MailService } from 'src/mail/mail.service';
+import { AuthProvider } from '@prisma/client';
 
 
 @Injectable()
@@ -31,10 +32,10 @@ export class AuthService {
         if (!user) {
             throw new UnauthorizedException('Invalid credentials');
         }
-        if (!user.password) {
-        throw new UnauthorizedException('Invalid credentials');
+        if (user.provider !== 'LOCAL') {
+            throw new UnauthorizedException('ACCOUNT_LOGIN_WITH_GOOGLE');
         }
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await bcrypt.compare(password, user.password!);//user local bắt buộc có pasword => user.pw !== null
         if (!isPasswordValid) {
             throw new UnauthorizedException('Invalid credentials');
         }
@@ -101,5 +102,38 @@ export class AuthService {
                 resetPasswordToken:null,
             }
         })
+    }
+
+
+    async loginWithGoogle(googleUser: {email: string;googleId: string;provider: AuthProvider;username: string;}) {
+        let user = await this.prisma.user.findUnique({
+            where: { email: googleUser.email },
+        });
+
+        if (!user) {
+            user = await this.prisma.user.create({
+            data: {
+                email: googleUser.email,
+                username: googleUser.username,
+                provider: AuthProvider.GOOGLE,
+                googleId: googleUser.googleId,
+                password: null,
+            },
+            });
+        }
+
+        if (user.provider !== AuthProvider.GOOGLE) {
+            throw new UnauthorizedException(
+            'ACCOUNT_REGISTERED_WITH_PASSWORD',
+            );
+        }
+
+        const publicUser = await this.usersService.getUserById(user.id);
+        const accessToken = await this.jwtService.signAsync({ 
+            sub: user.id, 
+            role: user.role 
+        });
+        
+        return { user: publicUser, accessToken };
     }
 }

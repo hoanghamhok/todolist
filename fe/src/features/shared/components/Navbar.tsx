@@ -154,13 +154,21 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
                     to="/profile"
                     className="block px-4 py-2 hover:bg-gray-100"
                   >
-                    Hồ sơ
+                    Profile
                   </Link>
+                  {user.role == "SUPER_ADMIN" && (
+                    <Link
+                      to="/admin"
+                      className="block px-4 py-2 hover:bg-gray-100"  
+                    >
+                      Admin
+                    </Link>
+                  )}
                   <button
                     onClick={logout}
                     className="w-full text-left px-4 py-2 text-red-500 hover:bg-red-50"
                   >
-                    Đăng xuất
+                    Logout
                   </button>
                 </div>
               )}

@@ -22,6 +22,7 @@ export class UsersService {
                 username,
                 password: hash,
                 role: 'USER',
+                provider:'LOCAL'
             },
         });
     }
@@ -50,7 +51,14 @@ export class UsersService {
     }
 
     async findAllUsers(){
-        return this.prisma.user.findMany({select:{id:true,email:true,role:true,createdAt:true}});
+        return this.prisma.user.findMany({select:{id:true,email:true,role:true,createdAt:true,username:true}});
+    }
+
+    async updateUserRole(id:string, role: SystemRole){
+        return this.prisma.user.update({
+            where:{id},
+            data:{role}
+        })
     }
 
     async createAdmin(email: string, password: string,username:string) {
