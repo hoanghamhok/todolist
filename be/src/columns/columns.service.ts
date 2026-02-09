@@ -7,6 +7,14 @@ import { UpdateColumnDto } from "./dto/update-column.dto";
 export class ColumnsService {
   constructor(private prisma: PrismaService) {}
 
+  async getAll() {
+    return this.prisma.column.findMany({
+        orderBy: [
+          { position: 'asc' },
+        ],
+      });
+    }
+
   async getByProject(projectId: string) {
     return this.prisma.column.findMany({
       where: {

@@ -1,11 +1,11 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { MailService } from 'src/mail/mail.service';
-import { AuthProvider } from '@prisma/client';
+import { AuthProvider, SystemRole } from '@prisma/client';
 
 
 @Injectable()
@@ -135,5 +135,38 @@ export class AuthService {
         });
         
         return { user: publicUser, accessToken };
+    }
+
+    async deleteUser(targetUserId: string, currentUserId: string) {
+        const currentUser = await this.prisma.user.findUnique({
+            where: { id: currentUserId },
+            select: { role: true },
+        });
+
+        if (!currentUser || currentUser.role !== SystemRole.SUPER_ADMIN) {
+            throw new ForbiddenException('Only SUPER_ADMIN can delete users');
+        }
+        if (currentUserId === targetUserId) {
+            throw new ForbiddenException('SUPER_ADMIN cannot delete himself');
+        }
+        const targetUser = await this.prisma.user.findUnique({
+            where: { id: targetUserId },
+        });
+
+        if (!targetUser) {
+            throw new NotFoundException('User not found');
+        }
+
+        const ownedProjects = await this.prisma.project.count({
+            where: { ownerId: targetUserId },
+        });
+
+        if (ownedProjects > 0) {
+            throw new BadRequestException('Cannot delete user who owns projects');
+        }   
+        
+        return this.prisma.user.delete({
+            where: { id: targetUserId },
+        });
     }
 }

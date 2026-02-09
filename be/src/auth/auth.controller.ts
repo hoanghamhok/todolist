@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards,Request,Response } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards,Request,Response, Delete, Param } from '@nestjs/common';
 import { ApiTags,ApiBody,ApiOkResponse,ApiCreatedResponse } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
@@ -9,6 +9,8 @@ import { ForgotPasswordDto } from 'src/mail/dto/forgotpassword.dto';
 import { ResetPasswordDto } from 'src/mail/dto/resetpassword.dto';
 import { ForgotPassWordResponseDto } from './dto/fw-response.dto';
 import { ResetPassWordResponseDto } from './dto/rs-response.dto';
+import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -66,6 +68,13 @@ export class AuthController {
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleAuth() {
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @Delete('DeleteUser/:targetUserId')
+  async DeleteUser( @Param('targetUserId') targetUserId: string,@Request() req){
+    return this.authService.deleteUser(targetUserId,req.user.userId);
   }
   
 }

@@ -9,6 +9,11 @@ import { UpdateColumnDto } from "./dto/update-column.dto";
 export class ColumnsController {
   constructor(private readonly columnsService: ColumnsService) {}
 
+  @Get('all')
+  async getTask(){
+    return this.columnsService.getAll();
+  }
+
   @Get("project/:projectId")
   getByProject(@Param("projectId") projectId: string) {
     return this.columnsService.getByProject(projectId);

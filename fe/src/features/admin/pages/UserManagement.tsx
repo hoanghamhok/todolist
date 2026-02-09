@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getAllUsers, updateUserRole } from "../admin";
+import { deleteUser, getAllUsers, updateUserRole } from "../admin";
 import { MoreHorizontal, Shield, User as UserIcon } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -22,11 +22,113 @@ export const UserManagement = () => {
         },
     });
 
-    const handleRoleChange = (userId: string, currentRole: string) => {
+    const deleteUserMutation = useMutation({
+        mutationFn: deleteUser,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin", "users"] });
+            toast.success("User deleted successfully");
+        },
+        onError: () => {
+            toast.error("Failed to delete user");
+        },
+    });
+
+    const handleRoleChange = (userId: string, currentRole: "USER" | "SUPER_ADMIN", username?: string) => {
         const newRole = currentRole === "USER" ? "SUPER_ADMIN" : "USER";
-        if (window.confirm(`Are you sure you want to change this user's role to ${newRole}?`)) {
-            updateRoleMutation.mutate({ userId, role: newRole });
-        }
+
+        toast((t) => (
+            <div className="flex flex-col gap-3">
+            <p className="text-sm font-semibold text-gray-900">
+                Change user role?
+            </p>
+
+            <p className="text-xs text-gray-600">
+                {username ? (
+                <>
+                    Change role of <b>{username}</b> to <b>{newRole}</b>?
+                </>
+                ) : (
+                <>Change role to <b>{newRole}</b>?</>
+                )}
+            </p>
+
+            {newRole === "SUPER_ADMIN" && (
+                <p className="text-xs text-red-600">
+                This user will gain full administrative access.
+                </p>
+            )}
+
+            <div className="flex justify-end gap-2 mt-2">
+                <button
+                onClick={() => toast.dismiss(t.id)}
+                className="px-3 py-1.5 text-xs bg-gray-200 rounded"
+                >
+                Cancel
+                </button>
+
+                <button
+                onClick={() => {
+                    updateRoleMutation.mutate({ userId, role: newRole });
+                    toast.dismiss(t.id);
+                }}
+                className={`px-3 py-1.5 text-xs text-white rounded ${
+                    newRole === "SUPER_ADMIN" ? "bg-red-600" : "bg-blue-600"
+                }`}
+                >
+                Confirm
+                </button>
+            </div>
+            </div>
+        ), {
+            duration: Infinity,
+        });
+    };
+
+    const handleDeleteUser = (userId: string, username?: string, email?: string) => {
+        toast((t) => (
+            <div className="flex flex-col gap-3">
+            <p className="text-sm font-semibold text-gray-900">
+                Delete user account?
+            </p>
+
+            <p className="text-xs text-gray-600">
+                {username ? (
+                <>
+                    You are about to delete <b>{username}</b>
+                    {email && <> ({email})</>}
+                </>
+                ) : (
+                <>You are about to delete this user.</>
+                )}
+            </p>
+
+            <p className="text-xs text-red-600">
+                This action cannot be undone. All related data may be removed.
+            </p>
+
+            <div className="flex justify-end gap-2 mt-2">
+                <button
+                onClick={() => toast.dismiss(t.id)}
+                className="px-3 py-1.5 text-xs bg-gray-200 rounded"
+                >
+                Cancel
+                </button>
+
+                <button
+                onClick={() => {
+                    deleteUserMutation.mutate(userId);
+                    toast.dismiss(t.id);
+                }}
+                className="px-3 py-1.5 text-xs bg-red-600 text-white rounded"
+                disabled={deleteUserMutation.isPending}
+                >
+                Delete
+                </button>
+            </div>
+            </div>
+        ), {
+            duration: Infinity,
+        });
     };
 
     if (isLoading) return <div className="p-8">Loading users...</div>;
@@ -79,11 +181,21 @@ export const UserManagement = () => {
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <button
-                                        onClick={() => handleRoleChange(user.id, user.role)}
-                                        className="text-gray-400 hover:text-blue-600 transition-colors p-2 rounded-lg hover:bg-blue-50"
-                                        title="Change Role"
+                                        onClick={() =>
+                                        handleRoleChange(user.id, user.role, user.username)
+                                        }
+                                        className="w-full text-left px-4 py-2 text-sm hover:bg-gray-50"
                                     >
-                                        <MoreHorizontal size={20} />
+                                        Change role
+                                    </button>
+
+                                    <button
+                                        onClick={() =>
+                                        handleDeleteUser(user.id, user.username, user.email)
+                                        }
+                                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                    >
+                                        Delete user
                                     </button>
                                 </td>
                             </tr>

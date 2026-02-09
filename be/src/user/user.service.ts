@@ -1,5 +1,5 @@
 import { SystemRole } from './../../node_modules/.prisma/client/index.d';
-import { Injectable,ConflictException } from '@nestjs/common';
+import { Injectable, ConflictException, Delete } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 @Injectable()

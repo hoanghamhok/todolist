@@ -95,9 +95,35 @@ export class TasksService{
     async getAll() {
         return this.prisma.task.findMany({
             orderBy: [
+            { projectId: 'asc' },
             { columnId: 'asc' },
             { position: 'asc' },
             ],
+            include: {
+            project: {
+                select: {
+                id: true,
+                name: true,
+                },
+            },
+            column: {
+                select: {
+                id: true,
+                title: true,
+                },
+            },
+            assignees: {
+                include: {
+                user: {
+                    select: {
+                    id: true,
+                    username: true,
+                    email: true,
+                    },
+                },
+                },
+            },
+            },
         });
     }
     //note:di chuyển task vào cột DONE->set close:true->set completedAt=Date

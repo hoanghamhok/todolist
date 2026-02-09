@@ -31,7 +31,7 @@ function App() {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/users" element={<UserManagement />} />
           </Route>
-          </Route>
+        </Route>
       </Routes>
     </>
   );
