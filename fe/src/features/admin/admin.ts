@@ -15,7 +15,9 @@ export interface Project {
     description: string;
     owner: User;
     created_at: string;
+    updated_at: string;
     members: any[];
+    ownerId: string;
 }
 
 export interface Task {
@@ -28,6 +30,11 @@ export interface Task {
     assignees: any[];
     column:Column;
     project:Project;
+    position:number;
+    updateAt?:string;
+    dueDate?: string;
+    completedAt?: string;
+    assigneeIds: string[];
 }
 
 export const getAllUsers = async (): Promise<User[]> => {

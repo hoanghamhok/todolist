@@ -1,6 +1,10 @@
 import type { Task } from "../types";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import timezone from 'dayjs/plugin/timezone';
+
 
 interface TaskCardProps {
   task: Task;
@@ -64,6 +68,9 @@ export function TaskCard({
   const getMemberName = (member: any) =>
     member.user?.username || member.name || "Unknown";
 
+  dayjs.extend(utc);
+  dayjs.extend(timezone);
+  const dueDatetoString = dayjs(task.dueDate).tz('Asia/Ho_Chi_Minh').format('DD/MM/YYYY HH:mm:ss');
   return (
     <div
       ref={setNodeRef}
@@ -74,13 +81,14 @@ export function TaskCard({
       }`}
     >
       <div {...attributes} {...listeners}>
-        <div className="font-medium text-sm mb-2">{task.title}</div>
-
+        <div className="text-sm font-medium text-gray-900">{task.title}</div>
+        
         {task.description && (
           <p className="text-xs text-gray-600 mb-2 line-clamp-2">
             {task.description}
           </p>
         )}
+        <div className="text-xs text-gray-500 italic">{task.dueDate ? dueDatetoString : ""}</div>
       </div>
 
       <div className="flex justify-between items-end">

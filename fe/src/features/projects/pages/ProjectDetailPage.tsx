@@ -55,7 +55,7 @@ export default function ProjectDetailPage() {
   // Check role current user
   const members = membersRes?.data ?? [];
 
-  const { isAdmin } = useProjectRole(members, user?.id);
+  const { isAdmin, canSetOwner } =useProjectRole(members, user ?? undefined);
 
   const handleDeleteConfirm = async () => {
     if (!deleteTarget) return;
@@ -116,11 +116,13 @@ export default function ProjectDetailPage() {
         </div>
 
         <div className="flex items-center gap-3 ml-auto">
-          <MembersAvatar 
+          <MembersAvatar
             projectId={projectId}
             isAdmin={isAdmin}
+            canSetOwner={canSetOwner}
             onInviteClick={() => setIsInviteModalOpen(true)}
           />
+
           <LeaveProject projectId={projectId} />
         </div>
       </header>

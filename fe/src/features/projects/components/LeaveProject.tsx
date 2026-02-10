@@ -19,7 +19,7 @@ export function LeaveProject({
     const { data: membersRes, refetch: refetchMembers } = useProjectMembers(projectId);
     const members = membersRes?.data ?? [];
     const {user} = useAuth();
-    const {isOwner} = useProjectRole(members, user?.id);
+    const { isOwner } = useProjectRole(members, user ?? undefined);
           
     const handleConfirm = () =>{
         if (isOwner) {

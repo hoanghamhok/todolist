@@ -2,8 +2,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllProjects, deleteProject } from "../admin";
 import { Folder, Trash2, Users } from "lucide-react";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 export const ProjectManagement = () => {
+    const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { data: projects, isLoading, error } = useQuery({
         queryKey: ["admin", "projects"],
@@ -79,8 +81,8 @@ export const ProjectManagement = () => {
                     </thead>
                     <tbody className="divide-y divide-gray-100">
                         {projects?.map((project) => (
-                            <tr key={project.id} className="hover:bg-gray-50/50 transition-colors">
-                                <td className="px-6 py-4">
+                            <tr key={project.id} className="hover:bg-gray-50/50 transition-colors"  onClick={() => navigate(`/projects/${project.id}`)} >
+                                <td className="px-6 py-4" >
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center text-orange-600">
                                             <Folder size={20} />
@@ -106,7 +108,10 @@ export const ProjectManagement = () => {
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <button
-                                        onClick={() => handleDelete(project.id)}
+                                    
+                                        onClick={(e) => {
+                                            e.stopPropagation(); 
+                                            handleDelete(project.id)}}
                                         className="text-gray-400 hover:text-red-600 transition-colors p-2 rounded-lg hover:bg-red-50"
                                         title="Delete Project"
                                     >

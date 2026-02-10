@@ -14,6 +14,8 @@ export interface Project {
 
 export type ProjectRole = "OWNER" | "ADMIN" | "MEMBER";
 
+export type SystemRole = "SUPER_ADMIN" | "USER";
+
 export interface ProjectMember {
   id: string;
   projectId: string;

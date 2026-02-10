@@ -7,12 +7,14 @@ import { ConfirmModal } from "../../shared/components/ModalConfirm";
 interface MembersAvatarProps {
   projectId: string;
   isAdmin: boolean;
+  canSetOwner: boolean;
   onInviteClick: () => void;
 }
 
 export function MembersAvatar({
   projectId,
   isAdmin,
+  canSetOwner,
   onInviteClick,
 }: MembersAvatarProps) {
   const { data: membersRes, isLoading } = useProjectMembers(projectId);
@@ -22,7 +24,9 @@ export function MembersAvatar({
 
   const [selectedMember, setSelectedMember] = useState<any>(null);
   const [showMenuFor, setShowMenuFor] = useState<string | null>(null);
-  const [confirmAction, setConfirmAction] = useState<"ADMIN" | "REMOVE_ADMIN" | "KICK" | null>(null);
+  const [confirmAction, setConfirmAction] = useState<
+    "ADMIN" | "REMOVE_ADMIN" | "OWNER" | "KICK" | null
+  >(null);
 
   const {
     removeMember,
@@ -83,6 +87,13 @@ export function MembersAvatar({
       });
     }
 
+    if (confirmAction === "OWNER") {
+      setRole({
+        targetUserId: selectedMember.user?.id,
+        role: "OWNER",
+      });
+    }
+
     setConfirmAction(null);
     setSelectedMember(null);
   };
@@ -115,15 +126,20 @@ export function MembersAvatar({
             >
               {getInitials(username)}
 
-              <div className="hidden group-hover:block absolute bottom-full left-1/2
+              <div
+                className="hidden group-hover:block absolute bottom-full left-1/2
                 -translate-x-1/2 mb-2 bg-gray-900 text-white text-xs
-                py-1 px-2 rounded whitespace-nowrap z-10">
+                py-1 px-2 rounded whitespace-nowrap z-10"
+              >
                 {username} ({member.role})
               </div>
 
               {isAdmin && showMenuFor === member.id && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2
-                  bg-white shadow-lg border rounded-md text-xs z-20 w-40">
+                <div
+                  className="absolute top-full left-1/2 -translate-x-1/2 mt-2
+                  bg-white shadow-lg border rounded-md text-xs z-20 w-44"
+                >
+                  {/* Set Admin */}
                   {member.role !== "ADMIN" && member.role !== "OWNER" && (
                     <button
                       onClick={() => {
@@ -145,6 +161,18 @@ export function MembersAvatar({
                       className="w-full text-left px-3 py-2 hover:bg-gray-100 text-black"
                     >
                       Remove Admin
+                    </button>
+                  )}
+
+                  {canSetOwner && member.role !== "OWNER" && (
+                    <button
+                      onClick={() => {
+                        setConfirmAction("OWNER");
+                        setShowMenuFor(null);
+                      }}
+                      className="w-full text-left px-3 py-2 hover:bg-gray-100 text-black font-medium"
+                    >
+                      Set as Owner
                     </button>
                   )}
 
@@ -183,25 +211,33 @@ export function MembersAvatar({
               ? "Kick member"
               : confirmAction === "ADMIN"
               ? "Set Admin"
-              : "Remove Admin"
+              : confirmAction === "REMOVE_ADMIN"
+              ? "Remove Admin"
+              : "Set Owner"
           }
           description={
             confirmAction === "KICK"
-              ? `Bạn có chắc muốn kick ${selectedMember.user?.username || selectedMember.username}?`
+              ? `Bạn có chắc muốn kick ${
+                  selectedMember.user?.username ||
+                  selectedMember.username
+                }?`
               : confirmAction === "ADMIN"
-              ? `Bạn có chắc muốn set ${selectedMember.user?.username || selectedMember.username} làm Admin?`
-              : `Bạn có chắc muốn gỡ quyền Admin của ${selectedMember.user?.username || selectedMember.username}?`
+              ? `Bạn có chắc muốn set ${
+                  selectedMember.user?.username ||
+                  selectedMember.username
+                } làm Admin?`
+              : confirmAction === "REMOVE_ADMIN"
+              ? `Bạn có chắc muốn gỡ quyền Admin của ${
+                  selectedMember.user?.username ||
+                  selectedMember.username
+                }?`
+              : `Bạn có chắc muốn chuyển quyền OWNER cho ${
+                  selectedMember.user?.username ||
+                  selectedMember.username
+                }?`
           }
           onCancel={() => {
-            console.log(" onCancel được gọi!");
-            console.log("isConfirmLoading:", isConfirmLoading);
-            
-            if (isConfirmLoading) {
-              console.log("Đang loading, không đóng modal");
-              return;
-            }
-            
-            console.log("✅ Đóng modal");
+            if (isConfirmLoading) return;
             setConfirmAction(null);
             setSelectedMember(null);
           }}
@@ -212,7 +248,8 @@ export function MembersAvatar({
 
       {(isRemoveError || isSetRoleError) && (
         <p className="text-xs text-red-500 mt-2">
-          {(removeError || setRoleError)?.message || "Có lỗi xảy ra"}
+          {(removeError || setRoleError)?.message ||
+            "Có lỗi xảy ra"}
         </p>
       )}
     </div>
