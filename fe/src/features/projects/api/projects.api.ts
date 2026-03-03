@@ -11,7 +11,7 @@ export const getUserProjects = () =>
   api.get(`/projects/my`);
 
 export const getProjectDetails = (projectId: string) =>
-  api.get(`/projects/details/${projectId}`);
+  api.get(`/projects/${projectId}`);
 
 export const removeProject = (projectId: string) =>
   api.delete(`/projects/remove/${projectId}`);

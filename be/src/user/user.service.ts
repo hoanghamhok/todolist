@@ -6,7 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 export class UsersService {
     constructor(private prisma: PrismaService) {}
 
-    async createUser(email: string, password: string,username:string) {
+    async createUser(email: string, password: string,username:string,fullname:string) {
         const existemail = await this.prisma.user.findUnique({ where: { email } });
         const existusername = await this.prisma.user.findUnique({ where: { username } });
         if (existemail) {
@@ -20,6 +20,7 @@ export class UsersService {
             data: {
                 email,
                 username,
+                fullName: fullname,
                 password: hash,
                 role: 'USER',
                 provider:'LOCAL'
@@ -61,7 +62,7 @@ export class UsersService {
         })
     }
 
-    async createAdmin(email: string, password: string,username:string) {
+    async createAdmin(email: string, password: string,username:string,fullname:string) {
         const existemail = await this.prisma.user.findUnique({ where: { email } });
         const existusername = await this.prisma.user.findUnique({ where: { username } });
         if (existemail) {
@@ -73,6 +74,7 @@ export class UsersService {
         const hash = await bcrypt.hash(password, 10);
         return this.prisma.user.create({
             data: {
+                fullName: fullname,
                 email,
                 password: hash,
                 username: username,

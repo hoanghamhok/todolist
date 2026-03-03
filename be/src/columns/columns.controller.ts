@@ -9,7 +9,7 @@ import { UpdateColumnDto } from "./dto/update-column.dto";
 export class ColumnsController {
   constructor(private readonly columnsService: ColumnsService) {}
 
-  @Get('all')
+  @Get('')
   async getTask(){
     return this.columnsService.getAll();
   }
@@ -19,14 +19,13 @@ export class ColumnsController {
     return this.columnsService.getByProject(projectId);
   }
 
-  @Post()
+  @Post("project/:projectId")
   create(@Body() dto: CreateColumnDto) {
     return this.columnsService.create(dto);
   }
 
   @Patch(":id")
   update(@Param("id") id: string,@Body() dto: UpdateColumnDto,) {
-    // If closed is being set to true, call close method for validation
     if (dto.closed === true) {
       return this.columnsService.close(id);
     }

@@ -21,7 +21,7 @@ export class AuthController {
   @ApiCreatedResponse({type: AuthResponseDto,})
   @ApiBody({ type: RegisterDto })
   async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto.email, registerDto.password,registerDto.username);
+    return this.authService.register(registerDto.email, registerDto.password,registerDto.username,registerDto.fullname);
   }
 
   @Post('login')
@@ -34,7 +34,7 @@ export class AuthController {
   @Post('register-admin')
   @ApiCreatedResponse({type: AuthResponseDto})
   async registerAdmin(@Body()  registerDto: RegisterDto) {
-    return this.authService.registerAdmin(registerDto.email, registerDto.password,registerDto.username);
+    return this.authService.registerAdmin(registerDto.email, registerDto.password,registerDto.username,registerDto.fullname);
   }
 
   @Post('forgot-password')
@@ -72,7 +72,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @Delete('DeleteUser/:targetUserId')
+  @Delete('users/:id')
   async DeleteUser( @Param('targetUserId') targetUserId: string,@Request() req){
     return this.authService.deleteUser(targetUserId,req.user.userId);
   }

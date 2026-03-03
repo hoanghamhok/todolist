@@ -10,12 +10,12 @@ import { MoveTaskDto } from './dto/move-task.dto';
 export class TasksController{
     constructor(private tasksService:TasksService){}
     
-    @Get('all')
+    @Get('')
     async getTask(){
         return this.tasksService.getAll();
     }
 
-    @Post('create')
+    @Post('')
     create(@Body() createTaskDto:CreateTaskDto){
         return this.tasksService.create(createTaskDto);
     }

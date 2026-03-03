@@ -33,28 +33,28 @@ export class ProjectsController {
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
-    @Post('create')
+    @Post('')
     async createProject(@Body() data: CreateProjectDto) {
         return this.projectsService.createProject(data);
     }
 
-    @UseGuards(JwtAuthGuard)
-    @ApiBearerAuth()
-    @Get('details/:projectId')
-    async getProjectDetails(@Param('projectId') projectId: string) {
-        return this.projectsService.getProjectDetails(projectId);
-    }
+    // @UseGuards(JwtAuthGuard)
+    // @ApiBearerAuth()
+    // @Get('details/:projectId')
+    // async getProjectDetails(@Param('projectId') projectId: string) {
+    //     return this.projectsService.getProjectDetails(projectId);
+    // }
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
-    @Patch(':projectId/update')
+    @Patch(':id/update')
     async updateProject(@Param('projectId') projectId: string, @Request() req, @Body() dto: UpdateProjectDto) {
         return this.projectsService.updateProject(projectId, req.user.userId, dto)
     }
 
     @UseGuards(JwtAuthGuard)
     @ApiBearerAuth()
-    @Delete('remove/:projectId')
+    @Delete('/:id')
     async deleteProject(@Param('projectId') projectId: string, @Request() req) {
         return this.projectsService.deleteProject(projectId, req.user.userId);
     }

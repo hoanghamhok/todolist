@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum SystemRole {
@@ -31,6 +32,8 @@ enum AuthProvider {
 model User {
   id                   String          @id @default(cuid())
   username             String          @unique
+  fullName             String
+  avatarUrl            String?
   email                String          @unique
   password             String?
   provider             AuthProvider    @default(LOCAL)
@@ -44,6 +47,10 @@ model User {
   invitation           Invitation[]
   notifitcation        Notification[]
   taskAssignees        TaskAssignee[]
+  activityLogs         ActivityLog[]
+  taskTimeLogs         TaskTimeLog[]
+  commentmentions      CommentMention[]
+  comments             Comment[]
 }
 
 model Project {
@@ -104,6 +111,8 @@ model Task {
   columnId    String
   column      Column         @relation(fields: [columnId], references: [id], onDelete: Cascade)
   assignees   TaskAssignee[]
+  comments    Comment[]
+  taskTimeLogs TaskTimeLog[]
   created_at  DateTime       @default(now())
   updated_at  DateTime       @updatedAt
   completedAt DateTime?
@@ -149,4 +158,66 @@ model Notification {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, read])
+}
+
+//DATN
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  taskId    String
+  authorId  String
+
+  parentId  String?
+  parent    Comment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentThread")
+  mentions CommentMention[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  task   Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([authorId])
+  @@index([parentId])
+}
+
+model CommentMention {
+  commentId String
+  userId    String
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([commentId, userId])
+  @@index([userId])
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  userId     String
+  projectId  String
+  entityId   String
+  entityType String
+  action     String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  
+  @@index([projectId])
+  @@index([entityId])
+}
+
+model TaskTimeLog {
+  id        String   @id @default(cuid())
+  taskId    String   
+  userId    String
+  hours     Float
+  createdAt DateTime @default(now())
+
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id])
 }

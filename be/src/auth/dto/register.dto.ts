@@ -21,6 +21,15 @@ export class RegisterDto {
   username: string;
 
   @ApiProperty({ 
+    example: 'Hoang Minh',
+    description: 'User full name',
+    required: false
+  })
+  @IsNotEmpty()
+  @IsString()
+  fullname: string;
+
+  @ApiProperty({ 
     example: 'password123',
     description: 'User password',
     minLength: 6,

@@ -17,8 +17,8 @@ export class AuthService {
         private mailService:MailService
     ) {}
 
-    async register(email: string, password: string,username:string) {
-        const user = await this.usersService.createUser(email, password,username);
+    async register(email: string, password: string,username:string,fullname:string) {
+        const user = await this.usersService.createUser(email, password,username,fullname);
         const accessToken = await this.jwtService.signAsync({ 
             sub: user.id, 
             role: user.role 
@@ -49,8 +49,8 @@ export class AuthService {
         return { user: publicUser, accessToken };
     }
 
-    async registerAdmin(email: string, password: string,username:string) {
-        const user = await this.usersService.createAdmin(email, password,username);
+    async registerAdmin(email: string, password: string,username:string,fullname:string) {
+        const user = await this.usersService.createAdmin(email, password,username,fullname);
         const accessToken = await this.jwtService.signAsync({
             sub: user.id,
             role: user.role,
@@ -114,6 +114,7 @@ export class AuthService {
             user = await this.prisma.user.create({
             data: {
                 email: googleUser.email,
+                fullName: googleUser.username,
                 username: googleUser.username,
                 provider: AuthProvider.GOOGLE,
                 googleId: googleUser.googleId,

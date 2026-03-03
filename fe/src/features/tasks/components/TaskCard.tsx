@@ -20,6 +20,7 @@ interface TaskCardProps {
   }>;
   onEdit: () => void;
   onDelete: () => void;
+  onOpenDetail: (task: Task) => void;
 }
 
 export function TaskCard({
@@ -76,6 +77,7 @@ export function TaskCard({
       ref={setNodeRef}
       style={style}
       data-taskid={task.id}
+      onClick={() => onOpenDetail(task)}
       className={`bg-white p-2.5 rounded-2xl shadow-sm hover:shadow transition flex flex-col justify-between group cursor-grab active:cursor-grabbing ${
         isDragging ? "opacity-50 ring-2 ring-blue-500" : ""
       }`}
