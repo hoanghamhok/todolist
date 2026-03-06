@@ -16,6 +16,7 @@ import { NotificationsService } from './notifications/notifications.service';
 import { NotificationsModule } from './notifications/notifications.module';
 import { CommentsModule } from './comment/comment.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { AiModule } from './ai/ai.module';
 
 @Module({
   imports: [
@@ -32,7 +33,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     require('./invites/invites.module').InvitesModule,
     MailModule,
     NotificationsModule,
-    CommentsModule
+    CommentsModule,AiModule
   ],
   controllers: [NotificationsController],
   providers: [AppService, NotificationsService],

@@ -2,12 +2,14 @@ import { Injectable,NotFoundException,ConflictException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CreateTaskDto } from "./dto/create-task.dto";
 import { UpdateTaskDto } from "./dto/update-task.dto";
+import { ActivityLogService } from "src/activity-log/activity-log.service";
 
 
 @Injectable()
 
 export class TasksService{
-    constructor(private prisma:PrismaService){}
+    constructor(private prisma:PrismaService,
+                private activitylogservice:ActivityLogService){}
     
     async getTaskByID(id:string){
         const task = await this.prisma.task.findUnique({where:{id}})
@@ -127,14 +129,8 @@ export class TasksService{
         });
     }
     //note:di chuyển task vào cột DONE->set close:true->set completedAt=Date
-    async moveTask(
-        taskId: string,
-        columnId: string,
-        beforeTaskId?: string,
-        afterTaskId?: string,
-        ) {
+    async moveTask(taskId: string,columnId: string,beforeTaskId?: string,afterTaskId?: string,) {
         const GAP = 1000;
-        console.log('moveTask called:', {taskId, columnId, beforeTaskId, afterTaskId});
 
         await this.getTaskByID(taskId);
 
@@ -236,6 +232,123 @@ export class TasksService{
             },
         });
     }
+//     async moveTask(
+//   taskId: string,
+//   columnId: string,
+//   userId: string,
+//   beforeTaskId?: string,
+//   afterTaskId?: string,
+// ) {
+//   const GAP = 1000;
+
+//   return this.prisma.$transaction(async (tx) => {
+
+//     const task = await tx.task.findUnique({
+//       where: { id: taskId },
+//     });
+
+//     if (!task) {
+//       throw new Error("Task not found");
+//     }
+
+//     const targetColumn = await tx.column.findUnique({
+//       where: { id: columnId },
+//     });
+
+//     let newPosition: number;
+
+//     if (beforeTaskId && afterTaskId) {
+//       const beforeTask = await tx.task.findUnique({
+//         where: { id: beforeTaskId },
+//       });
+
+//       const afterTask = await tx.task.findUnique({
+//         where: { id: afterTaskId },
+//       });
+
+//       if (!beforeTask || !afterTask) {
+//         throw new Error("Before or After task not found");
+//       }
+
+//       newPosition = (beforeTask.position + afterTask.position) / 2;
+//     }
+
+//     else if (beforeTaskId) {
+//       const beforeTask = await tx.task.findUnique({
+//         where: { id: beforeTaskId },
+//       });
+
+//       if (!beforeTask) throw new Error("Before task not found");
+
+//       const prevTask = await tx.task.findFirst({
+//         where: {
+//           columnId,
+//           position: { lt: beforeTask.position },
+//         },
+//         orderBy: { position: "desc" },
+//       });
+
+//       newPosition = prevTask
+//         ? (prevTask.position + beforeTask.position) / 2
+//         : beforeTask.position - GAP;
+//     }
+
+//     else if (afterTaskId) {
+//       const afterTask = await tx.task.findUnique({
+//         where: { id: afterTaskId },
+//       });
+
+//       if (!afterTask) throw new Error("After task not found");
+
+//       const nextTask = await tx.task.findFirst({
+//         where: {
+//           columnId,
+//           position: { gt: afterTask.position },
+//         },
+//         orderBy: { position: "asc" },
+//       });
+
+//       newPosition = nextTask
+//         ? (afterTask.position + nextTask.position) / 2
+//         : afterTask.position + GAP;
+//     }
+
+//     else {
+//       const lastTask = await tx.task.findFirst({
+//         where: { columnId },
+//         orderBy: { position: "desc" },
+//       });
+
+//       newPosition = lastTask ? lastTask.position + GAP : GAP;
+//     }
+
+//     const updated = await tx.task.update({
+//       where: { id: taskId },
+//       data: {
+//         columnId,
+//         position: newPosition,
+//         updated_at: new Date(),
+//         completedAt: targetColumn?.closed ? new Date() : null,
+//       },
+//     });
+
+//     await this.activitylogservice.log({
+//       userId,
+//       projectId: task.projectId,
+//       entityType: "TASK",
+//       entityId: taskId,
+//       action: "TASK_MOVED",
+//       metadata: {
+//         fromColumn: task.columnId,
+//         toColumn: columnId,
+//         oldPosition: task.position,
+//         newPosition,
+//       },
+//     });
+
+//     return updated;
+//   });
+// }
 
     async getTasksByUserId(userId: string) {
         return this.prisma.task.findMany({

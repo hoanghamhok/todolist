@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useProjectMembers } from "../hooks/useProjectMembers";
 import { useRemoveMember } from "../../members/hooks/useRemoveMeber";
 import { useSetRoleMember } from "../../members/hooks/useSetRoleMember";
@@ -98,6 +98,15 @@ export function MembersAvatar({
     setSelectedMember(null);
   };
 
+  useEffect(() => {
+  const handleClickOutside = () => {
+    setShowMenuFor(null);
+  };
+
+  window.addEventListener("click", handleClickOutside);
+  return () => window.removeEventListener("click", handleClickOutside);
+}, []);
+
   if (isLoading) {
     return <div className="text-xs text-gray-500">Loading...</div>;
   }
@@ -133,7 +142,7 @@ export function MembersAvatar({
               >
                 {username} ({member.role})
               </div>
-
+              
               {isAdmin && showMenuFor === member.id && (
                 <div
                   className="absolute top-full left-1/2 -translate-x-1/2 mt-2
@@ -193,7 +202,7 @@ export function MembersAvatar({
           );
         })}
       </div>
-
+      
       {isAdmin && (
         <button
           onClick={onInviteClick}
