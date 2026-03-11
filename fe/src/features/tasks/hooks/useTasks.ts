@@ -4,6 +4,7 @@ import type { Task } from "../types";
 import {fetchTasksByProjectID,createTask,updateTask,deleteTask,moveTask} from "../tasks.api";
 export function useTask(projectId: string) {
   const queryClient = useQueryClient();
+  
   const tasksQuery = useQuery<Task[]>({
     queryKey: ["tasks", projectId],
     enabled: !!projectId,
@@ -28,12 +29,10 @@ export function useTask(projectId: string) {
     projectId: string,
     description: string,
     assigneeIds: string[],
-    dueDate?: string,
+    dueDate: string,
+    difficulty?: number,
+    estimateHours?: number
   ) => {
-    if (!columnId) throw new Error("columnId is required");
-    if (!assigneeIds || assigneeIds.length === 0) {
-      throw new Error("assigneeIds is required and must not be empty");
-    }
     return addMutation.mutateAsync({
       title,
       description,
@@ -41,7 +40,9 @@ export function useTask(projectId: string) {
       projectId,
       assigneeIds,
       dueDate,
-    } as any);
+      difficulty:difficulty ?? 0,
+      estimateHours: estimateHours ?? 0,
+    });
   };
 
   const editMutation = useMutation({

@@ -118,6 +118,11 @@ model Task {
   updated_at  DateTime       @updatedAt
   completedAt DateTime?
 
+  estimateHours Int?
+  difficulty Int?
+  blocked Boolean @default(false)
+  blockedReason String?
+
   @@index([columnId, position])
   @@index([projectId])
 }

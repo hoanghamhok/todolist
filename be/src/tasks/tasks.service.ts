@@ -47,6 +47,8 @@ export class TasksService{
                 position: nextPosition,
                 projectId: createTaskDto.projectId,
                 columnId: createTaskDto.columnId,
+                estimateHours:createTaskDto.estimateHours,
+                difficulty:createTaskDto.difficulty,
                 dueDate: createTaskDto.dueDate ? new Date(createTaskDto.dueDate) : null,
                 assignees: {
                 create: createTaskDto.assigneeIds.map(userId => ({

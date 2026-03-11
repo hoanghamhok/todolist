@@ -2,7 +2,7 @@ import type { paths } from "../../types/openapi"
 import type { JsonResponse } from "../../types/openapi-helpers";
 
 export type CreateTaskRequest =
-  paths["/tasks/create"]["post"]["requestBody"]["content"]["application/json"];
+  paths["/tasks"]["post"]["requestBody"]["content"]["application/json"];
 export type UpdateTaskRequest =
   paths["/tasks/{id}"]["patch"]["requestBody"]["content"]["application/json"];
 export type GetTasksResult =
@@ -10,7 +10,7 @@ export type GetTasksResult =
 export type GetTaskDetailResult =
   JsonResponse<"/tasks/{id}", "get", 200>;
 export type CreateTaskResult =
-  JsonResponse<"/tasks/create", "post", 201>;
+  JsonResponse<"/tasks", "post", 201>;
 export type UpdateTaskResult =
   JsonResponse<"/tasks/{id}", "patch", 200>;
 export type DeleteTaskResult =
@@ -27,6 +27,8 @@ export interface Task {
   assigneeIds: string[];
   dueDate?: string;
   completedAt?: string;
+  difficulty:number;
+  estimateHours:number;
 }
 
 export type Column = {

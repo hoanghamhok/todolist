@@ -29,4 +29,12 @@ export class CreateTaskDto {
   @IsOptional()
   @IsISO8601()
   dueDate?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  estimateHours?: number;
+
+  @ApiProperty()
+  @IsOptional()
+  difficulty?: number;
 }

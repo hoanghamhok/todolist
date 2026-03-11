@@ -20,7 +20,9 @@ interface ColumnTasksContainerProps {
     projectId: string,
     description: string,
     assigneeIds: string[],
-    dueDate?: string
+    dueDate?: string,
+    difficulty?: number,
+    estimatehours?: number
   ) => Promise<void>;
   onEditTask: (taskId: string) => void;
   onDeleteTask: (taskId: string, taskTitle: string) => void;
@@ -46,6 +48,8 @@ export function ColumnTasksContainer({
   const [newTaskDescription, setNewTaskDescription] = useState("");
   const [newTaskDueDate, setNewTaskDueDate] = useState("");
   const [newTaskAssignees, setNewTaskAssignees] = useState<string[]>([]);
+  const [newTaskEstimateHours, setNewTaskEstimateHours] = useState<number | "">("");
+  const [newTaskDifficulty, setNewTaskDifficulty] = useState<number>(3);
 
   const avatarColors = [
     "bg-violet-500",
@@ -74,22 +78,33 @@ export function ColumnTasksContainer({
 
   const canAdd = !!newTaskTitle.trim() && newTaskAssignees.length > 0;
 
-  const handleAdd = () => {
-    if (!canAdd) return;
-    addTask(
-      columnId,
-      newTaskTitle.trim(),
-      projectId,
-      newTaskDescription,
-      newTaskAssignees,
-      newTaskDueDate || undefined
-    );
-    setIsAddingTask(false);
-    setNewTaskTitle("");
-    setNewTaskDescription("");
-    setNewTaskDueDate("");
-    setNewTaskAssignees([]);
-  };
+  const handleAdd = async () => {
+  if (!canAdd) return;
+
+  const estimate =
+    newTaskEstimateHours === "" ? undefined : Number(newTaskEstimateHours);
+
+  const difficulty = Number(newTaskDifficulty);
+
+  await addTask(
+    columnId,
+    newTaskTitle.trim(),
+    projectId,
+    newTaskDescription,
+    newTaskAssignees,
+    newTaskDueDate || undefined,
+    difficulty,
+    estimate
+  );
+
+  setIsAddingTask(false);
+  setNewTaskTitle("");
+  setNewTaskDescription("");
+  setNewTaskDueDate("");
+  setNewTaskAssignees([]);
+  setNewTaskEstimateHours("");
+  setNewTaskDifficulty(3);
+};
 
   return (
     <div
@@ -117,15 +132,12 @@ export function ColumnTasksContainer({
         )}
       </SortableContext>
 
-      {/* ── Add Task ────────────────────────────────────────────── */}
       <div className="mt-1">
         {isAddingTask ? (
           <div className="relative bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden">
-            {/* Accent bar */}
             <div className="h-1 w-full bg-gradient-to-r from-sky-400 to-violet-500" />
 
             <div className="p-4 space-y-3">
-              {/* Header label */}
               <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
                 ＋ New Task
               </p>
@@ -137,10 +149,6 @@ export function ColumnTasksContainer({
                 onChange={(e) => setNewTaskTitle(e.target.value)}
                 placeholder="Task title…"
                 className={inputCls}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleAdd();
-                  if (e.key === "Escape") setIsAddingTask(false);
-                }}
               />
 
               {/* Description */}
@@ -152,8 +160,8 @@ export function ColumnTasksContainer({
                 className={inputCls}
               />
 
-              {/* Due date */}
-              <div className="relative">
+              {/* Due Date */}
+              <div>
                 <label className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 block mb-1">
                   Due date
                 </label>
@@ -163,6 +171,45 @@ export function ColumnTasksContainer({
                   onChange={(e) => setNewTaskDueDate(e.target.value)}
                   className={inputCls}
                 />
+              </div>
+
+              {/* Estimate Hours */}
+              <div>
+                <label className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 block mb-1">
+                  Estimate Hours
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  value={newTaskEstimateHours}
+                  onChange={(e) =>
+                    setNewTaskEstimateHours(
+                      e.target.value === "" ? "" : Number(e.target.value)
+                    )
+                  }
+                  placeholder="e.g. 8"
+                  className={inputCls}
+                />
+              </div>
+
+              {/* Difficulty */}
+              <div>
+                <label className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 block mb-1">
+                  Difficulty
+                </label>
+                <select
+                  value={newTaskDifficulty}
+                  onChange={(e) =>
+                    setNewTaskDifficulty(Number(e.target.value))
+                  }
+                  className={inputCls}
+                >
+                  <option value={1}>Easy</option>
+                  <option value={2}>Normal</option>
+                  <option value={3}>Medium</option>
+                  <option value={4}>Hard</option>
+                  <option value={5}>Very Hard</option>
+                </select>
               </div>
 
               {/* Assignees */}
@@ -192,7 +239,9 @@ export function ColumnTasksContainer({
                           }`}
                         >
                           <span
-                            className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold text-white ${getAvatarColor(m.userId)}`}
+                            className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold text-white ${getAvatarColor(
+                              m.userId
+                            )}`}
                           >
                             {getInitials(m.user?.username ?? "")}
                           </span>
@@ -217,6 +266,7 @@ export function ColumnTasksContainer({
                 >
                   Add task
                 </button>
+
                 <button
                   onClick={() => setIsAddingTask(false)}
                   className="px-4 py-2 text-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition"
@@ -231,7 +281,13 @@ export function ColumnTasksContainer({
             onClick={() => setIsAddingTask(true)}
             className="w-full flex items-center justify-center gap-1.5 py-2 text-sm text-gray-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all border border-transparent hover:border-sky-200 font-medium"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
             </svg>
             Add task
