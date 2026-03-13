@@ -1,99 +1,25 @@
-import React, { createContext, useState, useEffect } from 'react';
-import { authApi } from '../auth.api';
-import { userApi } from '../user.api';
-import type { AuthContextType, LoginRequest, LoginResult, RegisterRequest, RegisterResult, User } from '../../auth/type';
+import { createContext, useContext } from "react";
+import type { User, LoginRequest, RegisterRequest } from "../type";
 
-export const AuthContext = createContext<AuthContextType | null>(null);
+export interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  loading: boolean;
 
-interface AuthProviderProps {
-  children: React.ReactNode;
+  login: (data: LoginRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<void>;
+  logout: () => void;
+  updateAvatar: (file: File) => Promise<void>;
 }
 
-export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-  const [loading, setLoading] = useState(false);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-  useEffect(() => {
-    if (token) {
-      fetchProfile();
-    }
-  }, [token]);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
 
-  const fetchProfile = async () => {
-    try {
-      const { data } = await authApi.getProfile();
-      setUser(data);
-    } catch (error) {
-      console.error('Failed to fetch profile:', error);
-      logout();
-    }
-  };
-
-  const login = async (data: LoginRequest):Promise<LoginResult> => {
-  setLoading(true);
-  try {
-    const { data: res } = await authApi.login(data);
-
-    setToken(res.accessToken);
-    setUser(res.user);
-    localStorage.setItem("token", res.accessToken);
-
-    return res;
-  } finally {
-    setLoading(false);
+  if (!context) {
+    throw new Error("useAuth must be used inside AuthProvider");
   }
- };
 
-  const loginWithToken = async (accessToken: string) => {
-    setToken(accessToken);
-    localStorage.setItem('token', accessToken);
-    await fetchProfile();
-  };
-
-  const register = async (data: RegisterRequest):Promise<RegisterResult> => {
-  setLoading(true);
-  try {
-    const { data: res } = await authApi.register(data);
-
-    setToken(res.accessToken);
-    setUser(res.user);
-    localStorage.setItem("token", res.accessToken);
-
-    return res;
-  } finally {
-    setLoading(false);
-  }
- };
-
-  const logout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('access_token');
-    window.location.href = "/";
-  };
-
-  const updateAvatar = async (file: File) => {
-    try {
-      const { data } = await userApi.uploadAvatar(file);
-      if (user) {
-        setUser({ ...user, avatarUrl: data.avatar });
-      }
-    } catch (error) {
-      console.error('Failed to upload avatar:', error);
-      throw error;
-    }
-  };
-
-  return (
-    <AuthContext.Provider value={{ user, token, loading, logout, login, loginWithToken, register, updateAvatar }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return context;
 };
-
-
-
-
-

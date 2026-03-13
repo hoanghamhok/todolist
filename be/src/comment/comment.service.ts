@@ -138,6 +138,7 @@ export class CommentsService {
             userId: mentionedUserId,
             type: 'COMMENT_MENTION',
             data: {
+                message:``,
                 commentId: comment.id,
                 taskId,
                 projectId: task.projectId,

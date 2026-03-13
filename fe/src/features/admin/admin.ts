@@ -7,6 +7,7 @@ export interface User {
     username: string;
     role: "USER" | "SUPER_ADMIN";
     createdAt: string;
+    avatarUrl?:string;
 }
 
 export interface Project {

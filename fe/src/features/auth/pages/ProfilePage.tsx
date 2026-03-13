@@ -8,6 +8,7 @@ export const ProfilePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  console.log(authContext)
   if (!authContext) {
     return <div>Unable to load profile</div>;
   }

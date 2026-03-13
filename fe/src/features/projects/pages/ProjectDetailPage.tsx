@@ -10,7 +10,7 @@ import { MembersAvatar } from "../components/MembersAvatar";
 import { InviteMemberModal } from "../components/InviteMemberModal";
 import { ConfirmDeleteModal } from "../components/ConfirmDeleteModal";
 import { DragContextProvider } from "../components/DragContextProvider";
-import { ColumnCard } from "../components/ColumnCard";
+import { ColumnCard } from "../../columns/components/ColumnCard";
 import { useDnd } from "../../tasks/hooks/useDnd";
 import { LeaveProject } from "../components/LeaveProject";
 import type { Task } from "../../tasks/types";
@@ -200,7 +200,7 @@ export default function ProjectDetailPage() {
                   setDeleteConfirmOpen(true);
                 }}
                 addTask={async (columnId, title, projectId, description, assigneeIds, dueDate) => {
-                  await addTask(columnId, title, projectId, description, assigneeIds, dueDate);
+                  await addTask(columnId, title, projectId, description, assigneeIds, dueDate ?? "");
                 }}
                 editTask={editTask}
                 deleteTask={(id, title) => {

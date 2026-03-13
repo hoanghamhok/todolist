@@ -1,8 +1,9 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useProjectMembers } from "../hooks/useProjectMembers";
 import { useRemoveMember } from "../../members/hooks/useRemoveMeber";
 import { useSetRoleMember } from "../../members/hooks/useSetRoleMember";
 import { ConfirmModal } from "../../shared/components/ModalConfirm";
+import { UserPlus } from "lucide-react";
 
 interface MembersAvatarProps {
   projectId: string;
@@ -18,144 +19,123 @@ export function MembersAvatar({
   onInviteClick,
 }: MembersAvatarProps) {
   const { data: membersRes, isLoading } = useProjectMembers(projectId);
+
   const members = Array.isArray(membersRes)
     ? membersRes
     : membersRes?.data || [];
 
+  const [menuMemberId, setMenuMemberId] = useState<string | null>(null);
   const [selectedMember, setSelectedMember] = useState<any>(null);
-  const [showMenuFor, setShowMenuFor] = useState<string | null>(null);
   const [confirmAction, setConfirmAction] = useState<
     "ADMIN" | "REMOVE_ADMIN" | "OWNER" | "KICK" | null
   >(null);
 
-  const {
-    removeMember,
-    isLoading: isRemoving,
-    isError: isRemoveError,
-    error: removeError,
-  } = useRemoveMember(projectId);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const {
-    setRole,
-    isLoading: isSettingRole,
-    isError: isSetRoleError,
-    error: setRoleError,
-  } = useSetRoleMember(projectId);
+  const { removeMember, isLoading: removing } = useRemoveMember(projectId);
+  const { setRole, isLoading: settingRole } = useSetRoleMember(projectId);
 
-  const isConfirmLoading = isRemoving || isSettingRole;
+  const isConfirmLoading = removing || settingRole;
 
-  const getInitials = (identifier: string) => {
-    if (!identifier) return "?";
-    if (identifier.includes("@")) {
-      return identifier.split("@")[0][0]?.toUpperCase() || "?";
-    }
-    return identifier[0]?.toUpperCase() || "?";
-  };
+  /* close menu when clicking outside */
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (!containerRef.current?.contains(e.target as Node)) {
+        setMenuMemberId(null);
+      }
+    };
 
-  const getAvatarColor = (index: number) => {
-    const colors = [
-      "bg-blue-500",
-      "bg-purple-500",
-      "bg-pink-500",
-      "bg-green-500",
-      "bg-yellow-500",
-      "bg-red-500",
-      "bg-indigo-500",
-      "bg-cyan-500",
-    ];
-    return colors[index % colors.length];
-  };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, []);
+
+  const getInitials = (name: string) =>
+    name?.charAt(0)?.toUpperCase() || "?";
+
+  const colors = [
+    "bg-blue-500",
+    "bg-purple-500",
+    "bg-pink-500",
+    "bg-green-500",
+    "bg-yellow-500",
+    "bg-red-500",
+  ];
 
   const handleConfirm = () => {
     if (!selectedMember || !confirmAction) return;
 
-    if (confirmAction === "KICK") {
-      removeMember(selectedMember.user?.id);
-    }
+    const userId = selectedMember.userId;
 
-    if (confirmAction === "ADMIN") {
-      setRole({
-        targetUserId: selectedMember.user?.id,
-        role: "ADMIN",
-      });
-    }
+    if (confirmAction === "KICK") removeMember(userId);
 
-    if (confirmAction === "REMOVE_ADMIN") {
-      setRole({
-        targetUserId: selectedMember.user?.id,
-        role: "MEMBER",
-      });
-    }
+    if (confirmAction === "ADMIN")
+      setRole({ targetUserId: userId, role: "ADMIN" });
 
-    if (confirmAction === "OWNER") {
-      setRole({
-        targetUserId: selectedMember.user?.id,
-        role: "OWNER",
-      });
-    }
+    if (confirmAction === "REMOVE_ADMIN")
+      setRole({ targetUserId: userId, role: "MEMBER" });
+
+    if (confirmAction === "OWNER")
+      setRole({ targetUserId: userId, role: "OWNER" });
 
     setConfirmAction(null);
     setSelectedMember(null);
   };
 
-  useEffect(() => {
-  const handleClickOutside = () => {
-    setShowMenuFor(null);
-  };
-
-  window.addEventListener("click", handleClickOutside);
-  return () => window.removeEventListener("click", handleClickOutside);
-}, []);
-
   if (isLoading) {
-    return <div className="text-xs text-gray-500">Loading...</div>;
+    return <span className="text-xs text-gray-500">Loading...</span>;
   }
 
   return (
-    <div className="flex items-center gap-2 pt-3 relative">
-      <div className="flex -space-x-2">
+    <div ref={containerRef} className="flex items-center gap-2 relative">
+      {/* avatars */}
+      <div className="flex items-center -space-x-2">
         {members.map((member: any, index: number) => {
           const username =
             member.user?.username || member.username || "User";
 
-          return (
-            <div
-              key={member.userId}
-              onClick={() => {
-                if (!isAdmin) return;
-                setSelectedMember(member);
-                setShowMenuFor(member.id);
-              }}
-              className={`w-8 h-8 ${getAvatarColor(
-                index
-              )} rounded-full flex items-center justify-center
-              text-white text-xs font-bold border-2 border-white
-              cursor-pointer hover:scale-110 transition-transform
-              relative group`}
-            >
-              {getInitials(username)}
+          const avatar =
+            member.user?.avatarUrl || member.avatarUrl || null;
 
+          return (
+            <div key={member.id} className="relative">
               <div
-                className="hidden group-hover:block absolute bottom-full left-1/2
-                -translate-x-1/2 mb-2 bg-gray-900 text-white text-xs
-                py-1 px-2 rounded whitespace-nowrap z-10"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!isAdmin) return;
+
+                  setSelectedMember(member);
+
+                  setMenuMemberId((prev) =>
+                    prev === member.id ? null : member.id
+                  );
+                }}
+                className={`w-8 h-8 rounded-full border-2 border-white
+                flex items-center justify-center overflow-hidden
+                text-white text-xs font-bold cursor-pointer
+                hover:scale-110 transition
+                ${!avatar ? colors[index % colors.length] : ""}`}
               >
-                {username} ({member.role})
+                {avatar ? (
+                  <img
+                    src={avatar}
+                    alt={username}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  getInitials(username)
+                )}
               </div>
-              
-              {isAdmin && showMenuFor === member.id && (
-                <div
-                  className="absolute top-full left-1/2 -translate-x-1/2 mt-2
-                  bg-white shadow-lg border rounded-md text-xs z-20 w-44"
-                >
-                  {/* Set Admin */}
+
+              {/* menu */}
+              {isAdmin && menuMemberId === member.id && (
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-44 bg-white border rounded-md shadow-lg text-xs z-[999]">
                   {member.role !== "ADMIN" && member.role !== "OWNER" && (
                     <button
                       onClick={() => {
                         setConfirmAction("ADMIN");
-                        setShowMenuFor(null);
+                        setMenuMemberId(null);
                       }}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-100 text-black"
+                      className="w-full px-3 py-2 text-left hover:bg-gray-100"
                     >
                       Set as Admin
                     </button>
@@ -165,9 +145,9 @@ export function MembersAvatar({
                     <button
                       onClick={() => {
                         setConfirmAction("REMOVE_ADMIN");
-                        setShowMenuFor(null);
+                        setMenuMemberId(null);
                       }}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-100 text-black"
+                      className="w-full px-3 py-2 text-left hover:bg-gray-100"
                     >
                       Remove Admin
                     </button>
@@ -177,9 +157,9 @@ export function MembersAvatar({
                     <button
                       onClick={() => {
                         setConfirmAction("OWNER");
-                        setShowMenuFor(null);
+                        setMenuMemberId(null);
                       }}
-                      className="w-full text-left px-3 py-2 hover:bg-gray-100 text-black font-medium"
+                      className="w-full px-3 py-2 text-left hover:bg-gray-100"
                     >
                       Set as Owner
                     </button>
@@ -189,9 +169,9 @@ export function MembersAvatar({
                     <button
                       onClick={() => {
                         setConfirmAction("KICK");
-                        setShowMenuFor(null);
+                        setMenuMemberId(null);
                       }}
-                      className="w-full text-left px-3 py-2 text-red-600 hover:bg-red-50"
+                      className="w-full px-3 py-2 text-left text-red-600 hover:bg-red-50"
                     >
                       Kick User
                     </button>
@@ -202,64 +182,38 @@ export function MembersAvatar({
           );
         })}
       </div>
-      
+
+      {/* add member */}
       {isAdmin && (
         <button
           onClick={onInviteClick}
-          className="w-12 h-9 rounded-full bg-blue-500 hover:bg-blue-600
-          text-white flex items-center justify-center text-sm font-bold transition"
+          className={`
+            group relative flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium
+            border transition-all duration-200
+            border-blue-200 text-blue-500 bg-white
+            hover:bg-blue-500 hover:text-white hover:border-blue-500
+            hover:shadow-md hover:shadow-blue-100 active:scale-95
+          `}
         >
-          Add
+          <UserPlus className="w-4 h-4 transition-transform duration-200 group-hover:scale-110" />
+          <span>Add</span>
         </button>
       )}
 
+      {/* confirm modal */}
       {confirmAction && selectedMember && (
         <ConfirmModal
-          title={
-            confirmAction === "KICK"
-              ? "Kick member"
-              : confirmAction === "ADMIN"
-              ? "Set Admin"
-              : confirmAction === "REMOVE_ADMIN"
-              ? "Remove Admin"
-              : "Set Owner"
-          }
-          description={
-            confirmAction === "KICK"
-              ? `Bạn có chắc muốn kick ${
-                  selectedMember.user?.username ||
-                  selectedMember.username
-                }?`
-              : confirmAction === "ADMIN"
-              ? `Bạn có chắc muốn set ${
-                  selectedMember.user?.username ||
-                  selectedMember.username
-                } làm Admin?`
-              : confirmAction === "REMOVE_ADMIN"
-              ? `Bạn có chắc muốn gỡ quyền Admin của ${
-                  selectedMember.user?.username ||
-                  selectedMember.username
-                }?`
-              : `Bạn có chắc muốn chuyển quyền OWNER cho ${
-                  selectedMember.user?.username ||
-                  selectedMember.username
-                }?`
-          }
+          title="Confirm action"
+          description={`Are you sure you want to apply this action to ${
+            selectedMember.user?.username || "this user"
+          }?`}
           onCancel={() => {
-            if (isConfirmLoading) return;
             setConfirmAction(null);
             setSelectedMember(null);
           }}
           onConfirm={handleConfirm}
           loading={isConfirmLoading}
         />
-      )}
-
-      {(isRemoveError || isSetRoleError) && (
-        <p className="text-xs text-red-500 mt-2">
-          {(removeError || setRoleError)?.message ||
-            "Có lỗi xảy ra"}
-        </p>
       )}
     </div>
   );

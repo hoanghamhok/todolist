@@ -113,7 +113,7 @@ export function InviteMemberModal({
                 <div className={`flex items-center gap-2 border rounded-xl px-3 py-2 transition-all ${
                   error
                     ? "border-red-300 ring-2 ring-red-100"
-                    : "border-gray-200 focus-within:ring-2 focus-within:ring-violet-400 focus-within:border-transparent"
+                    : "border-gray-200 focus-within:ring-2 focus-within:ring-blue-400 focus-within:border-transparent"
                 }`}>
                   <Mail className="w-4 h-4 text-gray-400 shrink-0" />
                   <input

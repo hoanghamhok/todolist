@@ -8,6 +8,11 @@ export interface User {
     createdAt: string;
 }
 
+export const getAllUsers = async (): Promise<User[]> => {
+    const response = await api.get("/users");
+    return response.data;
+};
+
 export const getStats = async () => {
     // Mock stats for now since we don't have a specific stats endpoint yet, 
     // or we can calculate from users list
@@ -18,10 +23,7 @@ export const getStats = async () => {
     };
 };
 
-export const getAllUsers = async (): Promise<User[]> => {
-    const response = await api.get("/users/all");
-    return response.data;
-};
+
 
 export const updateUserRole = async (userId: string, role: "USER" | "SUPER_ADMIN") => {
     const response = await api.patch(`/users/${userId}/role`, { role });

@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { deleteUser, getAllUsers, updateUserRole } from "../admin";
 import { MoreHorizontal, Shield, User as UserIcon } from "lucide-react";
 import toast from "react-hot-toast";
+import type { User } from "../admin";
 
 type UserRole = "USER" | "SUPER_ADMIN";
 
@@ -10,7 +11,7 @@ export const UserManagement = () => {
   const queryClient = useQueryClient();
   const [openActionId, setOpenActionId] = useState<string | null>(null);
 
-  const { data: users, isLoading, error } = useQuery({
+  const { data: users = [], isLoading, error } = useQuery<User[]>({
     queryKey: ["admin", "users"],
     queryFn: getAllUsers,
   });
@@ -169,7 +170,8 @@ export const UserManagement = () => {
           </thead>
 
           <tbody className="divide-y divide-gray-100">
-            {users?.map((user: any) => (
+            {Array.isArray(users) && users?.map((user) => (
+              
               <tr key={user.id} className="hover:bg-gray-50/50">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
