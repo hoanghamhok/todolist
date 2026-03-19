@@ -5,6 +5,8 @@ import { useProjectsByUser } from "../../projects/hooks/useProjectsByUser";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { Clock } from "lucide-react";
 import { ProjectCard } from "../../projects/components/ProjectCard";
+import { useLocation } from "react-router-dom";
+
 const HomePage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuth();
@@ -14,6 +16,7 @@ const HomePage = () => {
     isLoading,
     isError,
   } = useProjectsByUser();
+  
   
   return (
     <div className="min-h-screen bg-gray-50">

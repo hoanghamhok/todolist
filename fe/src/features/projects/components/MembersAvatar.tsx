@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useProjectMembers } from "../hooks/useProjectMembers";
+import { useProjectMembers } from "../../members/hooks/useProjectMembers";
 import { useRemoveMember } from "../../members/hooks/useRemoveMeber";
 import { useSetRoleMember } from "../../members/hooks/useSetRoleMember";
 import { ConfirmModal } from "../../shared/components/ModalConfirm";
@@ -84,7 +84,6 @@ export function MembersAvatar({
   if (isLoading) {
     return <span className="text-xs text-gray-500">Loading...</span>;
   }
-
   return (
     <div ref={containerRef} className="flex items-center gap-2 relative">
       {/* avatars */}

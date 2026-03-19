@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ColumnTasksContainer } from "./ColumnTasksContainer";
 import type { Task } from "../../tasks/types";
+import { useProjectMembers } from "../../members/hooks/useProjectMembers";
 
 interface ColumnCardProps {
   column: any;
@@ -20,7 +21,7 @@ interface ColumnCardProps {
 export function ColumnCard({
   column,
   tasks,
-  members,
+  // members,
   isAdmin,
   projectId,
   markColumnAsDone,
@@ -38,7 +39,11 @@ export function ColumnCard({
   const [editingTaskTitle, setEditingTaskTitle] = useState("");
   const [editingTaskDescription, setEditingTaskDescription] = useState("");
   const [editingTaskAssignees, setEditingTaskAssignees] = useState<string[]>([]);
+  const { data: membersRes, isLoading } = useProjectMembers(projectId);
 
+  const members = Array.isArray(membersRes)
+    ? membersRes
+    : membersRes?.data || [];
   const getInitials = (name: string) =>
     name
       ?.split(" ")
@@ -180,7 +185,6 @@ export function ColumnCard({
       </div>
     );
   };
-
   return (
     <div className="bg-gray-50 border border-gray-200 rounded-2xl p-3 flex flex-col gap-2 min-w-[280px]">
       {/* ── Column Header ───────────────────────────────────────── */}

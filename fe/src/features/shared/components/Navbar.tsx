@@ -7,7 +7,7 @@ import type { Notification } from "../../notifications/type";
 import { InviteModal } from "../../invitations/components/InviteModal";
 import { useInvite } from "../../invitations/hooks/useInvite";
 import { DeleteNotification } from "../../notifications/components/DeleteNotification";
-
+import AuthModal from "../../auth/pages/AuthModal";
 interface NavbarProps {
   onToggleSidebar?: () => void;
   user?: User | null;
@@ -72,7 +72,7 @@ const timeAgo = (iso: string) => {
 const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   const { user, loading, logout } = useAuth();
   const navigate = useNavigate();
-  const { data: notifications = [], markRead, markAllRead } = useNotifications();
+  const { data: notifications = [], markRead} = useNotifications();
   const { acceptMutation, rejectMutation } = useInvite();
 
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -90,6 +90,8 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
   const isLoading = acceptMutation.isPending || rejectMutation.isPending;
   const error = acceptMutation.error || rejectMutation.error;
   const errorMsg = (error as any)?.response?.data?.message || (error as Error)?.message;
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
   /* Dark mode */
   useEffect(() => {
@@ -318,18 +320,6 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
 
               {showNotiMenu && (
                 <div className="nb-drop nb-noti">
-                  <div className="nb-noti-head">
-                    <span className="nb-noti-title">Thông báo {unread > 0 && `(${unread})`}</span>
-                    {unread > 0 && (
-                      <button
-                        className="nb-mark-all"
-                        onClick={() => (markAllRead as any)?.mutate?.()}
-                      >
-                        <IconCheck /> Đọc tất cả
-                      </button>
-                    )}
-                  </div>
-
                   <div className="nb-noti-list">
                     {notifications.length === 0 ? (
                       <div className="nb-noti-empty">
@@ -415,14 +405,36 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
               </>
             ) : (
               <div style={{ display: "flex", gap: 6 }}>
-                <Link to="/auth" className="nb-link-btn nb-link-ghost">Đăng nhập</Link>
-                <Link to="/auth" className="nb-link-btn nb-link-fill">Đăng ký</Link>
+                <button
+                  className="nb-link-btn nb-link-ghost"
+                  onClick={() => {
+                    setAuthMode('login');
+                    setShowAuthModal(true);
+                  }}
+                >
+                  Đăng nhập
+                </button>
+
+                <button
+                  className="nb-link-btn nb-link-fill"
+                  onClick={() => {
+                    setAuthMode('register');
+                    setShowAuthModal(true);
+                  }}
+                >
+                  Đăng ký
+                </button>
               </div>
             )}
 
           </div>
         </div>
       </nav>
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        defaultMode={authMode}
+      />
     </>
   );
 };

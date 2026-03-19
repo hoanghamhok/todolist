@@ -3,7 +3,7 @@ import { useLeave } from "../../members/hooks/useLeave";
 import { LogOut } from "lucide-react";
 import { ConfirmDeleteModal } from "./ConfirmDeleteModal";
 import { useProjectRole } from "../hooks/useProjectRole";
-import { useProjectMembers } from "../hooks/useProjectMembers";
+import { useProjectMembers } from "../../members/hooks/useProjectMembers";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../../auth/hooks/useAuth";
 

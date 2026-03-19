@@ -80,7 +80,6 @@ export function ColumnTasksContainer({
 
   const handleAdd = async () => {
   if (!canAdd) return;
-
   const estimate =
     newTaskEstimateHours === "" ? undefined : Number(newTaskEstimateHours);
 
@@ -104,8 +103,7 @@ export function ColumnTasksContainer({
   setNewTaskAssignees([]);
   setNewTaskEstimateHours("");
   setNewTaskDifficulty(3);
-};
-
+}; 
   return (
     <div
       ref={setNodeRef}
@@ -215,11 +213,12 @@ export function ColumnTasksContainer({
               {/* Assignees */}
               {assignees.length > 0 && (
                 <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-2">
+                   <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 mb-2">
                     Assignees
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {assignees.map((m: any) => {
+                     const avatar = m.user?.avatarUrl;
                       const selected = newTaskAssignees.includes(m.userId);
                       return (
                         <button
@@ -243,7 +242,15 @@ export function ColumnTasksContainer({
                               m.userId
                             )}`}
                           >
-                            {getInitials(m.user?.username ?? "")}
+                            {avatar ? (
+                              <img
+                                src={avatar}
+                                alt={m.username}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              getInitials(m.user.username)
+                            )}
                           </span>
                           {m.user?.username}
                         </button>

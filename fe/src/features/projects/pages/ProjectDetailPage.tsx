@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { useColumn } from "../../columns/hooks/useColumn";
 import { useTask } from "../../tasks/hooks/useTasks";
 import { useProjectDetails } from "../hooks/useProjectDetails";
-import { useProjectMembers } from "../hooks/useProjectMembers";
+import { useProjectMembers } from "../../members/hooks/useProjectMembers";
 import { useState } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { useProjectRole } from "../hooks/useProjectRole";

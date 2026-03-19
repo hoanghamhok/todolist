@@ -14,8 +14,6 @@ export const getAllUsers = async (): Promise<User[]> => {
 };
 
 export const getStats = async () => {
-    // Mock stats for now since we don't have a specific stats endpoint yet, 
-    // or we can calculate from users list
     const users = await getAllUsers();
     return {
         totalUsers: users.length,

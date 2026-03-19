@@ -1,10 +1,20 @@
 import { create } from 'zustand';
 import { authApi } from '../auth.api';
 import { userApi } from '../user.api';
-import type { AuthContextType, LoginRequest, LoginResult, RegisterRequest, RegisterResult } from '../type';
+import type { LoginRequest, RegisterRequest } from '../type';
+import type { User } from '../type';
 
-type AuthState = AuthContextType & {
+type AuthState = {
+  user: User | null;
+  token: string | null;
+  loading: boolean;
+
   fetchProfile: () => Promise<void>;
+  login: (data: LoginRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<void>;
+  loginWithToken: (token: string) => Promise<void>;
+  logout: () => void;
+  updateAvatar: (file: File) => Promise<void>;
 };
 
 export const useAuth = create<AuthState>((set, get) => ({
@@ -17,37 +27,60 @@ export const useAuth = create<AuthState>((set, get) => ({
       const { data } = await authApi.getProfile();
       set({ user: data });
     } catch (error) {
-      console.error('Failed to fetch profile:', error);
-      get().logout();
+      console.error('Fetch profile failed:', error);
+
+      set({ user: null, token: null });
+      localStorage.removeItem('token');
     }
   },
 
-  login: async (data: LoginRequest): Promise<LoginResult> => {
+  login: async (data: LoginRequest) => {
     set({ loading: true });
+
     try {
       const { data: res } = await authApi.login(data);
-      set({ token: res.accessToken, user: res.user, loading: false });
-      localStorage.setItem("token", res.accessToken);
-      return res;
+
+      set({
+        token: res.accessToken,
+        user: res.user,
+        loading: false,
+      });
+
+      localStorage.setItem('token', res.accessToken);
     } catch (err) {
       set({ loading: false });
-      throw err;
+      throw err; 
     }
   },
 
   loginWithToken: async (accessToken: string) => {
     set({ token: accessToken });
     localStorage.setItem('token', accessToken);
-    await get().fetchProfile();
+
+    try {
+      const { data } = await authApi.getProfile();
+      set({ user: data });
+    } catch (err) {
+      console.error('loginWithToken failed:', err);
+
+      set({ user: null, token: null });
+      localStorage.removeItem('token');
+    }
   },
 
-  register: async (data: RegisterRequest): Promise<RegisterResult> => {
+  register: async (data: RegisterRequest) => {
     set({ loading: true });
+
     try {
       const { data: res } = await authApi.register(data);
-      set({ token: res.accessToken, user: res.user, loading: false });
-      localStorage.setItem("token", res.accessToken);
-      return res;
+
+      set({
+        token: res.accessToken,
+        user: res.user,
+        loading: false,
+      });
+
+      localStorage.setItem('token', res.accessToken);
     } catch (err) {
       set({ loading: false });
       throw err;
@@ -55,27 +88,23 @@ export const useAuth = create<AuthState>((set, get) => ({
   },
 
   logout: () => {
-    set({ token: null, user: null });
+    set({ user: null, token: null });
     localStorage.removeItem('token');
-    localStorage.removeItem('access_token');
-    window.location.href = "/";
   },
 
   updateAvatar: async (file: File) => {
     try {
       const { data } = await userApi.uploadAvatar(file);
+
       const user = get().user;
       if (user) {
-        set({ user: { ...user, avatarUrl: data.avatar } });
+        set({
+          user: { ...user, avatarUrl: data.avatar },
+        });
       }
     } catch (error) {
-      console.error('Failed to upload avatar:', error);
+      console.error('Upload avatar failed:', error);
       throw error;
     }
-  }
+  },
 }));
-
-// Initialize profile fetch if token exists on mount
-if (useAuth.getState().token) {
-  useAuth.getState().fetchProfile();
-}
