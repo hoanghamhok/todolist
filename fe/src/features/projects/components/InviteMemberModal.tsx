@@ -106,10 +106,10 @@ export function InviteMemberModal({
           ) : (
             <>
               {/* Email input */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
+              <div className="space-y-1.5 ">
+                <div className="text-[11px] font-semibold uppercase tracking-widest text-gray-400 pt-3">
                   Email address
-                </label>
+                </div>
                 <div className={`flex items-center gap-2 border rounded-xl px-3 py-2 transition-all ${
                   error
                     ? "border-red-300 ring-2 ring-red-100"

@@ -52,7 +52,7 @@ export function InviteModal({
         </div>
 
         {/* Body */}
-        <div className="px-6 pb-2 -mt-1 text-center">
+        <div className="px-6 pt-5  -mt-1 text-center">
           <p className="text-sm text-gray-600 leading-relaxed">
             You have received an invitation to join a project.
             Would you like to accept and start collaborating?
