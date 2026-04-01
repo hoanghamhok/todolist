@@ -1,3 +1,6 @@
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
+
 interface ConfirmDeleteModalProps {
   isOpen: boolean;
   title: string;
@@ -19,20 +22,57 @@ export function ConfirmDeleteModal({
   onConfirm,
   onCancel,
 }: ConfirmDeleteModalProps) {
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onCancel();
+      }
+    };
+
+    if (isOpen) {
+      window.addEventListener("keydown", handleKey);
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKey);
+    };
+  }, [isOpen, onCancel]);
+
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]"
       onClick={onCancel}
     >
       <div
-        className="bg-white rounded-lg p-6 max-w-sm w-full mx-4"
+        className="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-xl animate-in fade-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="text-xl font-semibold mb-2 text-gray-900">{title}</h2>
-        <p className="text-gray-600 text-sm mb-6">{message}</p>
+        {/* Title */}
+        <h2 className="text-xl font-semibold mb-2 text-gray-900">
+          {title}
+        </h2>
 
+        {/* Message */}
+        <p className="text-gray-600 text-sm mb-6">
+          {message}
+        </p>
+
+        {/* Actions */}
         <div className="flex gap-2">
           <button
             onClick={(e) => {
@@ -57,6 +97,7 @@ export function ConfirmDeleteModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
