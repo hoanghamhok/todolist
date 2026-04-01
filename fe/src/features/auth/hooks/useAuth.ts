@@ -3,7 +3,6 @@ import { authApi } from '../auth.api';
 import { userApi } from '../user.api';
 import type { LoginRequest, RegisterRequest } from '../type';
 import type { User } from '../type';
-import { useNavigate } from 'react-router-dom';
 
 type AuthState = {
   user: User | null;
@@ -30,7 +29,7 @@ export const useAuth = create<AuthState>((set, get) => ({
     } catch (error) {
       console.error('Fetch profile failed:', error);
 
-      set({ user: null, token: null });
+      set({ user: null});
       localStorage.removeItem('token');
     }
   },

@@ -18,6 +18,7 @@ import { CommentsModule } from './comment/comment.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AiModule } from './ai/ai.module';
 import { GeminiModule } from './gemini/gemini.module';
+import { ActivityLogModule } from './activity-log/activity.module';
 
 @Module({
   imports: [
@@ -34,7 +35,7 @@ import { GeminiModule } from './gemini/gemini.module';
     require('./invites/invites.module').InvitesModule,
     MailModule,
     NotificationsModule,
-    CommentsModule,AiModule,AiModule,GeminiModule
+    CommentsModule,AiModule,AiModule,GeminiModule,ActivityLogModule
   ],
   controllers: [NotificationsController],
   providers: [AppService, NotificationsService],

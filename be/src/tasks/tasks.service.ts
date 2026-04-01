@@ -20,7 +20,7 @@ export class TasksService{
         return task;
     }
     
-    async create(createTaskDto:CreateTaskDto){
+    async create(createTaskDto:CreateTaskDto,userId:string){
         
         const project = await this.prisma.project.findUnique({ where: { id: createTaskDto.projectId } });
         if (!project) {
@@ -40,32 +40,46 @@ export class TasksService{
             select: { position: true },
         });
         const nextPosition = last ? last.position + 1000 : 1000;
-        return this.prisma.task.create({
+
+        const task = await this.prisma.task.create({
             data: {
                 title: createTaskDto.title,
                 description: createTaskDto.description,
                 position: nextPosition,
                 projectId: createTaskDto.projectId,
                 columnId: createTaskDto.columnId,
-                estimateHours:createTaskDto.estimateHours,
-                difficulty:createTaskDto.difficulty,
-                dueDate:createTaskDto.dueDate ? new Date(createTaskDto.dueDate): null,
+                estimateHours: createTaskDto.estimateHours,
+                difficulty: createTaskDto.difficulty,
+                dueDate: createTaskDto.dueDate ? new Date(createTaskDto.dueDate) : null,
                 assignees: {
-                create: createTaskDto.assigneeIds.map(userId => ({
-                    user: {
-                    connect: { id: userId },
-                    },
+                    create: createTaskDto.assigneeIds.map(userId => ({
+                        user: { connect: { id: userId } },
                     })),
                 },
             },
             include: {
-                assignees: {
-                    include: {
-                        user: true,
-                    },
-                },
+                assignees: { include: { user: true } },
             }
         });
+
+        await this.activityLogService.log({
+            userId,
+            projectId: task.projectId,
+            entityType: "TASK",
+            entityId: task.id,
+            action: "TASK_CREATED",
+            metadata: {
+                title: task.title,
+                columnId: task.columnId,
+                position: task.position,
+                assigneeIds: createTaskDto.assigneeIds,
+                dueDate: task.dueDate,
+                estimateHours: task.estimateHours,
+                difficulty: task.difficulty,
+            },
+        });
+
+        return task;
         
     }
     
@@ -231,16 +245,20 @@ export class TasksService{
             }
 
             const updated = await tx.task.update({
-            where: { id: taskId },
-            data: {
-                columnId,
-                position: newPosition,
-                updated_at: new Date(),
-                completedAt: targetColumn?.closed ? new Date() : null,
-            },
+                where: { id: taskId },
+                data: {
+                    columnId,
+                    position: newPosition,
+                    updated_at: new Date(),
+                    completedAt: targetColumn?.closed ? new Date() : null,
+                },
             });
 
-            // Activity log
+            const fromColumn = await tx.column.findUnique({
+                where: { id: task.columnId },
+            });
+
+            // Activity log for move
             await this.activityLogService.log({
                 userId,
                 projectId: task.projectId,
@@ -248,8 +266,11 @@ export class TasksService{
                 entityId: taskId,
                 action: "TASK_MOVED",
                 metadata: {
+                    taskTitle: task.title,
                     fromColumn: task.columnId,
+                    fromColumnTitle: fromColumn?.title,
                     toColumn: columnId,
+                    toColumnTitle: targetColumn?.title,
                     oldPosition: task.position,
                     newPosition,
                     movedAcrossColumn: task.columnId !== columnId,
@@ -258,21 +279,48 @@ export class TasksService{
                 },
             });
 
+            // Activity log for completion if moved to closed column
+            if (targetColumn?.closed && !task.completedAt) {
+                await this.activityLogService.log({
+                    userId,
+                    projectId: task.projectId,
+                    entityType: "TASK",
+                    entityId: taskId,
+                    action: "TASK_COMPLETED",
+                    metadata: {
+                        taskTitle: task.title,
+                        completedAt: updated.completedAt,
+                        columnId: columnId,
+                        columnTitle: targetColumn?.title,
+                    },
+                });
+            }
+
             return updated;
         });
     }
 
     async getTasksByUserId(userId: string) {
-        return this.prisma.task.findMany({
-            where: {
-            assignees: {some: {userId: userId}}},
-            orderBy: {position: 'asc'},
-            include: {
-            assignees: {
-                include: {
-                user: true}
-            }},
+        console.log("userId:", userId);
+
+        const assignees = await this.prisma.taskAssignee.findMany({
+            where: { userId }
         });
+
+        const tasks = await this.prisma.task.findMany({
+            where: {
+            assignees: {
+                some: {
+                userId: userId
+                }
+            }
+            },
+            include: {
+            assignees: true
+            }
+        });
+
+        return tasks;
     }
 
 

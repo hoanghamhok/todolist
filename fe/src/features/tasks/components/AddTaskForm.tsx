@@ -204,6 +204,8 @@ export function AddTaskForm({ onSubmit, assignees }: Props) {
             <div className="flex flex-wrap gap-2">
               {assignees.map((m: any) => {
                 const selected = assigneeIds.includes(m.userId);
+                const avatar =m.user?.avatarUrl || m.avatarUrl || null;
+                const username = m.user?.username || m.username || null;
                 return (
                   <button
                     key={m.userId}
@@ -224,7 +226,15 @@ export function AddTaskForm({ onSubmit, assignees }: Props) {
                     <span
                       className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold text-white ${getAvatarColor(m.userId)}`}
                     >
-                      {getInitials(m.user?.username ?? "")}
+                      {
+                          avatar ? (
+                          <img
+                            src={avatar}
+                            alt={username}
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        ) : (getInitials(m.user?.username ?? ""))
+                      }
                     </span>
                     {m.user?.username}
                   </button>

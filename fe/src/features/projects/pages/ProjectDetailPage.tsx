@@ -95,7 +95,6 @@ export default function ProjectDetailPage() {
       </div>
     );
   }
-  console.log(role)
   return (
     <DragContextProvider onDragEnd={actions.handleDragEnd}>
       <ConfirmDeleteModal
@@ -206,8 +205,8 @@ export default function ProjectDetailPage() {
                   onClick={() => setIsAdding(true)}
                   className="flex items-center gap-2 px-4 py-3 min-w-[280px] text-left text-sm font-medium text-gray-600 hover:text-gray-900 bg-white/60 hover:bg-white border-2 border-dashed border-gray-300 hover:border-violet-400 rounded-2xl transition-all group"
                 >
-                  <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white group-hover:scale-110 transition-transform">
-                    <Plus className="w-5 h-5" />
+                  <div className="w-6 h-6 flex items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white group-hover:scale-110 transition-transform">
+                    <Plus className="w-4 h-5" />
                   </div>
                   <span>Add Column</span>
                 </button>

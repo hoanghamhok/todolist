@@ -3,10 +3,12 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
+import { ActivityLogService } from 'src/activity-log/activity-log.service';
 
 @Injectable()
 export class CommentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService,
+              private activityLogService:ActivityLogService,) {}
 
     async getTaskComments(taskId: string) {
         const task = await this.prisma.task.findUnique({
@@ -172,6 +174,20 @@ export class CommentsService {
             });
         }
 
+        await this.activityLogService.log({
+            userId,
+            projectId: task.projectId,
+            entityType: "COMMENT",
+            entityId: comment.id,
+            action: "COMMENT_CREATED",
+            metadata: {
+                taskId,
+                content: dto.content,
+                parentId: dto.parentId ?? null,
+                mentions: uniqueMentions,
+                isReply: !!dto.parentId,
+            },
+        });
         return comment;
         });
   }

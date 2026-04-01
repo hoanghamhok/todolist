@@ -267,9 +267,57 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["TasksController_getTask"];
+        get: operations["TasksController_getAllTasks"];
         put?: never;
         post: operations["TasksController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tasks/my-tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TasksController_getMyTasks"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tasks/project/{projectId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TasksController_getByProjectID"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/tasks/detail/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TasksController_getByID"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -283,7 +331,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get: operations["TasksController_getByID"];
+        get?: never;
         put?: never;
         post?: never;
         delete: operations["TasksController_remove"];
@@ -306,22 +354,6 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["TasksController_moveTask"];
-        trace?: never;
-    };
-    "/tasks/project/{projectId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["TasksController_getByProjectID"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
         trace?: never;
     };
     "/projects/my": {
@@ -686,6 +718,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["AiController_ask"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/activity-logs/activities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ActivityLogController_getAllActivities"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1127,7 +1175,7 @@ export interface operations {
             };
         };
     };
-    TasksController_getTask: {
+    TasksController_getAllTasks: {
         parameters: {
             query?: never;
             header?: never;
@@ -1158,6 +1206,42 @@ export interface operations {
         };
         responses: {
             201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TasksController_getMyTasks: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TasksController_getByProjectID: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1240,25 +1324,6 @@ export interface operations {
                 "application/json": components["schemas"]["MoveTaskDto"];
             };
         };
-        responses: {
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    TasksController_getByProjectID: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                projectId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             200: {
                 headers: {
@@ -1783,6 +1848,23 @@ export interface operations {
                 "application/json": components["schemas"]["AskDto"];
             };
         };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    ActivityLogController_getAllActivities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             200: {
                 headers: {

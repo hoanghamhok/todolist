@@ -17,4 +17,26 @@ export class ActivityLogService {
       }
     });
   }
+
+  async getAllActivitiesForUser(userId: string) {
+    return this.prisma.activityLog.findMany({
+      where: {
+        project: {
+          members: {
+            some: {
+              userId: userId,
+            },
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 20,
+
+      include: {
+        user: true,
+      },
+    });
+  }
 }

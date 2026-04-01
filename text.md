@@ -78,3 +78,7 @@
         ColumnCard            (UI)
         ├── TaskList       (render list + dnd)
         └── AddTaskForm    (form riêng)
+
+
+#tx là transaction client-một phiên bản đặc biệt của prisma,đảm bảo mọi query
+bên trong cùng 1 transaction

@@ -66,6 +66,7 @@ model Project {
   tasks       Task[]
   columns     Column[]
   invitation  Invitation[]
+  activity    ActivityLog[]
 
   @@index([ownerId])
 }
@@ -212,8 +213,9 @@ model ActivityLog {
   metadata   Json?
   createdAt  DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
-  
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
   @@index([projectId])
   @@index([entityId])
 }

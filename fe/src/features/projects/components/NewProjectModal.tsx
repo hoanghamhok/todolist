@@ -62,7 +62,7 @@ export function NewProjectModal({ isOpen, onClose, onSuccess }: NewProjectModalP
   };
 
   if (!isOpen) return null;
-
+ const avatar = user?.avatarUrl;
   return createPortal(
     <>
       {/* Backdrop with animation */}
@@ -140,7 +140,10 @@ export function NewProjectModal({ isOpen, onClose, onSuccess }: NewProjectModalP
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-4 border border-blue-100">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                  {(user?.username || user?.email)?.charAt(0).toUpperCase()}
+                  {/* {(user?.username || user?.email)?.charAt(0).toUpperCase()} */}
+                  { avatar ? (<img src={user?.avatarUrl} className="rounded-full"></img>) 
+                    :((user?.username || user?.email)?.charAt(0).toUpperCase())
+                  }
                 </div>
                 <div>
                   <p className="text-xs text-gray-600 font-medium">Project Owner</p>

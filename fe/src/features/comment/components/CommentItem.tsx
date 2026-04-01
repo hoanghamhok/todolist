@@ -28,10 +28,28 @@ export function CommentItem({ comment, replies, onReply, onDelete }: Props) {
     });
   }
 
+  const userInitial = comment.author.fullName
+    ? comment.author.fullName
+        .split(" ")
+        .filter(Boolean)
+        .map((part) => part[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : comment.author.id.slice(0, 2).toUpperCase();
+
   return (
     <div className="flex gap-3">
-      <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs">
-        {comment.author.fullName[0]}
+      <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-300 flex items-center justify-center text-xs font-semibold text-white">
+        {comment.author.avatarUrl ? (
+          <img
+            src={comment.author.avatarUrl}
+            alt={`Avatar of ${comment.author.fullName}`}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span>{userInitial}</span>
+        )}
       </div>
 
       <div className="flex-1">

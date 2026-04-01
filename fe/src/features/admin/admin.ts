@@ -39,7 +39,7 @@ export interface Task {
 }
 
 export const getAllUsers = async (): Promise<User[]> => {
-    const response = await api.get("/users/all");
+    const response = await api.get("/users");
     return response.data;
 };
 
@@ -49,7 +49,7 @@ export const getAllProjects = async (): Promise<Project[]> => {
 };
 
 export const getAllTasks = async (): Promise<Task[]> => {
-    const response = await api.get("/tasks/all");
+    const response = await api.get("/tasks");
     return response.data;
 };
 
