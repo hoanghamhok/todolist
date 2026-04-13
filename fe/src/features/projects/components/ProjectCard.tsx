@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import { RemoveProject } from "./DeleteProject";
+import { useTask } from "../../tasks/hooks/useTasks";
+import { useProjectMembers } from "../../members/hooks/useProjectMembers";
 
 type ProjectMemberItem = {
   id: string;
@@ -27,9 +29,30 @@ interface ProjectCardProps {
 
 export function ProjectCard({ item }: ProjectCardProps) {
   const { project, role } = item;
-  const progress = project.progress ?? 75;
-  const status = project.status ?? "HEALTHY";
-  const members = project.members ?? [];
+  const { tasks } = useTask(project.id);
+  const { data: members = [] } = useProjectMembers(project.id);
+
+  // Tính progress từ tasks
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(t => t.completedAt).length;
+  const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+  // Tính status dựa trên progress và deadlines
+  const currentDate = new Date();
+  const overdueTasks = tasks.filter(t => t.dueDate && new Date(t.dueDate) < currentDate && !t.completedAt).length;
+  let status: "HEALTHY" | "AT_RISK" | "DELAYED" = "HEALTHY";
+  if (overdueTasks > 0) {
+    status = "DELAYED";
+  } else if (progress < 50) {
+    status = "AT_RISK";
+  }
+
+  // Chuẩn bị member data
+  const memberAvatars = members.map((m:any) => ({
+    id: m.userId,
+    name: m.user?.username || "Unknown",
+    avatar: m.user?.avatarUrl,
+  }));
 
   const statusColors = {
     HEALTHY: "text-green-600",
@@ -85,7 +108,7 @@ export function ProjectCard({ item }: ProjectCardProps) {
         <div className="flex items-center justify-between">
           {/* Member avatars */}
           <div className="flex -space-x-2">
-            {members.slice(0, 3).map((member) => (
+            {memberAvatars.slice(0, 3).map((member:any) => (
               <div
                 key={member.id}
                 className="w-7 h-7 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-xs font-medium text-gray-600 overflow-hidden"
@@ -98,9 +121,9 @@ export function ProjectCard({ item }: ProjectCardProps) {
                 )}
               </div>
             ))}
-            {members.length > 3 && (
+            {memberAvatars.length > 3 && (
               <div className="w-7 h-7 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-xs font-medium text-gray-500">
-                +{members.length - 3}
+                +{memberAvatars.length - 3}
               </div>
             )}
           </div>

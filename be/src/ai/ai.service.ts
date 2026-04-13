@@ -19,7 +19,11 @@ export class AiService {
     const project = await this.prisma.project.findUnique({
       where: { id: projectId },
       include: {
-        members: true,
+        members:{
+          include:{
+            user:true,
+          }
+        },
         columns: {
           include: {
             tasks: {
@@ -61,26 +65,26 @@ export class AiService {
     //context cho AI
 
     const context = JSON.stringify(project, null, 2);
-
+    console.log(project);
     const prompt = `
-You are an AI assistant for a Kanban project.
+  You are an AI assistant for a Kanban project.
 
-Project data (JSON):
-${context}
+  Project data (JSON):
+  ${context}
 
-Instructions:
-- Answer ONLY based on data
-- You can count, filter, compare
-- Understand:
-  - members
-  - tasks
-  - columns
-  - assignees
-- Be concise
+  Instructions:
+  - Answer ONLY based on data
+  - You can count, filter, compare
+  - Understand:
+    - members
+    - tasks
+    - columns
+    - assignees
+  - Be concise
 
-User question:
-${question}
-`;
+  User question:
+  ${question}
+  `;
 
 //gọi AI
 

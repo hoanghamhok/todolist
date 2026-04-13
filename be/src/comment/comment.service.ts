@@ -160,8 +160,13 @@ export class CommentsService {
 
         const notifications: Prisma.NotificationCreateManyInput[] = [];
 
+        const parentAuthorId = parentComment?.authorId;
+        const mentionTargets = uniqueMentions.filter(
+        (mentionedUser) => mentionedUser.id !== parentAuthorId,
+        );
+
         // Mention notification
-        uniqueMentions.forEach((mentionedUser) => {
+        mentionTargets.forEach((mentionedUser) => {
         notifications.push({
             userId: mentionedUser.id,
             type: 'COMMENT_MENTION',
@@ -185,16 +190,8 @@ export class CommentsService {
         });
         });
 
-        // Reply notification (tránh duplicate)
-        const isMentionedParentAuthor = uniqueMentions.some(
-        (u) => u.id === parentComment?.authorId,
-        );
-
-        if (
-        parentComment &&
-        parentComment.authorId !== userId &&
-        !isMentionedParentAuthor
-        ) {
+        // Reply notification
+        if (parentComment && parentComment.authorId !== userId) {
         notifications.push({
             userId: parentComment.authorId,
             type: 'COMMENT_REPLY',
@@ -210,6 +207,48 @@ export class CommentsService {
             taskId,
             projectId: task.projectId,
             } as Prisma.InputJsonValue,
+        });
+        }
+
+        // Task comment notification (notify assignees when new top-level comment is created)
+        if (!parentComment) {
+        const taskAssignees = await tx.taskAssignee.findMany({
+            where: { taskId },
+            include: {
+            user: {
+                select: {
+                id: true,
+                fullName: true,
+                avatarUrl: true,
+                },
+            },
+            },
+        });
+
+        // Get IDs of already notified users
+        const alreadyNotifiedIds = new Set<string>();
+        uniqueMentions.forEach((u) => alreadyNotifiedIds.add(u.id));
+        alreadyNotifiedIds.add(userId); // Don't notify the comment author
+
+        // Notify assignees who haven't been notified yet
+        taskAssignees.forEach((assignee) => {
+            if (!alreadyNotifiedIds.has(assignee.userId)) {
+            notifications.push({
+                userId: assignee.userId,
+                type: 'TASK_COMMENT',
+                data: {
+                message: `${comment.author.fullName} đã bình luận về task của bạn `,
+
+                actorId: comment.author.id,
+                actorName: comment.author.fullName,
+                actorAvatar: comment.author.avatarUrl,
+
+                commentId: comment.id,
+                taskId,
+                projectId: task.projectId,
+                } as Prisma.InputJsonValue,
+            });
+            }
         });
         }
 

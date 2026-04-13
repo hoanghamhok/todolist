@@ -73,8 +73,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @Delete('users/:id')
-  async DeleteUser( @Param('targetUserId') targetUserId: string,@Request() req){
-    return this.authService.deleteUser(targetUserId,req.user.userId);
+  async deleteUser(
+    @Param('id') targetUserId: string,
+    @Request() req,
+  ) {
+    return this.authService.deleteUser(targetUserId, req.user.userId);
   }
-  
 }

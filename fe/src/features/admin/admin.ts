@@ -77,7 +77,7 @@ export const updateUserRole = async (userId: string, role: "USER" | "SUPER_ADMIN
 };
 
 export const deleteProject = async (projectId: string) => {
-    const response = await api.delete(`/projects/remove/${projectId}`);
+    const response = await api.delete(`/projects/${projectId}`);
     return response.data;
 };
 
@@ -87,6 +87,6 @@ export const deleteTask = async (taskId: string) => {
 };
 
 export const deleteUser = async (userId:string) => {
-    const response = await api.delete(`/auth/DeleteUser/${userId}`);
+    const response = await api.delete(`/auth/users/${userId}`);
     return response.data;
 }

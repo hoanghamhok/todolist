@@ -6,6 +6,10 @@ import { DeleteNotification } from "../../notifications/components/DeleteNotific
 import { useInvite } from "../../invitations/hooks/useInvite";
 import { useNavigate } from "react-router-dom";
 import { InviteModal } from "../../invitations/components/InviteModal";
+import GlobalSearch from "../../search/components/GlobalSearch";
+import { TaskDetailModal } from "../../tasks/components/TaskDetailModal";
+import type { Task } from "../../tasks/types";
+import { IoMdNotifications } from "react-icons/io";
 
 const HomeNavbar = () => {
   const { user, logout } = useAuth();
@@ -19,6 +23,7 @@ const HomeNavbar = () => {
   const [inviteToken, setInviteToken] = useState<string | null>(null);
   const [showNoti, setShowNoti] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   const notiRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
@@ -30,7 +35,6 @@ const HomeNavbar = () => {
     const handleClickOutside = (e: MouseEvent) => {
       if (notiRef.current && !notiRef.current.contains(e.target as Node)) {
         setShowNoti(false);
-        setInviteToken(null);
       }
       if (userRef.current && !userRef.current.contains(e.target as Node)) {
         setShowUserMenu(false);
@@ -45,17 +49,22 @@ const HomeNavbar = () => {
     acceptMutation.mutate(token, {
       onSuccess: () => setInviteToken(null),
     });
+    window.location.reload();
   };
 
+  console.log("Notifications:", notifications);
   return (
     <header className="w-full h-16 sticky top-0 z-20 flex justify-between items-center px-10 bg-[#f7f9fb]">
       {/* Search */}
-      <div>
-        <input
-          className="bg-gray-100 rounded-full py-2 px-4 text-sm w-96"
-          placeholder="Search..."
+      <GlobalSearch onTaskClick={setSelectedTask} />
+      
+      {/* Task Detail Modal */}
+      {selectedTask && (
+        <TaskDetailModal
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
         />
-      </div>
+      )}  
 
       {/* Right */}
       <div className="flex items-center gap-6">
@@ -70,7 +79,7 @@ const HomeNavbar = () => {
             }}
             className="p-2 rounded-full hover:bg-white/50 relative"
           >
-            🔔
+            <IoMdNotifications className="text-indigo-500" />
 
             {unread > 0 && (
               <span className="absolute top-0 right-0 text-xs bg-red-500 text-white rounded-full px-1">
@@ -95,7 +104,7 @@ const HomeNavbar = () => {
                     onClick={() => {
                       if (!n.read) markRead.mutate(n.id);
                       if (n.type === "INVITE_RECEIVED") {
-                        setInviteToken(n.data.inviteToken);
+                        setInviteToken(n.data.inviteToken ?? null);
                       }
                     }}
                   >

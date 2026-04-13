@@ -51,7 +51,7 @@ export function ColumnForm({
     return (
       <button
         onClick={() => setIsShowing(true)}
-        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 border border-dashed border-gray-300 rounded-lg hover:bg-gray-100 transition"
+        className="flex items-center gap-2 px-3 py-2 text-base text-gray-400  border-2 border-dashed border-gray-300 rounded-lg hover:bg-gray-100 transition w-[280px] justify-center"
       >
         <Plus className="w-4 h-4" />
         Add Column

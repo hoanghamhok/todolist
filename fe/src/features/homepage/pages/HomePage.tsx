@@ -6,13 +6,22 @@ import { useProjectsByUser } from "../../projects/hooks/useProjectsByUser";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { ProjectCard } from "../../projects/components/ProjectCard";
 import { DashboardSidebar } from "../components/DashboardSidebar";
+import { useMyTasks } from "../../tasks/hooks/useMyTask";
 
 const HomePage = () => {
   const { user } = useAuth();
   const { data: projects, isLoading, isError } = useProjectsByUser();
-
+  const { data: myTasks } = useMyTasks();
   const displayedProjects = projects?.slice(0, 3) || [];
   const hasMoreProjects = (projects?.length || 0) > 3;
+
+  const currentDate = new Date();
+  const onTrackCount = myTasks?.filter(task => 
+    !task.completedAt && task.dueDate && new Date(task.dueDate) > currentDate
+  ).length || 0;
+  const deadlinesCount = myTasks?.filter(task => 
+    !task.completedAt && task.dueDate && new Date(task.dueDate) < currentDate
+  ).length || 0;
 
   return (
     <div className="bg-[#f7f9fb] min-h-screen">
@@ -50,14 +59,14 @@ const HomePage = () => {
             </div>
 
             <div className="bg-white p-4 sm:p-6 rounded-xl">
-              <p className="text-2xl sm:text-3xl font-bold">92%</p>
+              <p className="text-2xl sm:text-3xl font-bold">{onTrackCount}</p>
               <p className="text-xs sm:text-sm text-gray-500">
                 On Track
               </p>
             </div>
 
             <div className="bg-white p-4 sm:p-6 rounded-xl">
-              <p className="text-2xl sm:text-3xl font-bold">3</p>
+              <p className="text-2xl sm:text-3xl font-bold">{deadlinesCount}</p>
               <p className="text-xs sm:text-sm text-gray-500">
                 Deadlines
               </p>

@@ -16,6 +16,7 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'login' }: Props) => {
   const [mode, setMode] = useState('login');
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -36,7 +37,7 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'login' }: Props) => {
           setError('Mật khẩu không khớp');
           return;
         }
-        await register({ email, username, password });
+        await register({ email, username, fullname: fullName, password });
       } else {
         await login({ identifier: email, password });
       }
@@ -176,6 +177,28 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'login' }: Props) => {
                       onChange={(e) => setUsername(e.target.value)}
                       onFocus={() => setFocusedField('username')}
                       onBlur={() => setFocusedField(null)}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence>
+                {!isLogin && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    style={{ overflow: 'hidden' }}
+                  >
+                    <label className="block text-xs font-semibold text-gray-600 mb-1.5 ml-1">Họ và tên</label>
+                    <input
+                      className={inputClass('fullName')}
+                      placeholder="Nguyễn Văn A"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      onFocus={() => setFocusedField('fullName')}
+                      onBlur={() => setFocusedField(null)}
+                      required
                     />
                   </motion.div>
                 )}

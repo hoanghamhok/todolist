@@ -42,7 +42,7 @@ export function DashboardSidebar({ tasks: fallbackTasks = [] }: DashboardSidebar
         day: date.getDate(),
       };
     };
-    console.log(upcomingTasks)
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-8 mt-12">
 

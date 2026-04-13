@@ -33,7 +33,7 @@
         title: currentTask.title || "",
         description: currentTask.description || "",
         assigneeIds: currentTask.assigneeIds || [],
-        dueDate: currentTask.dueDate?.split("T")[0] || "",
+        dueDate: currentTask.dueDate? toLocalDateTime(currentTask.dueDate): "",
         estimateHours: currentTask.estimateHours ?? "",
         difficulty: currentTask.difficulty ?? ""
         });
@@ -70,10 +70,21 @@
         }));
     };
 
+    const toLocalDateTime = (isoString: string) => {
+        const date = new Date(isoString);
+        const offset = date.getTimezoneOffset();
+
+        const localDate = new Date(date.getTime() - offset * 60000);
+        return localDate.toISOString().slice(0, 16);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const payload = {
         ...formData,
+          dueDate: formData.dueDate
+    ? new Date(formData.dueDate).toISOString()
+    : undefined,
         difficulty: formData.difficulty === "" ? undefined : formData.difficulty,
         estimateHours: formData.estimateHours === "" ? undefined : formData.estimateHours
         };
@@ -165,7 +176,7 @@
             <div>
                 <label className="text-xs font-bold text-gray-500 uppercase">Due Date</label>
                 <input
-                type="date"
+                type="datetime-local"
                 name="dueDate"
                 value={formData.dueDate}
                 onChange={handleChange}

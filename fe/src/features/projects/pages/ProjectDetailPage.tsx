@@ -11,6 +11,7 @@
   import ChatBox from "../../ai/components/Chatbot";
   import { ColumnForm } from "../../columns/components/ColumnForm";
 
+
   export default function ProjectDetailPage() {
     const { projectId } = useParams<{ projectId: string }>();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -83,7 +84,7 @@
     }
     return (
       <DragContextProvider onDragEnd={handleDragEnd}>
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-violet-50/30">
+        <div className="h-full min-h-0 flex flex-col bg-gradient-to-br from-gray-50 via-white to-violet-50/30">
         
           {/* Header */}
           <ProjectHeader
@@ -98,8 +99,8 @@
           />
 
           {/* Board */}
-          <div className="p-4 sm:p-6 overflow-x-auto overflow-y-hidden">
-            <div className="flex gap-4 sm:gap-6 pb-4 items-start min-h-[calc(100vh-180px)]">
+          <div className="flex-1 min-h-0 p-4 sm:p-6 overflow-x-auto overflow-y-hidden">
+            <div className="flex gap-4 sm:gap-6 pb-4 items-start">
               {columns.map((column) => (
                 <ColumnCard
                   key={column.id}

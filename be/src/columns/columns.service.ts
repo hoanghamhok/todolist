@@ -63,26 +63,30 @@ export class ColumnsService {
     });
   }
 
-  async move(columnId: string,beforeColumnId?: string,afterColumnId?: string,) {
-    let newPosition = 1000;
+  async move(columnId: string, beforeColumnId?: string, afterColumnId?: string) {
+    let newPosition: number;
 
     if (beforeColumnId && afterColumnId) {
       const [before, after] = await Promise.all([
         this.prisma.column.findUnique({ where: { id: beforeColumnId } }),
         this.prisma.column.findUnique({ where: { id: afterColumnId } }),
       ]);
-
-      if (!before || !after)
-        throw new NotFoundException("Invalid column reference");
+      if (!before || !after) throw new NotFoundException("Invalid column reference");
 
       newPosition = (before.position + after.position) / 2;
+
+    } else if (beforeColumnId) {
+      const before = await this.prisma.column.findUnique({ where: { id: beforeColumnId } });
+      if (!before) throw new NotFoundException("Invalid column reference");
+
+      newPosition = before.position + 1000;
+
     } else if (afterColumnId) {
-      const after = await this.prisma.column.findUnique({
-        where: { id: afterColumnId },
-      });
+      const after = await this.prisma.column.findUnique({ where: { id: afterColumnId } });
       if (!after) throw new NotFoundException("Invalid column reference");
 
-      newPosition = after.position - 1000;
+      newPosition = after.position / 2; // ✅ tránh âm
+
     } else {
       const last = await this.prisma.column.findFirst({
         where: { closed: false },

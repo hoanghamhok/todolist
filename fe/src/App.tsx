@@ -2,7 +2,6 @@ import { Routes, Route } from "react-router-dom";
 import HomePage from "./features/homepage/pages/HomePage";
 import ForgotPassword from "./features/auth/pages/ForgotPasswordPage";
 import ResetPassword from "./features/auth/pages/ResetPassword";
-import DashboardLayout from "./features/shared/layout/DashboardLayout";
 import GoogleCallback from "./features/auth/pages/Callback";
 import { Toaster } from "react-hot-toast";
 import { AdminLayout } from "./features/admin/layouts/AdminLayout";
@@ -36,7 +35,7 @@ function App() {
         <Route path="/auth/google/callback" element={<GoogleCallback />} />
 
         {/* DASHBOARD */}
-        <Route element={<DashboardLayout />}>
+        <Route>
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
 

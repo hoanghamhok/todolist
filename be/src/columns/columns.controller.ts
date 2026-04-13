@@ -3,6 +3,7 @@ import { ApiTags} from "@nestjs/swagger";
 import { ColumnsService } from "./columns.service";
 import { CreateColumnDto } from "./dto/create-column.dto";
 import { UpdateColumnDto } from "./dto/update-column.dto";
+import { MoveColumnDto } from "./dto/move-column.dto";
 
 @ApiTags("Columns")
 @Controller("columns")
@@ -32,11 +33,10 @@ export class ColumnsController {
     return this.columnsService.update(id, dto);
   }
 
-  @Patch(":id/move")
-  move(@Param("id") id: string,@Body()body: {
-      beforeColumnId?: string;
-      afterColumnId?: string;
-    },
+  @Patch(':id/move')
+  move(
+    @Param('id') id: string,
+    @Body() body: MoveColumnDto,
   ) {
     return this.columnsService.move(
       id,
