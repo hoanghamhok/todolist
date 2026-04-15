@@ -3,7 +3,6 @@
   import { useProjectDetailPage } from "../hooks/useProjectDetailPage";
   import { ColumnCard } from "../../columns/components/ColumnCard";
   import { DragContextProvider } from "../components/DragContextProvider";
-  import { TaskDetailModal } from "../../tasks/components/TaskDetailModal";
   import { Loader2 } from "lucide-react";
   import type { Task } from "../../tasks/types";
   import { ProjectHeader } from "../components/ProjectHeader";
@@ -17,8 +16,6 @@
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
     const {project,columns,role,isLoading,isError,handleDragEnd} = useProjectDetailPage(projectId!);
-
-    const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
     if (!projectId) {
       return (
@@ -120,9 +117,6 @@
           onClose={() => setIsInviteModalOpen(false)}
         />
         <ChatBox projectId={projectId}/>       
-        {selectedTask && (
-          <TaskDetailModal task={selectedTask} onClose={() => setSelectedTask(null)} />
-        )}
       </DragContextProvider>
     );
   }

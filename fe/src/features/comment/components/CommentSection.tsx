@@ -1,14 +1,17 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useComments } from "../hook/useComment";
+import { useProjectMembers } from "../../members/hooks/useProjectMembers";
 import { CommentInput } from "./CommentInput";
 import { CommentItem } from "./CommentItem";
 
 interface Props {
   taskId: string;
+  projectId: string;
 }
 
-export function CommentSection({ taskId }: Props) {
+export function CommentSection({ taskId, projectId }: Props) {
   const { comments, add, remove, loading } = useComments(taskId);
+  const { data: members = [] } = useProjectMembers(projectId);
   const [parentId, setParentId] = useState<string | null>(null);
   const [replyUser, setReplyUser] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(2);
@@ -29,12 +32,32 @@ export function CommentSection({ taskId }: Props) {
     setReplyUser(null);
   };
 
+  const extractMentionIds = (content: string) => {
+    const mentionPattern = /@(\w+)/g;
+    const matches = [...content.matchAll(mentionPattern)];
+    const usernames = matches.map(m => m[1].toLowerCase());
+
+    const memberMap = new Map(
+      members.map((m: any) => [m.username.toLowerCase(), m.id])
+    );
+
+    return [
+      ...new Set(
+        usernames
+          .map(u => memberMap.get(u))
+          .filter((id): id is string => !!id)
+      ),
+    ];
+  };
+
   const handleSubmit = async (content: string) => {
     const finalContent = replyUser ? `@${replyUser} ${content}` : content;
+
     await add({
       content: finalContent,
       parentId: parentId ?? undefined,
     });
+
     handleCancelReply();
   };
 
@@ -153,6 +176,7 @@ export function CommentSection({ taskId }: Props) {
           onSubmit={handleSubmit}
           replyUser={replyUser}
           onCancelReply={handleCancelReply}
+          
         />
       </div>
     </section>

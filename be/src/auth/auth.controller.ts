@@ -4,6 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { ForgotPasswordDto } from 'src/mail/dto/forgotpassword.dto';
 import { ResetPasswordDto } from 'src/mail/dto/resetpassword.dto';
@@ -53,6 +54,16 @@ export class AuthController {
    return {
     message:"Reset password successful"
    }
+  }
+
+  @Post('change-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOkResponse({ description: 'Password changed successfully' })
+  @ApiBody({ type: ChangePasswordDto })
+  async changePassword(@Body() data: ChangePasswordDto, @Request() req) {
+    await this.authService.changePassword(req.user.userId, data.currentPassword, data.newPassword);
+    return { message: 'Password changed successfully' };
   }
 
   @Get('google/callback')

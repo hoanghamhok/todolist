@@ -104,6 +104,31 @@ export class AuthService {
         })
     }
 
+    async changePassword(userId: string, currentPassword: string, newPassword: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw new NotFoundException('User not found');
+        }
+
+        if (user.provider !== 'LOCAL' || !user.password) {
+            throw new BadRequestException('Cannot change password for non-local accounts');
+        }
+
+        const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+        if (!isPasswordValid) {
+            throw new BadRequestException('Current password is incorrect');
+        }
+
+        const hashed = await bcrypt.hash(newPassword, 10);
+
+        await this.prisma.user.update({
+            where: { id: userId },
+            data: { password: hashed },
+        });
+    }
 
     async loginWithGoogle(googleUser: {email: string;googleId: string;provider: AuthProvider;username: string;}) {
         let user = await this.prisma.user.findUnique({

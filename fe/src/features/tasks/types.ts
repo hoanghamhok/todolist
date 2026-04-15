@@ -21,6 +21,12 @@ export interface Task {
   title:string;
   description:string;
   columnId:string;
+  projectId: string;
+  column: {
+    id: string;
+    title: string;
+    position: number;
+  };
   position:number;
   createdAt?:string;
   updateAt?:string;

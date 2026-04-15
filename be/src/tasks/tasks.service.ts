@@ -12,7 +12,18 @@ export class TasksService{
                 private activityLogService:ActivityLogService,){}
     
     async getTaskByID(id:string){
-        const task = await this.prisma.task.findUnique({where:{id}})
+        const task = await this.prisma.task.findUnique({
+            where:{id},
+            include: {
+                column: {
+                    select: {
+                        id: true,
+                        title: true,
+                        position: true
+                    }
+                }
+            }
+        })
         if(!task){
             throw new NotFoundException();
         }
@@ -301,26 +312,47 @@ export class TasksService{
     }
 
     async getTasksByUserId(userId: string) {
-        console.log("userId:", userId);
-
-        const assignees = await this.prisma.taskAssignee.findMany({
-            where: { userId }
-        });
 
         const tasks = await this.prisma.task.findMany({
             where: {
-            assignees: {
-                some: {
-                userId: userId
-                }
-            }
+                assignees: {
+                    some: {
+                        userId: userId,
+                    },
+                },
             },
             include: {
-            assignees: true
-            }
+                assignees: {
+                    select: {
+                        userId: true,
+                    },
+                },
+                column: {
+                    select: {
+                        id: true,
+                        title: true,
+                        position: true,
+                    },
+                },
+            },
         });
 
-        return tasks;
+        return tasks.map(task => ({
+            id: task.id,
+            title: task.title,
+            description: task.description,
+            position: task.position,
+            dueDate: task.dueDate,
+            completedAt: task.completedAt,
+            projectId: task.projectId,
+            columnId: task.columnId,
+            column: task.column,
+            created_at: task.created_at,
+            updated_at: task.updated_at,
+            assigneeIds: task.assignees.map(a => a.userId),
+            difficulty: task.difficulty,
+            estimateHours: task.estimateHours,
+        }));
     }
 
 
@@ -329,9 +361,16 @@ export class TasksService{
             where: { projectId },
             include: {
                 assignees: {
-                select: {
-                    userId: true,
+                    select: {
+                        userId: true,
+                    },
                 },
+                column: {
+                    select: {
+                        id: true,
+                        title: true,
+                        position: true,
+                    },
                 },
             },
         });
@@ -344,11 +383,12 @@ export class TasksService{
             completedAt: task.completedAt,
             projectId: task.projectId,
             columnId: task.columnId,
+            column: task.column,
             created_at: task.created_at,
             updated_at: task.updated_at,
             assigneeIds: task.assignees.map(a => a.userId),
-            difficulty:task.difficulty,
-            estimateHours:task.estimateHours
+            difficulty: task.difficulty,
+            estimateHours: task.estimateHours,
         }));
     }
 }

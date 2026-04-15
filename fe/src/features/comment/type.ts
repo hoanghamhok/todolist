@@ -14,6 +14,7 @@ export interface Comment {
     id: string
     fullName: string
     avatarUrl?: string | null
+    username:string;
   }
   replies: Comment[]
   mentions: string[]

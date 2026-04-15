@@ -57,9 +57,10 @@ export default function GlobalSearch({ onTaskClick }: GlobalSearchProps) {
                     setShow(false);
                     setQ("");
                   }}
-                  className="px-3 py-2 text-sm hover:bg-slate-100 rounded cursor-pointer"
+                  className="flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-100 rounded cursor-pointer"
                 >
-                  <CiFolderOn /> {p.name}
+                  <CiFolderOn className="text-lg" />
+                  <span>{p.name}</span>
                 </div>
               ))}
             </div>
@@ -85,8 +86,12 @@ export default function GlobalSearch({ onTaskClick }: GlobalSearchProps) {
                   }}
                   className="px-3 py-2 text-sm hover:bg-slate-100 rounded cursor-pointer"
                 >
-                  <MdOutlineTask />{t.title}
-                  <div className="text-xs text-slate-400">
+                  <div className="flex items-center gap-2">
+                    <MdOutlineTask className="text-lg" />
+                    <span>{t.title}</span>
+                  </div>
+
+                  <div className="text-xs text-slate-400 ml-6">
                     {t.project?.name}
                   </div>
                 </div>

@@ -44,9 +44,15 @@ export class CommentsService {
             },
             mentions: {
                 include: {
-                user: true
-                }
-            }
+                user: {
+                    select: {
+                    id: true,
+                    fullName: true,
+                    avatarUrl: true,
+                    },
+                },
+                },
+            },
         },
         orderBy: {
             createdAt: 'asc',
@@ -54,234 +60,226 @@ export class CommentsService {
         });
     }
 
-    async createComment(taskId: string,userId: string,dto: CreateCommentDto,) {
-        
-    return this.prisma.$transaction(async (tx) => {
-        const task = await tx.task.findUnique({
-        where: { id: taskId },
-        select: { id: true, projectId: true },
-        });
 
-        if (!task) {
-        throw new NotFoundException('Task not found');
-        }
 
-        //check parent comment
-        let parentComment:
-        | { id: string; authorId: string; taskId: string }
-        | null = null;
+    async createComment(taskId: string, userId: string, dto: CreateCommentDto) {
 
-        if (dto.parentId) {
-        parentComment = await tx.comment.findUnique({
-            where: { id: dto.parentId },
-            select: { id: true, authorId: true, taskId: true },
-        });
+        return this.prisma.$transaction(async (tx) => {
 
-        if (!parentComment) {
-            throw new NotFoundException('Parent comment not found');
-        }
+            const extractMentionsFromContent = (content: string): string[] => {
+            const mentionPattern = /@([a-zA-Z0-9._-]+)/g;
+            const matches = [...content.matchAll(mentionPattern)];
+            return [...new Set(matches.map(m => m[1].toLowerCase()))];
+            };
 
-        if (parentComment.taskId !== taskId) {
-            throw new ForbiddenException(
-            'Parent comment does not belong to this task',
-            );
-        }
-        }
+            const task = await tx.task.findUnique({
+            where: { id: taskId },
+            select: { id: true, projectId: true },
+            });
 
-        //loại duplicate trước tránh 2 thông báo
-        const mentionIds = [...new Set(dto.mentions ?? [])];
+            if (!task) throw new NotFoundException('Task not found');
 
-        let validMentionUsers: {
-        id: string;
-        fullName: string;
-        avatarUrl: string | null;
-        }[] = [];
+            // parent comment
+            let parentComment: { id: string; authorId: string; taskId: string } | null = null;
 
-        if (mentionIds.length > 0) {
-        const projectMembers = await tx.projectMember.findMany({
-            where: {
-            projectId: task.projectId,
-            userId: { in: mentionIds },
+            if (dto.parentId) {
+            parentComment = await tx.comment.findUnique({
+                where: { id: dto.parentId },
+                select: { id: true, authorId: true, taskId: true },
+            });
+
+            if (!parentComment) throw new NotFoundException('Parent comment not found');
+
+            if (parentComment.taskId !== taskId) {
+                throw new ForbiddenException('Parent comment does not belong to this task');
+            }
+            }
+
+            // parse mention từ content 
+            const usernames = extractMentionsFromContent(dto.content);
+
+            let validMentionUsers: {
+            id: string;
+            fullName: string;
+            avatarUrl: string | null;
+            username: string;
+            }[] = [];
+
+            if (usernames.length > 0) {
+            const projectMembers = await tx.projectMember.findMany({
+                where: {
+                projectId: task.projectId,
+                user: {
+                    username: { in: usernames },
+                },
+                },
+                include: {
+                user: {
+                    select: {
+                    id: true,
+                    fullName: true,
+                    avatarUrl: true,
+                    username: true,
+                    },
+                },
+                },
+            });
+
+            validMentionUsers = projectMembers.map((m) => m.user);
+
+            if (validMentionUsers.length !== usernames.length) {
+                throw new ForbiddenException(
+                'One or more mentioned users are not in this project'
+                );
+            }
+            }
+
+            //  remove self + unique
+            const uniqueMentions = [
+            ...new Map(validMentionUsers.map((u) => [u.id, u])).values(),
+            ].filter((u) => u.id !== userId);
+
+            //  create comment
+            const comment = await tx.comment.create({
+            data: {
+                content: dto.content,
+                taskId,
+                authorId: userId,
+                parentId: dto.parentId ?? null,
             },
             include: {
-            user: {
+                author: {
                 select: {
-                id: true,
-                fullName: true,
-                avatarUrl: true,
+                    id: true,
+                    fullName: true,
+                    avatarUrl: true,
+                    username: true, //  FIX
+                },
                 },
             },
-            },
-        });
+            });
 
-        validMentionUsers = projectMembers.map((m) => m.user);
+            //  create mention
+            if (uniqueMentions.length > 0) {
+            await tx.commentMention.createMany({
+                data: uniqueMentions.map((u) => ({
+                commentId: comment.id,
+                userId: u.id,
+                })),
+                skipDuplicates: true,
+            });
+            }
 
-        if (validMentionUsers.length !== mentionIds.length) {
-            throw new ForbiddenException(
-            'One or more mentioned users are not in this project',
-            );
-        }
-        }
+            const notifications: Prisma.NotificationCreateManyInput[] = [];
 
-        // remove self + unique
-        const uniqueMentions = [
-        ...new Map(validMentionUsers.map((u) => [u.id, u])).values(),
-        ].filter((u) => u.id !== userId);
+            const parentAuthorId = parentComment?.authorId;
 
-        // 4. Create comment + include author
-        const comment = await tx.comment.create({
-        data: {
-            content: dto.content,
-            taskId,
-            authorId: userId,
-            parentId: dto.parentId ?? null,
-        },
-        include: {
-            author: {
-            select: {
-                id: true,
-                fullName: true,
-                avatarUrl: true,
-            },
-            },
-        },
-        });
-
-        // 5. Create CommentMention
-        if (uniqueMentions.length > 0) {
-        await tx.commentMention.createMany({
-            data: uniqueMentions.map((u) => ({
-            commentId: comment.id,
-            userId: u.id,
-            })),
-            skipDuplicates: true,
-        });
-        }
-
-        const notifications: Prisma.NotificationCreateManyInput[] = [];
-
-        const parentAuthorId = parentComment?.authorId;
-        const mentionTargets = uniqueMentions.filter(
-        (mentionedUser) => mentionedUser.id !== parentAuthorId,
-        );
-
-        // Mention notification
-        mentionTargets.forEach((mentionedUser) => {
-        notifications.push({
-            userId: mentionedUser.id,
-            type: 'COMMENT_MENTION',
-            data: {
-            message: `${comment.author.fullName} đã nhắc bạn trong 1 bình luận`,
-
-            actorId: comment.author.id,
-            actorName: comment.author.fullName,
-            actorAvatar: comment.author.avatarUrl,
-
-            commentId: comment.id,
-            taskId,
-            projectId: task.projectId,
-
-            mentions: uniqueMentions.map((u) => ({
-                id: u.id,
-                name: u.fullName,
-                avatar: u.avatarUrl,
-            })),
-            } as Prisma.InputJsonValue,
-        });
-        });
-
-        // Reply notification
-        if (parentComment && parentComment.authorId !== userId) {
-        notifications.push({
-            userId: parentComment.authorId,
-            type: 'COMMENT_REPLY',
-            data: {
-            message: `${comment.author.fullName} đã trả lời bình luận của bạn`,
-
-            actorId: comment.author.id,
-            actorName: comment.author.fullName,
-            actorAvatar: comment.author.avatarUrl,
-
-            commentId: comment.id,
-            parentCommentId: parentComment.id,
-            taskId,
-            projectId: task.projectId,
-            } as Prisma.InputJsonValue,
-        });
-        }
-
-        // Task comment notification (notify assignees when new top-level comment is created)
-        if (!parentComment) {
-        const taskAssignees = await tx.taskAssignee.findMany({
-            where: { taskId },
-            include: {
-            user: {
-                select: {
-                id: true,
-                fullName: true,
-                avatarUrl: true,
-                },
-            },
-            },
-        });
-
-        // Get IDs of already notified users
-        const alreadyNotifiedIds = new Set<string>();
-        uniqueMentions.forEach((u) => alreadyNotifiedIds.add(u.id));
-        alreadyNotifiedIds.add(userId); // Don't notify the comment author
-
-        // Notify assignees who haven't been notified yet
-        taskAssignees.forEach((assignee) => {
-            if (!alreadyNotifiedIds.has(assignee.userId)) {
-            notifications.push({
-                userId: assignee.userId,
-                type: 'TASK_COMMENT',
+            //  mention notification
+            uniqueMentions
+            .filter((u) => u.id !== parentAuthorId)
+            .forEach((u) => {
+                notifications.push({
+                userId: u.id,
+                type: 'COMMENT_MENTION',
                 data: {
-                message: `${comment.author.fullName} đã bình luận về task của bạn `,
+                    message: `${comment.author.fullName} đã nhắc bạn trong 1 bình luận`,
+                    actorId: comment.author.id,
+                    actorName: comment.author.fullName,
+                    actorAvatar: comment.author.avatarUrl,
+                    commentId: comment.id,
+                    taskId,
+                    projectId: task.projectId,
+                } as Prisma.InputJsonValue,
+                });
+            });
 
+            // reply notification
+            if (parentComment && parentAuthorId !== userId) {
+            notifications.push({
+                userId: parentAuthorId!,
+                type: 'COMMENT_REPLY',
+                data: {
+                message: `${comment.author.fullName} đã trả lời bình luận của bạn`,
                 actorId: comment.author.id,
                 actorName: comment.author.fullName,
                 actorAvatar: comment.author.avatarUrl,
-
                 commentId: comment.id,
+                parentCommentId: parentComment.id,
                 taskId,
                 projectId: task.projectId,
                 } as Prisma.InputJsonValue,
             });
             }
-        });
-        }
 
-        // 7. Insert notifications
-        if (notifications.length > 0) {
-        await tx.notification.createMany({
-            data: notifications,
-        });
-        }
+            //  task comment notification
+            if (!parentComment) {
+            const taskAssignees = await tx.taskAssignee.findMany({
+                where: { taskId },
+            });
 
-        // 8. Activity log
-        await this.activityLogService.log({
-        userId,
-        projectId: task.projectId,
-        entityType: 'COMMENT',
-        entityId: comment.id,
-        action: 'COMMENT_CREATED',
-        metadata: {
-            taskId,
-            content: dto.content,
-            parentId: dto.parentId ?? null,
-            mentions: uniqueMentions.map((u) => u.id),
-            isReply: !!dto.parentId,
-        },
-        });
+            const alreadyNotifiedIds = new Set<string>();
+            uniqueMentions.forEach((u) => alreadyNotifiedIds.add(u.id));
+            alreadyNotifiedIds.add(userId);
 
-        return comment;
-    });
+            if (parentAuthorId) {
+                alreadyNotifiedIds.add(parentAuthorId); // FIX
+            }
+
+            taskAssignees.forEach((a) => {
+                if (!alreadyNotifiedIds.has(a.userId)) {
+                notifications.push({
+                    userId: a.userId,
+                    type: 'TASK_COMMENT',
+                    data: {
+                    message: `${comment.author.fullName} đã bình luận về task của bạn`,
+                    actorId: comment.author.id,
+                    actorName: comment.author.fullName,
+                    actorAvatar: comment.author.avatarUrl,
+                    commentId: comment.id,
+                    taskId,
+                    projectId: task.projectId,
+                    } as Prisma.InputJsonValue,
+                });
+                }
+            });
+            }
+
+            if (notifications.length > 0) {
+            await tx.notification.createMany({ data: notifications });
+            }
+
+           
+            await this.activityLogService.log({
+            userId,
+            projectId: task.projectId,
+            entityType: 'COMMENT',
+            entityId: comment.id,
+            action: 'COMMENT_CREATED',
+            metadata: {
+                taskId,
+                content: dto.content,
+                parentId: dto.parentId ?? null,
+                mentions: uniqueMentions.map((u) => u.id),
+                isReply: !!dto.parentId,
+            },
+            });
+
+            return comment;
+        });
     }
 
     async updateComment(commentId: string,userId: string,dto: UpdateCommentDto) {
         const comment = await this.prisma.comment.findUnique({
             where: { id: commentId },
+            select: {
+            id: true,
+            authorId: true,
+            taskId: true,
+            content: true,
+            task: {
+                select: { projectId: true },
+            },
+            },
         });
 
         if (!comment) throw new NotFoundException('Comment not found');
@@ -289,17 +287,42 @@ export class CommentsService {
         if (comment.authorId !== userId)
             throw new ForbiddenException('You cannot edit this comment');
 
-        return this.prisma.comment.update({
+        const updated = await this.prisma.comment.update({
             where: { id: commentId },
             data: {
-                content: dto.content,
+            content: dto.content,
             },
         });
+
+        await this.activityLogService.log({
+            userId,
+            projectId: comment.task.projectId,
+            entityType: 'COMMENT',
+            entityId: comment.id,
+            action: 'COMMENT_UPDATED',
+            metadata: {
+            taskId: comment.taskId,
+            oldContent: comment.content,
+            newContent: dto.content,
+            },
+        });
+
+        return updated;
     }
 
     async deleteComment(commentId: string, userId: string) {
         const comment = await this.prisma.comment.findUnique({
-        where: { id: commentId },
+            where: { id: commentId },
+            select: {
+            id: true,
+            authorId: true,
+            taskId: true,
+            content: true,
+            parentId: true,
+            task: {
+                select: { projectId: true },
+            },
+            },
         });
 
         if (!comment) throw new NotFoundException('Comment not found');
@@ -307,11 +330,26 @@ export class CommentsService {
         if (comment.authorId !== userId)
             throw new ForbiddenException('You cannot delete this comment');
 
-        return this.prisma.comment.update({
+        const deleted = await this.prisma.comment.delete({
             where: { id: commentId },
-            data: {
-                deletedAt: new Date(),
+        });
+
+        await this.activityLogService.log({
+            userId,
+            projectId: comment.task.projectId,
+            entityType: 'COMMENT',
+            entityId: comment.id,
+            action: 'COMMENT_DELETED',
+            metadata: {
+            taskId: comment.taskId,
+            content: comment.content,
+            parentId: comment.parentId,
+            isReply: !!comment.parentId,
             },
         });
+
+        return deleted;
     }
+
+
 }

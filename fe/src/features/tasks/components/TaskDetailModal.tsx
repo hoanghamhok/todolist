@@ -14,19 +14,45 @@ interface TaskDetailModalProps {
   onClose: () => void;
 }
 
-const StatusBadge = ({ columnId }: { columnId: string }) => {
+const StatusBadge = ({ columnId, columnTitle }: { columnId: string; columnTitle?: string }) => {
   const statusMap: Record<string, { bg: string; text: string; label: string }> = {
     'todo': { bg: 'bg-slate-500/10', text: 'text-slate-600', label: 'To Do' },
     'in-progress': { bg: 'bg-indigo-500/10', text: 'text-indigo-600', label: 'In Progress' },
     'done': { bg: 'bg-emerald-500/10', text: 'text-emerald-600', label: 'Done' },
   };
   
-  const style = statusMap[columnId] || { bg: 'bg-gray-500/10', text: 'text-gray-600', label: columnId };
+  // Use columnTitle if available, otherwise fall back to statusMap
+  const displayLabel = columnTitle || statusMap[columnId]?.label || columnId;
+  
+  // Determine style based on columnId or columnTitle
+  let style = statusMap[columnId];
+  if (!style && columnTitle) {
+    // If we have a custom column title, use a neutral style
+    const titleLower = columnTitle.toLowerCase();
+    if (titleLower.includes('done')) {
+      style = statusMap['done'];
+    } else if (titleLower.includes('progress')) {
+      style = statusMap['in-progress'];
+    } else {
+      style = statusMap['todo'];
+    }
+  }
+  style = style || { bg: 'bg-gray-500/10', text: 'text-gray-600', label: columnId };
   
   return (
-    <div className={`inline-flex items-center gap-2 px-4 py-2 ${style.bg} ${style.text} rounded-full border border-current/10 transition-all duration-200 hover:scale-[1.02]`}>
-      <div className={`w-2 h-2 rounded-full ${style.text.replace('text-', 'bg-')} animate-pulse`} />
-      <span className="text-sm font-bold tracking-tight">{style.label}</span>
+    <div
+      className={`inline-flex items-center px-4 py-2 ${style.bg} ${style.text} rounded-full border border-current/10`}
+    >
+      <div className="flex items-center justify-center w-full relative">
+        
+        {/* Dot */}
+        <div className={`absolute left-0 w-2 h-2 rounded-full ${style.text.replace('text-', 'bg-')} animate-pulse`} />
+        
+        {/* Text */}
+        <span className="text-sm font-bold tracking-tight mx-auto">
+          {displayLabel}
+        </span>
+      </div>
     </div>
   );
 };
@@ -35,12 +61,14 @@ const InfoItem = ({
   icon: Icon, 
   label, 
   value, 
-  subValue 
+  subValue,
+  subValueClassName,
 }: { 
   icon: any; 
   label: string; 
   value: string; 
   subValue?: string;
+  subValueClassName?: string;
 }) => (
   <div className="group flex items-start gap-4 transition-all duration-200 hover:translate-x-1">
     <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-white to-slate-50 flex items-center justify-center text-indigo-600 shadow-sm border border-slate-200/70 group-hover:shadow-md group-hover:border-indigo-200 transition-all duration-200">
@@ -54,7 +82,7 @@ const InfoItem = ({
         {value}
       </p>
       {subValue && (
-        <p className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg w-fit">
+        <p className={`text-xs font-semibold px-2.5 py-1 rounded-lg w-fit ${subValueClassName || 'text-indigo-600 bg-indigo-50'}`}>
           {subValue}
         </p>
       )}
@@ -64,6 +92,7 @@ const InfoItem = ({
 
 export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const isOverdue = Boolean(task.dueDate && !task.completedAt && dayjs(task.dueDate).isBefore(dayjs()));
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -163,7 +192,7 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
             aria-label="Comments"
           >
             <div className="max-h-[470px] overflow-y-auto pr-2">
-              <CommentSection taskId={task.id} />
+              <CommentSection taskId={task.id} projectId={task.projectId} />
             </div>
           </section>
         </div>
@@ -172,10 +201,17 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
           
           <div className="space-y-8">
             <div className="space-y-3.5">
-              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+              <p className=" text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
                 Current Status
               </p>
-              <StatusBadge columnId={task.columnId} />
+              <div className="flex flex-wrap items-center gap-2">
+                <StatusBadge columnId={task.columnId} columnTitle={task.column?.title} />
+                {/* {isOverdue && (
+                  <span className="inline-flex items-center rounded-full bg-rose-100 text-rose-700 text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-2">
+                    Overdue
+                  </span>
+                )} */}
+              </div>
             </div>
 
             {/* Difficulty */}
@@ -201,6 +237,8 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
                 icon={MdOutlineDateRange}
                 label="Due Date"
                 value={dayjs(task.dueDate).format("MMM DD, YYYY • HH:mm")}
+                subValue={isOverdue ? "Overdue" : undefined}
+                subValueClassName={isOverdue ? "text-rose-700 bg-rose-100" : undefined}
               />
             )}
 

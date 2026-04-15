@@ -1,6 +1,7 @@
 import React, { useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { ChangePasswordModal } from '../components/ChangePasswordModal';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -289,11 +290,13 @@ const QuickAction: React.FC<QuickActionProps> = ({ icon, label, desc, onClick, d
 export const ProfilePage: React.FC = () => {
   const user = useAuth((s) => s.user);
   const updateAvatar = useAuth((s) => s.updateAvatar);
+  const logout = useAuth((s) => s.logout);
   const loading = useAuth((s) => s.loading);
   const navigate = useNavigate();
 
   const [uploadState, setUploadState] = useState<UploadState>('idle');
   const [message, setMessage] = useState<string | null>(null);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showMessage = useCallback((state: UploadState, text: string, autoClear = false) => {
@@ -476,7 +479,7 @@ export const ProfilePage: React.FC = () => {
                   icon={<IconKey />}
                   label="Đổi mật khẩu"
                   desc="Cập nhật mật khẩu bảo mật"
-                  onClick={() => navigate('/settings/password')}
+                  onClick={() => setIsPasswordModalOpen(true)}
                 />
                 <QuickAction
                   icon={<IconBell />}
@@ -489,9 +492,7 @@ export const ProfilePage: React.FC = () => {
                   label="Đăng xuất"
                   desc="Thoát khỏi tài khoản"
                   danger
-                  onClick={() => {
-                    // Call your logout action here, e.g. logout()
-                  }}
+                  onClick={() => logout()}
                 />
               </div>
             </div>
@@ -509,6 +510,12 @@ export const ProfilePage: React.FC = () => {
           </aside>
         </div>
       </div>
+
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        onSuccess={() => showMessage('success', 'Mật khẩu đã được thay đổi!', true)}
+      />
     </>
   );
 };
