@@ -13,6 +13,7 @@ import { useEffect } from "react";
 import { useAuth } from "./features/auth/hooks/useAuth";
 import ProjectLayout from "./features/shared/layout/ProjectLayout";
 import ProjectDetailPage from "./features/projects/pages/ProjectDetailPage";
+import ReportPage from "./features/report/page/ReportPage";
 
 function App() {
   const { token, fetchProfile } = useAuth();
@@ -38,6 +39,7 @@ function App() {
         <Route>
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
+        <Route path="/report" element={<ReportPage />} />
 
         {/* PROJECT */}
         <Route path="/projects/:projectId" element={<ProjectLayout />}>

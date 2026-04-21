@@ -4,7 +4,6 @@
   import { ColumnCard } from "../../columns/components/ColumnCard";
   import { DragContextProvider } from "../components/DragContextProvider";
   import { Loader2 } from "lucide-react";
-  import type { Task } from "../../tasks/types";
   import { ProjectHeader } from "../components/ProjectHeader";
   import { InviteMemberModal } from "../components/InviteMemberModal";
   import ChatBox from "../../ai/components/Chatbot";

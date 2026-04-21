@@ -4,7 +4,7 @@ import { useMyTasks } from "../../tasks/hooks/useMyTask";
 import { useActivities } from "../../activities/hooks/useActivities";
 import type { Task } from "../../tasks/types";
 import type { Activity } from "../../activities/type";
-import { mapActivity, highlightMentions } from "../../activities/ulti"
+import { mapActivity, highlightMentions } from "../../activities/utils"
 
 interface DashboardSidebarProps {
   tasks?: Task[];
@@ -35,13 +35,13 @@ export function DashboardSidebar({ tasks: fallbackTasks = [] }: DashboardSidebar
     .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
     .slice(0, 5);
 
-    const formatDate = (dateStr: string) => {
-      const date = new Date(dateStr);
-      return {
-        month: date.toLocaleDateString("en-US", { month: "short" }).toUpperCase(),
-        day: date.getDate(),
-      };
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return {
+      month: date.toLocaleDateString("en-US", { month: "short" }).toUpperCase(),
+      day: date.getDate(),
     };
+  };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[60%_40%] gap-8 mt-12">
@@ -55,7 +55,7 @@ export function DashboardSidebar({ tasks: fallbackTasks = [] }: DashboardSidebar
         {loadingActivities && <p>Loading activities...</p>}
 
         <div className="space-y-6">
-          {activities.slice(0,5).map((activity) => (
+          {activities.slice(0, 5).map((activity) => (
             <div key={activity.id} className="flex gap-4">
 
               {/* Avatar */}

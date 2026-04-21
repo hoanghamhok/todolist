@@ -1,4 +1,4 @@
-import {Controller,Get,Request,UseGuards} from '@nestjs/common';
+import {Controller,Get,Request,UseGuards,Param} from '@nestjs/common';
 import { ActivityLogService } from './activity-log.service';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
@@ -12,5 +12,10 @@ export class ActivityLogController {
     @ApiBearerAuth()
     getAllActivities(@Request() req) {
     return this.activityLogService.getAllActivitiesForUser(req.user.userId);
+    }
+
+    @Get(':projectId/activities')
+    getProjectActivities(@Param('projectId') projectId: string) {
+      return this.activityLogService.getProjectActivity(projectId);
     }
 }

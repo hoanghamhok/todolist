@@ -20,6 +20,7 @@ import { AiModule } from './ai/ai.module';
 import { GeminiModule } from './gemini/gemini.module';
 import { ActivityLogModule } from './activity-log/activity.module';
 import { SearchModule } from './search/search.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -36,7 +37,7 @@ import { SearchModule } from './search/search.module';
     require('./invites/invites.module').InvitesModule,
     MailModule,
     NotificationsModule,
-    CommentsModule,AiModule,AiModule,GeminiModule,ActivityLogModule,SearchModule
+    CommentsModule,AiModule,AiModule,GeminiModule,ActivityLogModule,SearchModule,AnalyticsModule
   ],
   controllers: [NotificationsController],
   providers: [AppService, NotificationsService],

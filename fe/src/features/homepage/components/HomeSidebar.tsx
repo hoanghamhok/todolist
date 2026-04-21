@@ -70,7 +70,7 @@ const HomeSidebar = () => {
         </NavLink>
 
         <NavLink
-          to="/settings"
+          to="/report"
           className={({ isActive }) =>
             `${navItemBase} ${isActive ? navItemActive : navItemInactive}`
           }
