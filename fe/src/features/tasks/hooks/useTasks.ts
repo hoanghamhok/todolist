@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import {useQuery,useMutation,useQueryClient} from "@tanstack/react-query";
 import type { Task } from "../types";
-import {fetchTasksByProjectID,createTask,updateTask,deleteTask,moveTask} from "../tasks.api";
+import {fetchTasksByProjectID,createTask,updateTask,deleteTask,moveTask,tasksAPI} from "../tasks.api";
 export function useTask(projectId: string) {
   const queryClient = useQueryClient();
   
@@ -150,6 +150,24 @@ export function useTask(projectId: string) {
     return map;
   }, [tasksQuery.data]);
 
+  const blockMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) =>
+      tasksAPI.block(id, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+    },
+  });
+
+  const unblockMutation = useMutation({
+    mutationFn: (id: string) => tasksAPI.unblock(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
+    },
+  });
+
+  const block = (id: string, reason: string) => blockMutation.mutateAsync({ id, reason });
+  const unblock = (id: string) => unblockMutation.mutateAsync(id);
+
   return {
     tasks: tasksQuery.data ?? [],
     byColumn,
@@ -160,5 +178,7 @@ export function useTask(projectId: string) {
     edit,
     remove,
     move,
+    block,
+    unblock,
   };
 }

@@ -33,8 +33,12 @@ export interface Task {
   assigneeIds: string[];
   dueDate?: string;
   completedAt?: string;
-  difficulty:number;
-  estimateHours:number;
+  difficulty: number;
+  estimateHours: number;
+  blocked: boolean;
+  blockedAt?: string;
+  blockedReason?: string;
+  blockedBy?: string;
 }
 
 export type Column = {

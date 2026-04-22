@@ -9,8 +9,7 @@ export const tasksAPI = {
     api.get(`/tasks/my-tasks`),
 
   getByProjectId: (projectId: string) => 
-    api.get(`/tasks/project/${projectId}`)
-  ,
+    api.get(`/tasks/project/${projectId}`),
     
   getById: (id: string) =>
     api.get(`/tasks/detail/${id}`),
@@ -26,6 +25,15 @@ export const tasksAPI = {
 
   delete: (id: string) =>
     api.delete(`/tasks/${id}`),
+
+  block: (id: string, reason: string) =>
+    api.post(`/tasks/${id}/block`, { reason }),
+
+  unblock: (id: string) =>
+    api.post(`/tasks/${id}/unblock`),
+
+  getBlockHistory: (id: string) =>
+    api.get(`/tasks/${id}/block-history`),
 }
 
 export const fetchTasks = tasksAPI.getAll

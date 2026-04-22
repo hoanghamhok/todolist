@@ -1,8 +1,9 @@
-import { Injectable,NotFoundException,ConflictException } from "@nestjs/common";
+import { Injectable,NotFoundException,ConflictException, BadRequestException } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
 import { CreateTaskDto } from "./dto/create-task.dto";
 import { UpdateTaskDto } from "./dto/update-task.dto";
 import { ActivityLogService } from "src/activity-log/activity-log.service";
+import { CreateManyTasksDto } from "./dto/create-tasks.dto";
 
 
 @Injectable()
@@ -93,9 +94,88 @@ export class TasksService{
         return task;
         
     }
+
+    async bulkCreate(createManyTasksDto: CreateManyTasksDto, userId: string) {
+        const { tasks } = createManyTasksDto;
+
+        if (!tasks || tasks.length === 0) {
+            throw new BadRequestException('Tasks array is empty');
+        }
+
+        const projectId = tasks[0].projectId;
+
+        // 1. Check project
+        const project = await this.prisma.project.findUnique({
+            where: { id: projectId },
+        });
+        if (!project) throw new NotFoundException('Project not found');
+
+        // 2. Gom tất cả assigneeIds
+        const allAssigneeIds = [
+            ...new Set(tasks.flatMap(t => t.assigneeIds || [])),
+        ];
+
+        // 3. Check members 1 lần
+        const members = await this.prisma.projectMember.findMany({
+            where: {
+            projectId,
+            userId: { in: allAssigneeIds },
+            },
+            select: { userId: true },
+        });
+
+        const memberIds = members.map(m => m.userId);
+
+        const invalidUsers = allAssigneeIds.filter(id => !memberIds.includes(id));
+        if (invalidUsers.length) {
+            throw new ConflictException('Some assignees are not in project');
+        }
+
+        // 4. Lấy position cuối
+        const last = await this.prisma.task.findFirst({
+            where: { columnId: tasks[0].columnId },
+            orderBy: { position: 'desc' },
+            select: { position: true },
+        });
+
+        let currentPosition = last ? last.position : 0;
+
+        // 5. Transaction tạo nhiều task
+        const createdTasks = await this.prisma.$transaction(
+            tasks.map((taskDto, index) => {
+            currentPosition += 1000;
+
+            return this.prisma.task.create({
+                data: {
+                title: taskDto.title,
+                description: taskDto.description,
+                position: currentPosition,
+                projectId: taskDto.projectId,
+                columnId: taskDto.columnId,
+                estimateHours: taskDto.estimateHours,
+                difficulty: taskDto.difficulty,
+                dueDate: taskDto.dueDate ? new Date(taskDto.dueDate) : null,
+                assignees: {
+                    create: taskDto.assigneeIds.map(userId => ({
+                    user: { connect: { id: userId } },
+                    })),
+                },
+                },
+                include: {
+                assignees: { include: { user: true } },
+                },
+            });
+            })
+        );
+
+        return createdTasks;
+        }
     
     async update(id: string, dto: UpdateTaskDto) {
-        await this.getTaskByID(id);
+        const task = await this.getTaskByID(id);
+        if (task.blocked) {
+            throw new BadRequestException('Cannot update a blocked task');
+        }
         return this.prisma.task.update({
             where: { id },
             data: {
@@ -164,7 +244,7 @@ export class TasksService{
         });
     }
 
-    async moveTask(taskId: string,columnId: string,userId: string,beforeTaskId?: string,afterTaskId?: string) {
+     async moveTask(taskId: string,columnId: string,userId: string,beforeTaskId?: string,afterTaskId?: string) {
 
         console.log({taskId,columnId,userId,beforeTaskId,afterTaskId}); 
 
@@ -352,6 +432,7 @@ export class TasksService{
             assigneeIds: task.assignees.map(a => a.userId),
             difficulty: task.difficulty,
             estimateHours: task.estimateHours,
+            blocked: task.blocked,
         }));
     }
 
@@ -389,6 +470,7 @@ export class TasksService{
             assigneeIds: task.assignees.map(a => a.userId),
             difficulty: task.difficulty,
             estimateHours: task.estimateHours,
+            blocked: task.blocked,
         }));
     }
 }

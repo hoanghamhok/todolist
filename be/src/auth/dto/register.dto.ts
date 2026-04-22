@@ -37,6 +37,6 @@ export class RegisterDto {
   })
   @IsNotEmpty()
   @IsString()
-  @MinLength(6)
+  @MinLength(1)
   password: string;
 }

@@ -13,6 +13,8 @@
     const { tasks, add, edit } = useTask(projectId);
     const { data: members = [] } = useProjectMembers(projectId);
     const isEditting = Boolean(taskId);
+    const currentTask = tasks.find(t => t.id === taskId);
+    const isBlocked = currentTask?.blocked || false;
 
     const [formData, setFormData] = useState({
         title: "",
@@ -116,6 +118,20 @@
             {isEditting ? " Edit Task" : " New Task"}
         </h2>
 
+        {isBlocked && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3">
+            <div className="bg-amber-100 p-2 rounded-lg text-amber-600">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div>
+              <p className="text-xs font-bold text-amber-800">Task is Blocked</p>
+              <p className="text-[10px] text-amber-700 font-medium">Unblock this task in detail view to make changes.</p>
+            </div>
+          </div>
+        )}
+
         <div className="space-y-4">
             <div>
             <label className="text-xs font-bold text-gray-500 uppercase">Title</label>
@@ -124,8 +140,9 @@
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="What needs to be done?"
-                className="w-full border-b focus:border-violet-500 outline-none py-2 transition"
+                className="w-full border-b focus:border-violet-500 outline-none py-2 transition disabled:bg-gray-50"
                 required
+                disabled={isBlocked}
             />
             </div>
 
@@ -142,7 +159,7 @@
                     <button
                     key={m.userId}
                     type="button"
-                    onClick={() => toggleAssignee(m.userId)}
+                    onClick={() => !isBlocked && toggleAssignee(m.userId)}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
                         selected
                         ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200"
@@ -168,7 +185,8 @@
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="Add some details..."
-                className="w-full border rounded-lg p-2 mt-1 text-sm min-h-[80px] focus:ring-1 focus:ring-violet-500 outline-none"
+                className="w-full border rounded-lg p-2 mt-1 text-sm min-h-[80px] focus:ring-1 focus:ring-violet-500 outline-none disabled:bg-gray-50"
+                disabled={isBlocked}
             />
             </div>
 
@@ -180,7 +198,8 @@
                 name="dueDate"
                 value={formData.dueDate}
                 onChange={handleChange}
-                className="w-full border rounded-lg p-2 mt-1 text-sm outline-none"
+                className="w-full border rounded-lg p-2 mt-1 text-sm outline-none disabled:bg-gray-50"
+                disabled={isBlocked}
                 />
             </div>
             <div>
@@ -191,7 +210,8 @@
                 value={formData.estimateHours}
                 onChange={handleChange}
                 placeholder="0"
-                className="w-full border rounded-lg p-2 mt-1 text-sm outline-none"
+                className="w-full border rounded-lg p-2 mt-1 text-sm outline-none disabled:bg-gray-50"
+                disabled={isBlocked}
                 />
             </div>
             </div>
@@ -202,7 +222,8 @@
                 name="difficulty"
                 value={formData.difficulty}
                 onChange={handleChange}
-                className="w-full border rounded-lg p-2 mt-1 text-sm outline-none bg-white"
+                className="w-full border rounded-lg p-2 mt-1 text-sm outline-none bg-white disabled:bg-gray-50"
+                disabled={isBlocked}
             >
                 <option value="">Select Difficulty</option>
                 <option value="1"> Easy</option>
@@ -221,7 +242,8 @@
             </button>
             <button 
                 type="submit" 
-                className="px-5 py-2 text-sm font-medium bg-violet-600 text-white rounded-lg hover:bg-violet-700 shadow-lg shadow-violet-200 transition"
+                disabled={isBlocked}
+                className="px-5 py-2 text-sm font-medium bg-violet-600 text-white rounded-lg hover:bg-violet-700 shadow-lg shadow-violet-200 transition disabled:bg-gray-300 disabled:shadow-none disabled:cursor-not-allowed"
             >
                 {isEditting ? "Save Changes" : "Create Task"}
             </button>

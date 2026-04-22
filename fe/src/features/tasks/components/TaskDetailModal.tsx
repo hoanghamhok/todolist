@@ -7,7 +7,10 @@ import { CommentSection } from "../../comment/components/CommentSection";
 import { TfiAlignLeft } from "react-icons/tfi";
 import { MdOutlineDateRange } from "react-icons/md";
 import { IoMdTime } from "react-icons/io";
-import { Gauge, X } from "lucide-react";
+import { Gauge, X, Lock, Unlock, History, AlertCircle } from "lucide-react";
+import { useTask } from "../hooks/useTasks";
+import { tasksAPI } from "../tasks.api";
+import { useState } from "react";
 
 interface TaskDetailModalProps {
   task: Task;
@@ -92,7 +95,47 @@ const InfoItem = ({
 
 export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
+  const { block, unblock } = useTask(task.projectId);
+  const [blockReason, setBlockReason] = useState("");
+  const [isBlocking, setIsBlocking] = useState(false);
+  const [history, setHistory] = useState<any[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
+
   const isOverdue = Boolean(task.dueDate && !task.completedAt && dayjs(task.dueDate).isBefore(dayjs()));
+
+  const fetchHistory = async () => {
+    try {
+      const res = await tasksAPI.getBlockHistory(task.id);
+      setHistory(res.data);
+
+    } catch (error) {
+      console.error("Failed to fetch block history", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchHistory();
+  }, [task.id]);
+  const handleBlock = async () => {
+    if (!blockReason.trim()) return;
+    try {
+      await block(task.id, blockReason);
+      setBlockReason("");
+      setIsBlocking(false);
+      fetchHistory();
+    } catch (error) {
+      console.error("Failed to block task", error);
+    }
+  };
+
+  const handleUnblock = async () => {
+    try {
+      await unblock(task.id);
+      fetchHistory();
+    } catch (error) {
+      console.error("Failed to unblock task", error);
+    }
+  };
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -206,12 +249,64 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
               </p>
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge columnId={task.columnId} columnTitle={task.column?.title} />
-                {/* {isOverdue && (
-                  <span className="inline-flex items-center rounded-full bg-rose-100 text-rose-700 text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-2">
-                    Overdue
+                {task.blocked && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-2 border border-amber-200">
+                    <AlertCircle size={12} />
+                    Blocked
                   </span>
-                )} */}
+                )}
               </div>
+            </div>
+
+            {/* Blocking UI */}
+            <div className="space-y-4 pt-4 border-t border-slate-200/70">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                Blocking Control
+              </p>
+              
+              {!task.blocked ? (
+                isBlocking ? (
+                  <div className="space-y-3 animate-in slide-in-from-top-2 duration-200">
+                    <textarea
+                      value={blockReason}
+                      onChange={(e) => setBlockReason(e.target.value)}
+                      placeholder="Reason for blocking..."
+                      className="w-full p-3 text-sm border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none resize-none h-24"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleBlock}
+                        disabled={!blockReason.trim()}
+                        className="flex-1 py-2 bg-amber-500 text-white rounded-xl text-xs font-bold hover:bg-amber-600 disabled:opacity-50 transition-colors shadow-sm"
+                      >
+                        Confirm Block
+                      </button>
+                      <button
+                        onClick={() => setIsBlocking(false)}
+                        className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-200 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setIsBlocking(true)}
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-white border-2 border-dashed border-amber-200 text-amber-600 rounded-2xl text-sm font-bold hover:bg-amber-50 hover:border-amber-300 transition-all active:scale-[0.98]"
+                  >
+                    <Lock size={16} />
+                    Block Task
+                  </button>
+                )
+              ) : (
+                <button
+                  onClick={handleUnblock}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-500 text-white rounded-2xl text-sm font-bold hover:bg-emerald-600 transition-all shadow-md active:scale-[0.98]"
+                >
+                  <Unlock size={16} />
+                  Unblock Task
+                </button>
+              )}
             </div>
 
             {/* Difficulty */}
@@ -248,6 +343,65 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
                 label="Time Estimate"
                 value={`${task.estimateHours} hours`}
               />
+            )}
+          </div>
+
+          {/* Block History */}
+          <div className="space-y-6 pt-10 border-t border-slate-200/70">
+            <button
+              onClick={() => setShowHistory(!showHistory)}
+              className="flex items-center justify-between w-full group"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                  <History size={16} />
+                </div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 group-hover:text-indigo-600 transition-colors">
+                  Block History
+                </p>
+              </div>
+              <div className={`transition-transform duration-200 ${showHistory ? 'rotate-180' : ''}`}>
+                <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </button>
+
+            {showHistory && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                {history.length > 0 ? (
+                  <div className="relative pl-4 space-y-6 before:absolute before:left-0 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+                    {history.map((item) => (
+                      <div key={item.id} className="relative space-y-1.5">
+                        <div className={`absolute -left-[1.35rem] top-1.5 w-3 h-3 rounded-full border-2 border-white ${item.unblockedAt ? 'bg-emerald-500' : 'bg-amber-500 ring-4 ring-amber-50'}`} />
+                        <p className="text-xs font-bold text-slate-800">
+                          {item.unblockedAt ? 'Task Unblocked' : 'Task Blocked'}
+                        </p>
+                        <p className="text-[11px] text-slate-500 font-medium">
+                          {dayjs(item.blockedAt).format("MMM DD, YYYY")} 
+                          {item.unblockedAt && ` → ${dayjs(item.unblockedAt).format("MMM DD, YYYY")}`}
+                        </p>
+                        {!item.unblockedAt && (
+                          <div className="mt-2 p-2.5 bg-amber-50/50 border border-amber-100 rounded-lg">
+                            <p className="text-[11px] text-amber-800 font-semibold italic">
+                              "{item.reason}"
+                            </p>
+                          </div>
+                        )}
+                        {item.unblockedAt && (
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                            Duration: {dayjs(item.unblockedAt).diff(dayjs(item.blockedAt), 'hour')}h
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6 px-4 bg-slate-50 rounded-2xl border border-slate-100">
+                    <p className="text-xs text-slate-400 font-medium">No block history available</p>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </aside>

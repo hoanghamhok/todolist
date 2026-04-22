@@ -61,25 +61,36 @@ export function TaskCard({ taskId, projectId }: TaskCardProps) {
         } ${
           isOverdue 
             ? "border-red-200 bg-red-50/50" // Chỉ đổi màu nếu Overdue
+            : task.blocked
+            ? "border-amber-200 bg-amber-50/30"
             : "border-gray-200/80"
         }`}
       >
         {/* Badge Overdue */}
         {isOverdue && (
-          <div className="absolute -top-2 -right-1 bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full shadow-sm font-bold uppercase tracking-tighter">
+          <div className="absolute -top-2 -right-1 bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-full shadow-sm font-bold uppercase tracking-tighter z-10">
             Overdue
+          </div>
+        )}
+
+        {task.blocked && (
+          <div className="absolute -top-2 left-2 bg-amber-500 text-white text-[9px] px-1.5 py-0.5 rounded-full shadow-sm font-bold uppercase tracking-tighter z-10 flex items-center gap-1">
+            <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
+            </svg>
+            Blocked
           </div>
         )}
 
         {/* Drag Handle + Title */}
         <div
           {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing select-none"
+          {...(task.blocked ? {} : listeners)}
+          className={`${task.blocked ? "cursor-not-allowed" : "cursor-grab active:cursor-grabbing"} select-none`}
         >
           <div className="flex items-start justify-between gap-2">
             <h3 className={`text-sm font-medium leading-tight line-clamp-2 flex-1 truncate transition-colors ${
-              isOverdue ? "text-red-700" : "text-gray-800"
+              isOverdue ? "text-red-700" : task.blocked ? "text-amber-700" : "text-gray-800"
             }`}>
               {task.title}
             </h3>
@@ -87,7 +98,7 @@ export function TaskCard({ taskId, projectId }: TaskCardProps) {
             {/* Drag dots */}
             <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-0.5 pt-0.5">
               {[1, 2, 3].map((i) => (
-                <div key={i} className={`w-1 h-1 rounded-full ${isOverdue ? "bg-red-300" : "bg-gray-400"}`}></div>
+                <div key={i} className={`w-1 h-1 rounded-full ${isOverdue ? "bg-red-300" : task.blocked ? "bg-amber-300" : "bg-gray-400"}`}></div>
               ))}
             </div>
           </div>

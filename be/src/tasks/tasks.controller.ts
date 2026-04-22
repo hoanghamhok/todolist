@@ -15,6 +15,7 @@ import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { MoveTaskDto } from './dto/move-task.dto';
+import { CreateManyTasksDto } from './dto/create-tasks.dto';
 
 @ApiTags('Tasks')
 @Controller('tasks')
@@ -48,6 +49,13 @@ export class TasksController {
   @ApiBearerAuth()
   create(@Body() createTaskDto: CreateTaskDto, @Request() req) {
     return this.tasksService.create(createTaskDto, req.user.userId);
+  }
+
+  @Post('bulk')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  bulkCreate(@Body() createManyTasksDto: CreateManyTasksDto, @Request() req) {
+    return this.tasksService.bulkCreate(createManyTasksDto, req.user.userId);
   }
 
   @Patch(':id')

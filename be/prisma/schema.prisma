@@ -30,21 +30,21 @@ enum AuthProvider {
 }
 
 model User {
-  id                   String          @id @default(cuid())
-  username             String          @unique
+  id                   String           @id @default(cuid())
+  username             String           @unique
   fullName             String
   avatarUrl            String?
   avatarPublicId       String?
-  email                String          @unique
+  email                String           @unique
   password             String?
-  provider             AuthProvider    @default(LOCAL)
-  googleId             String?         @unique
+  provider             AuthProvider     @default(LOCAL)
+  googleId             String?          @unique
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
-  role                 SystemRole      @default(USER)
-  createdAt            DateTime        @default(now())
+  role                 SystemRole       @default(USER)
+  createdAt            DateTime         @default(now())
   memberships          ProjectMember[]
-  ownedProjects        Project[]       @relation("ProjectOwner")
+  ownedProjects        Project[]        @relation("ProjectOwner")
   invitation           Invitation[]
   notifitcation        Notification[]
   taskAssignees        TaskAssignee[]
@@ -101,33 +101,41 @@ model Column {
   @@index([projectId, position])
 }
 
-
-
 model Task {
-  id          String         @id @default(cuid())
-  title       String
-  description String?
-  position    Float
-  dueDate     DateTime?
-  projectId   String
-  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  columnId    String
-  column      Column         @relation(fields: [columnId], references: [id], onDelete: Cascade)
-  assignees   TaskAssignee[]
-  comments    Comment[]
+  id           String         @id @default(cuid())
+  title        String
+  description  String?
+  position     Float
+  dueDate      DateTime?
+  projectId    String
+  project      Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  columnId     String
+  column       Column         @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  assignees    TaskAssignee[]
+  comments     Comment[]
   taskTimeLogs TaskTimeLog[]
-  taskvector   TaskVector?
-  created_at  DateTime       @default(now())
-  updated_at  DateTime       @updatedAt
-  completedAt DateTime?
+  created_at   DateTime       @default(now())
+  updated_at   DateTime       @updatedAt
+  completedAt  DateTime?
 
   estimateHours Int?
-  difficulty Int?
-  blocked Boolean @default(false)
-  blockedReason String?
+  difficulty    Int?
+  blocked       Boolean     @default(false)
+  blocks        TaskBlock[]
 
   @@index([columnId, position])
   @@index([projectId])
+}
+
+model TaskBlock {
+  id          String    @id @default(cuid())
+  taskId      String
+  task        Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  reason      String
+  blockedAt   DateTime  @default(now())
+  unblockedAt DateTime?
+
+  @@index([taskId])
 }
 
 model TaskAssignee {
@@ -171,14 +179,14 @@ model Notification {
 
 //DATN
 model Comment {
-  id        String   @id @default(cuid())
-  content   String
-  taskId    String
-  authorId  String
+  id       String @id @default(cuid())
+  content  String
+  taskId   String
+  authorId String
 
-  parentId  String?
-  parent    Comment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   Comment[] @relation("CommentThread")
+  parentId String?
+  parent   Comment?         @relation("CommentThread", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[]        @relation("CommentThread")
   mentions CommentMention[]
 
   createdAt DateTime  @default(now())
@@ -214,8 +222,8 @@ model ActivityLog {
   metadata   Json?
   createdAt  DateTime @default(now())
 
-  user    User    @relation(fields: [userId], references: [id])
-  project Project @relation(fields: [projectId], references: [id])
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
   @@index([entityId])
@@ -223,22 +231,11 @@ model ActivityLog {
 
 model TaskTimeLog {
   id        String   @id @default(cuid())
-  taskId    String   
+  taskId    String
   userId    String
   hours     Float
   createdAt DateTime @default(now())
 
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
   user User @relation(fields: [userId], references: [id])
-}
-
-model TaskVector {
-  id        String   @id @default(cuid())
-  taskId    String   @unique
-  content   String
-  embedding Float[]
-
-  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-
-  @@index([taskId])
 }

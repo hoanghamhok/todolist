@@ -17,7 +17,7 @@ export function RemoveProject({ projectId }: RemoveProjectProps) {
           openConfirm({
             title: "Delete Project",
             message:
-              "Are you sure you want to delete this project? You will lose all data.",
+              "This action will delete all project data including columns, tasks, comments, attachments, activity logs, and all associated data. This action cannot be undone.",
             onConfirm: () => {
               mutate(projectId);
               window.location.href = "/";

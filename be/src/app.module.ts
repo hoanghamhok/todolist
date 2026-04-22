@@ -21,6 +21,7 @@ import { GeminiModule } from './gemini/gemini.module';
 import { ActivityLogModule } from './activity-log/activity.module';
 import { SearchModule } from './search/search.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { TaskBlockModule } from './task-block/task-block.module';
 
 @Module({
   imports: [
@@ -34,10 +35,15 @@ import { AnalyticsModule } from './analytics/analytics.module';
     InvitesModule,
     ProjectmembersModule,
     ColumnsModule,
-    require('./invites/invites.module').InvitesModule,
     MailModule,
     NotificationsModule,
-    CommentsModule,AiModule,AiModule,GeminiModule,ActivityLogModule,SearchModule,AnalyticsModule
+    CommentsModule,
+    AiModule,
+    GeminiModule,
+    ActivityLogModule,
+    SearchModule,
+    AnalyticsModule,
+    TaskBlockModule
   ],
   controllers: [NotificationsController],
   providers: [AppService, NotificationsService],
