@@ -22,6 +22,7 @@ import { ActivityLogModule } from './activity-log/activity.module';
 import { SearchModule } from './search/search.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { TaskBlockModule } from './task-block/task-block.module';
+import { TaskDependencyModule } from './task-dependency/task-dependency.module';
 
 @Module({
   imports: [
@@ -43,7 +44,8 @@ import { TaskBlockModule } from './task-block/task-block.module';
     ActivityLogModule,
     SearchModule,
     AnalyticsModule,
-    TaskBlockModule
+    TaskBlockModule,
+    TaskDependencyModule
   ],
   controllers: [NotificationsController],
   providers: [AppService, NotificationsService],

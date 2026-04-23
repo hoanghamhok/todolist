@@ -4,13 +4,15 @@ import { CreateTaskDto } from "./dto/create-task.dto";
 import { UpdateTaskDto } from "./dto/update-task.dto";
 import { ActivityLogService } from "src/activity-log/activity-log.service";
 import { CreateManyTasksDto } from "./dto/create-tasks.dto";
+import { TaskDependencyService } from "src/task-dependency/task-dependency.service";
 
 
 @Injectable()
 
 export class TasksService{
     constructor(private prisma:PrismaService,
-                private activityLogService:ActivityLogService,){}
+                private activityLogService:ActivityLogService,
+                private taskDependencyService: TaskDependencyService){}
     
     async getTaskByID(id:string){
         const task = await this.prisma.task.findUnique({
@@ -22,14 +24,32 @@ export class TasksService{
                         title: true,
                         position: true
                     }
-                }
+                },
+                dependencies: {
+                    include: {
+                        dependsOn: {
+                            select: {
+                                completedAt: true,
+                            },
+                        },
+                    },
+                },
             }
         })
         if(!task){
             throw new NotFoundException();
         }
 
-        return task;
+        const unresolvedDependencies = task.dependencies.filter(
+            (d) => d.dependsOn.completedAt === null,
+        ).length;
+
+        return {
+            ...task,
+            dependencyCount: task.dependencies.length,
+            unresolvedDependencies,
+            isBlockedByDependency: unresolvedDependencies > 0,
+        };
     }
     
     async create(createTaskDto:CreateTaskDto,userId:string){
@@ -335,13 +355,29 @@ export class TasksService{
             newPosition = lastTask ? lastTask.position + GAP : GAP;
             }
 
+            let completedAt: Date | null = task.completedAt;
+
+            if (targetColumn?.closed) {
+                const isBlocked = await this.taskDependencyService.checkDependencyBlocked(taskId);
+                if (isBlocked) {
+                    throw new BadRequestException('Cannot complete task: Blocked by unfinished dependencies');
+                }
+                // chỉ set nếu chưa complete trước đó
+                if (!task.completedAt) {
+                    completedAt = new Date();
+                }
+            } else {
+                // nếu kéo ra khỏi Done → un-complete
+                completedAt = null;
+            }
+
             const updated = await tx.task.update({
                 where: { id: taskId },
                 data: {
                     columnId,
                     position: newPosition,
                     updated_at: new Date(),
-                    completedAt: targetColumn?.closed ? new Date() : null,
+                    completedAt,
                 },
             });
 
@@ -414,26 +450,43 @@ export class TasksService{
                         position: true,
                     },
                 },
+                dependencies: {
+                    include: {
+                        dependsOn: {
+                            select: {
+                                completedAt: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
-        return tasks.map(task => ({
-            id: task.id,
-            title: task.title,
-            description: task.description,
-            position: task.position,
-            dueDate: task.dueDate,
-            completedAt: task.completedAt,
-            projectId: task.projectId,
-            columnId: task.columnId,
-            column: task.column,
-            created_at: task.created_at,
-            updated_at: task.updated_at,
-            assigneeIds: task.assignees.map(a => a.userId),
-            difficulty: task.difficulty,
-            estimateHours: task.estimateHours,
-            blocked: task.blocked,
-        }));
+        return tasks.map(task => {
+            const unresolvedDependencies = task.dependencies.filter(
+                (d) => d.dependsOn.completedAt === null,
+            ).length;
+            return {
+                id: task.id,
+                title: task.title,
+                description: task.description,
+                position: task.position,
+                dueDate: task.dueDate,
+                completedAt: task.completedAt,
+                projectId: task.projectId,
+                columnId: task.columnId,
+                column: task.column,
+                created_at: task.created_at,
+                updated_at: task.updated_at,
+                assigneeIds: task.assignees.map(a => a.userId),
+                difficulty: task.difficulty,
+                estimateHours: task.estimateHours,
+                blocked: task.blocked,
+                dependencyCount: task.dependencies.length,
+                unresolvedDependencies,
+                isBlockedByDependency: unresolvedDependencies > 0,
+            };
+        });
     }
 
 
@@ -453,24 +506,41 @@ export class TasksService{
                         position: true,
                     },
                 },
+                dependencies: {
+                    include: {
+                        dependsOn: {
+                            select: {
+                                completedAt: true,
+                            },
+                        },
+                    },
+                },
             },
         });
-        return tasks.map(task => ({
-            id: task.id,
-            title: task.title,
-            description: task.description,
-            position: task.position,
-            dueDate: task.dueDate,
-            completedAt: task.completedAt,
-            projectId: task.projectId,
-            columnId: task.columnId,
-            column: task.column,
-            created_at: task.created_at,
-            updated_at: task.updated_at,
-            assigneeIds: task.assignees.map(a => a.userId),
-            difficulty: task.difficulty,
-            estimateHours: task.estimateHours,
-            blocked: task.blocked,
-        }));
+        return tasks.map(task => {
+            const unresolvedDependencies = task.dependencies.filter(
+                (d) => d.dependsOn.completedAt === null,
+            ).length;
+            return {
+                id: task.id,
+                title: task.title,
+                description: task.description,
+                position: task.position,
+                dueDate: task.dueDate,
+                completedAt: task.completedAt,
+                projectId: task.projectId,
+                columnId: task.columnId,
+                column: task.column,
+                created_at: task.created_at,
+                updated_at: task.updated_at,
+                assigneeIds: task.assignees.map(a => a.userId),
+                difficulty: task.difficulty,
+                estimateHours: task.estimateHours,
+                blocked: task.blocked,
+                dependencyCount: task.dependencies.length,
+                unresolvedDependencies,
+                isBlockedByDependency: unresolvedDependencies > 0,
+            };
+        });
     }
 }

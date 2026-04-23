@@ -34,6 +34,15 @@ export const tasksAPI = {
 
   getBlockHistory: (id: string) =>
     api.get(`/tasks/${id}/block-history`),
+
+  getDependencies: (id: string) =>
+    api.get(`/tasks/${id}/dependencies`),
+
+  addDependency: (id: string, dependsOnTaskId: string) =>
+    api.post(`/tasks/${id}/dependencies`, { dependsOnTaskId }),
+
+  removeDependency: (id: string, dependsOnTaskId: string) =>
+    api.delete(`/tasks/${id}/dependencies/${dependsOnTaskId}`),
 }
 
 export const fetchTasks = tasksAPI.getAll

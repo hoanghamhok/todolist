@@ -39,6 +39,9 @@ export interface Task {
   blockedAt?: string;
   blockedReason?: string;
   blockedBy?: string;
+  dependencyCount?: number;
+  unresolvedDependencies?: number;
+  isBlockedByDependency?: boolean;
 }
 
 export type Column = {

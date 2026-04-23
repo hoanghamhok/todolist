@@ -7,7 +7,7 @@ import { CommentSection } from "../../comment/components/CommentSection";
 import { TfiAlignLeft } from "react-icons/tfi";
 import { MdOutlineDateRange } from "react-icons/md";
 import { IoMdTime } from "react-icons/io";
-import { Gauge, X, Lock, Unlock, History, AlertCircle } from "lucide-react";
+import { Gauge, X, Lock, Unlock, History, AlertCircle, Link, Trash2, Plus, CheckCircle2, Circle } from "lucide-react";
 import { useTask } from "../hooks/useTasks";
 import { tasksAPI } from "../tasks.api";
 import { useState } from "react";
@@ -100,6 +100,10 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
   const [isBlocking, setIsBlocking] = useState(false);
   const [history, setHistory] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [dependencies, setDependencies] = useState<any[]>([]);
+  const [projectTasks, setProjectTasks] = useState<Task[]>([]);
+  const [selectedTaskToDepend, setSelectedTaskToDepend] = useState("");
+  const [isLoadingDeps, setIsLoadingDeps] = useState(false);
 
   const isOverdue = Boolean(task.dueDate && !task.completedAt && dayjs(task.dueDate).isBefore(dayjs()));
 
@@ -113,9 +117,41 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
     }
   };
 
+  const fetchDependencies = async () => {
+    setIsLoadingDeps(true);
+    try {
+      const res = await tasksAPI.getDependencies(task.id);
+      setDependencies(res.data);
+    } catch (error) {
+      console.error("Failed to fetch dependencies", error);
+    } finally {
+      setIsLoadingDeps(false);
+    }
+  };
+
+  const fetchProjectTasks = async () => {
+    try {
+      const res = await tasksAPI.getByProjectId(task.projectId);
+      // Filter out current task and already dependent tasks
+      const filtered = res.data.filter((t: Task) => 
+        t.id !== task.id && !dependencies.some(d => d.dependsOnTaskId === t.id)
+      );
+      setProjectTasks(filtered);
+    } catch (error) {
+      console.error("Failed to fetch project tasks", error);
+    }
+  };
+
   useEffect(() => {
     fetchHistory();
+    fetchDependencies();
   }, [task.id]);
+
+  useEffect(() => {
+    if (task.projectId) {
+      fetchProjectTasks();
+    }
+  }, [task.projectId, dependencies]);
   const handleBlock = async () => {
     if (!blockReason.trim()) return;
     try {
@@ -134,6 +170,26 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
       fetchHistory();
     } catch (error) {
       console.error("Failed to unblock task", error);
+    }
+  };
+
+  const handleAddDependency = async () => {
+    if (!selectedTaskToDepend) return;
+    try {
+      await tasksAPI.addDependency(task.id, selectedTaskToDepend);
+      setSelectedTaskToDepend("");
+      fetchDependencies();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "Failed to add dependency");
+    }
+  };
+
+  const handleRemoveDependency = async (dependsOnId: string) => {
+    try {
+      await tasksAPI.removeDependency(task.id, dependsOnId);
+      fetchDependencies();
+    } catch (error) {
+      console.error("Failed to remove dependency", error);
     }
   };
 
@@ -175,7 +231,7 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
           <X size={20} strokeWidth={2.5} />
         </button>
 
-        <div className="flex-1 p-6 md:p-12 lg:p-16 space-y-12 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
+        <div className="flex-1 p-6 md:pt-8 lg:pt-10 space-y-6 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-transparent">
           
           <div className="space-y-6">
             <nav 
@@ -230,6 +286,79 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
             </div>
           </section>
 
+          <section className="space-y-6 pt-8 border-t border-slate-200/60">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3 text-indigo-600">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center">
+                  <Link size={18} strokeWidth={1.5} />
+                </div>
+                <h2 className="text-xl font-bold tracking-tight">Dependencies</h2>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              {/* Add Dependency UI */}
+              <div className="flex gap-2">
+                <select
+                  value={selectedTaskToDepend}
+                  onChange={(e) => setSelectedTaskToDepend(e.target.value)}
+                  className="flex-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                >
+                  <option value="">Select a task to depend on...</option>
+                  {projectTasks.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.title}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  onClick={handleAddDependency}
+                  disabled={!selectedTaskToDepend}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold hover:bg-indigo-700 disabled:opacity-50 transition-all flex items-center gap-2"
+                >
+                  <Plus size={18} />
+                  Add
+                </button>
+              </div>
+
+              {/* Dependency List */}
+              <div className="space-y-2">
+                {dependencies.length > 0 ? (
+                  dependencies.map((dep) => (
+                    <div
+                      key={dep.id}
+                      className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-xl hover:border-indigo-200 transition-all group"
+                    >
+                      <div className="flex items-center gap-3">
+                        {dep.dependsOn.completedAt ? (
+                          <CheckCircle2 size={18} className="text-emerald-500" />
+                        ) : (
+                          <Circle size={18} className="text-slate-300" />
+                        )}
+                        <div>
+                          <p className={`text-sm font-bold ${dep.dependsOn.completedAt ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                            {dep.dependsOn.title}
+                          </p>
+                          <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                            {dep.dependsOn.column?.title || 'Unknown Status'}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveDependency(dep.dependsOnTaskId)}
+                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-400 italic py-2">No dependencies set for this task.</p>
+                )}
+              </div>
+            </div>
+          </section>
+
           <section 
             className=" border-t flex flex-col"
             aria-label="Comments"
@@ -253,6 +382,12 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
                   <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 text-amber-700 text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-2 border border-amber-200">
                     <AlertCircle size={12} />
                     Blocked
+                  </span>
+                )}
+                {task.isBlockedByDependency && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-rose-100 text-rose-700 text-[11px] font-bold uppercase tracking-[0.18em] px-3 py-2 border border-rose-200">
+                    <AlertCircle size={12} />
+                    Blocked by Dependency
                   </span>
                 )}
               </div>

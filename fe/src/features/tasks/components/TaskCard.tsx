@@ -60,7 +60,9 @@ export function TaskCard({ taskId, projectId }: TaskCardProps) {
             : "hover:-translate-y-0.5"
         } ${
           isOverdue 
-            ? "border-red-200 bg-red-50/50" // Chỉ đổi màu nếu Overdue
+            ? "border-red-200 bg-red-50/50" // Chỉ báo nếu Overdue
+            : task.isBlockedByDependency
+            ? "border-rose-200 bg-rose-50/30"
             : task.blocked
             ? "border-amber-200 bg-amber-50/30"
             : "border-gray-200/80"
@@ -73,12 +75,12 @@ export function TaskCard({ taskId, projectId }: TaskCardProps) {
           </div>
         )}
 
-        {task.blocked && (
-          <div className="absolute -top-2 left-2 bg-amber-500 text-white text-[9px] px-1.5 py-0.5 rounded-full shadow-sm font-bold uppercase tracking-tighter z-10 flex items-center gap-1">
+        {(task.blocked || task.isBlockedByDependency) && (
+          <div className={`absolute -top-2 left-2 ${task.isBlockedByDependency ? 'bg-rose-500' : 'bg-amber-500'} text-white text-[9px] px-1.5 py-0.5 rounded-full shadow-sm font-bold uppercase tracking-tighter z-10 flex items-center gap-1`}>
             <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z" clipRule="evenodd" />
             </svg>
-            Blocked
+            {task.isBlockedByDependency ? 'Blocked by Dep' : 'Blocked'}
           </div>
         )}
 
@@ -90,7 +92,7 @@ export function TaskCard({ taskId, projectId }: TaskCardProps) {
         >
           <div className="flex items-start justify-between gap-2">
             <h3 className={`text-sm font-medium leading-tight line-clamp-2 flex-1 truncate transition-colors ${
-              isOverdue ? "text-red-700" : task.blocked ? "text-amber-700" : "text-gray-800"
+              isOverdue ? "text-red-700" : task.isBlockedByDependency ? "text-rose-700" : task.blocked ? "text-amber-700" : "text-gray-800"
             }`}>
               {task.title}
             </h3>

@@ -123,8 +123,26 @@ model Task {
   blocked       Boolean     @default(false)
   blocks        TaskBlock[]
 
+  dependencies TaskDependency[] @relation("TaskDeps")
+  blockedBy    TaskDependency[] @relation("TaskBlockedBy")
+
   @@index([columnId, position])
   @@index([projectId])
+}
+
+model TaskDependency {
+  id              String @id @default(cuid())
+  taskId          String
+  dependsOnTaskId String
+
+  task            Task @relation("TaskDeps", fields: [taskId], references: [id], onDelete: Cascade)
+  dependsOn       Task @relation("TaskBlockedBy", fields: [dependsOnTaskId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime @default(now())
+
+  @@unique([taskId, dependsOnTaskId])
+  @@index([taskId])
+  @@index([dependsOnTaskId])
 }
 
 model TaskBlock {
