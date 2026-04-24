@@ -23,6 +23,7 @@ import { SearchModule } from './search/search.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { TaskBlockModule } from './task-block/task-block.module';
 import { TaskDependencyModule } from './task-dependency/task-dependency.module';
+import { RiskPredictionModule } from './risk-prediction/risk-prediction.module';
 
 @Module({
   imports: [
@@ -45,7 +46,8 @@ import { TaskDependencyModule } from './task-dependency/task-dependency.module';
     SearchModule,
     AnalyticsModule,
     TaskBlockModule,
-    TaskDependencyModule
+    TaskDependencyModule,
+    RiskPredictionModule
   ],
   controllers: [NotificationsController],
   providers: [AppService, NotificationsService],

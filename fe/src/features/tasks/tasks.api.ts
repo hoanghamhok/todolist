@@ -43,6 +43,9 @@ export const tasksAPI = {
 
   removeDependency: (id: string, dependsOnTaskId: string) =>
     api.delete(`/tasks/${id}/dependencies/${dependsOnTaskId}`),
+
+  getRiskScore: (id: string) =>
+    api.get(`/risk-prediction/${id}`),
 }
 
 export const fetchTasks = tasksAPI.getAll

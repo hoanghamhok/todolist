@@ -42,6 +42,7 @@ export interface Task {
   dependencyCount?: number;
   unresolvedDependencies?: number;
   isBlockedByDependency?: boolean;
+  riskScore: number;
 }
 
 export type Column = {

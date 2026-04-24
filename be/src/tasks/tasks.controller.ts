@@ -16,11 +16,12 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { MoveTaskDto } from './dto/move-task.dto';
 import { CreateManyTasksDto } from './dto/create-tasks.dto';
+import { RiskPredictionService } from '../risk-prediction/risk-prediction.service';
 
 @ApiTags('Tasks')
 @Controller('tasks')
 export class TasksController {
-  constructor(private tasksService: TasksService) {}
+  constructor(private tasksService: TasksService,private riskPredictionService: RiskPredictionService) {}
 
   @Get()
   async getAllTasks() {
@@ -59,8 +60,13 @@ export class TasksController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
-    return this.tasksService.update(id, updateTaskDto);
+  async update(@Param('id') id: string, @Body() updateTaskDto: UpdateTaskDto) {
+    const updatedTask = await this.tasksService.update(id, updateTaskDto);
+    const newRiskScore = await this.riskPredictionService.getRiskScore(id);
+    return {
+      ...updatedTask,
+      riskScore: newRiskScore,
+    }
   }
 
   @Patch(':id/move')

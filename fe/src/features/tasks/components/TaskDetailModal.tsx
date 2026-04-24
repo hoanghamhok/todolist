@@ -11,6 +11,8 @@ import { Gauge, X, Lock, Unlock, History, AlertCircle, Link, Trash2, Plus, Check
 import { useTask } from "../hooks/useTasks";
 import { tasksAPI } from "../tasks.api";
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useRiskScore } from "../hooks/useRiskScore";
 
 interface TaskDetailModalProps {
   task: Task;
@@ -104,7 +106,8 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
   const [projectTasks, setProjectTasks] = useState<Task[]>([]);
   const [selectedTaskToDepend, setSelectedTaskToDepend] = useState("");
   const [isLoadingDeps, setIsLoadingDeps] = useState(false);
-
+  const queryClient = useQueryClient();
+  const { data: riskScore = 0 } = useRiskScore(task.id);
   const isOverdue = Boolean(task.dueDate && !task.completedAt && dayjs(task.dueDate).isBefore(dayjs()));
 
   const fetchHistory = async () => {
@@ -142,9 +145,19 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
     }
   };
 
+  // const fetchRiskScore = async () => {
+  //   try {
+  //     const res = await tasksAPI.getRiskScore(task.id);
+  //     setRiskScore(res.data.riskScore);
+  //   } catch (error) {
+  //     console.error("Failed to fetch risk score", error);
+  //   }
+  // };
+
   useEffect(() => {
     fetchHistory();
     fetchDependencies();
+    // fetchRiskScore();
   }, [task.id]);
 
   useEffect(() => {
@@ -159,6 +172,7 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
       setBlockReason("");
       setIsBlocking(false);
       fetchHistory();
+      queryClient.invalidateQueries({ queryKey: ['riskScore', task.id] });
     } catch (error) {
       console.error("Failed to block task", error);
     }
@@ -168,6 +182,7 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
     try {
       await unblock(task.id);
       fetchHistory();
+      queryClient.invalidateQueries({ queryKey: ['riskScore', task.id] });
     } catch (error) {
       console.error("Failed to unblock task", error);
     }
@@ -179,6 +194,7 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
       await tasksAPI.addDependency(task.id, selectedTaskToDepend);
       setSelectedTaskToDepend("");
       fetchDependencies();
+      queryClient.invalidateQueries({ queryKey: ['riskScore', task.id] });
     } catch (error) {
       alert(error instanceof Error ? error.message : "Failed to add dependency");
     }
@@ -188,6 +204,7 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
     try {
       await tasksAPI.removeDependency(task.id, dependsOnId);
       fetchDependencies();
+      queryClient.invalidateQueries({ queryKey: ['riskScore', task.id] });
     } catch (error) {
       console.error("Failed to remove dependency", error);
     }
@@ -442,6 +459,38 @@ export function TaskDetailModal({ task, onClose }: TaskDetailModalProps) {
                   Unblock Task
                 </button>
               )}
+            </div>
+            
+            {/* Risk Prediction UI */}
+            <div className="space-y-4 pt-4 border-t border-slate-200/70">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                Risk Prediction
+              </p>
+              <div className={`p-5 rounded-3xl border flex items-center justify-between transition-all duration-300 ${
+                riskScore >= 0.7 ? 'bg-rose-50 border-rose-200 text-rose-700 shadow-sm' :
+                riskScore >= 0.4 ? 'bg-amber-50 border-amber-200 text-amber-700 shadow-sm' :
+                'bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm'
+              }`}>
+                <div className="flex items-center gap-4">
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner ${
+                    riskScore >= 0.7 ? 'bg-rose-100/80' :
+                    riskScore >= 0.4 ? 'bg-amber-100/80' :
+                    'bg-emerald-100/80'
+                  }`}>
+                    <AlertCircle size={24} strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-black uppercase tracking-tight">
+                      {riskScore >= 0.7 ? 'High Risk' :
+                       riskScore >= 0.4 ? 'Medium Risk' :
+                       'Low Risk'}
+                    </p>
+                    <p className="text-[11px] opacity-80 font-bold uppercase tracking-wider mt-0.5">
+                      AI Predicts: {(riskScore * 100).toFixed(0)}%
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Difficulty */}

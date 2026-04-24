@@ -5,6 +5,7 @@ import { UpdateTaskDto } from "./dto/update-task.dto";
 import { ActivityLogService } from "src/activity-log/activity-log.service";
 import { CreateManyTasksDto } from "./dto/create-tasks.dto";
 import { TaskDependencyService } from "src/task-dependency/task-dependency.service";
+import { RiskPredictionService } from "src/risk-prediction/risk-prediction.service";
 
 
 @Injectable()
@@ -12,7 +13,8 @@ import { TaskDependencyService } from "src/task-dependency/task-dependency.servi
 export class TasksService{
     constructor(private prisma:PrismaService,
                 private activityLogService:ActivityLogService,
-                private taskDependencyService: TaskDependencyService){}
+                private taskDependencyService: TaskDependencyService,
+                private riskPredictionService: RiskPredictionService){}
     
     async getTaskByID(id:string){
         const task = await this.prisma.task.findUnique({
@@ -44,11 +46,14 @@ export class TasksService{
             (d) => d.dependsOn.completedAt === null,
         ).length;
 
+        const riskScore = await this.riskPredictionService.getRiskScore(id);
+
         return {
             ...task,
             dependencyCount: task.dependencies.length,
             unresolvedDependencies,
             isBlockedByDependency: unresolvedDependencies > 0,
+            riskScore,
         };
     }
     

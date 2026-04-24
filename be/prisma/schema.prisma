@@ -49,7 +49,7 @@ model User {
   notifitcation        Notification[]
   taskAssignees        TaskAssignee[]
   activityLogs         ActivityLog[]
-  taskTimeLogs         TaskTimeLog[]
+
   commentmentions      CommentMention[]
   comments             Comment[]
 }
@@ -113,7 +113,7 @@ model Task {
   column       Column         @relation(fields: [columnId], references: [id], onDelete: Cascade)
   assignees    TaskAssignee[]
   comments     Comment[]
-  taskTimeLogs TaskTimeLog[]
+
   created_at   DateTime       @default(now())
   updated_at   DateTime       @updatedAt
   completedAt  DateTime?
@@ -247,13 +247,3 @@ model ActivityLog {
   @@index([entityId])
 }
 
-model TaskTimeLog {
-  id        String   @id @default(cuid())
-  taskId    String
-  userId    String
-  hours     Float
-  createdAt DateTime @default(now())
-
-  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id])
-}

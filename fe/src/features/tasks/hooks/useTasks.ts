@@ -48,9 +48,10 @@ export function useTask(projectId: string) {
   const editMutation = useMutation({
     mutationFn: ({ id, data }: { id: string; data: Partial<Task> }) =>
       updateTask(id, data),
-    onSuccess: () => {
+    onSuccess: (data,variables) => {
       queryClient.invalidateQueries({ queryKey: ["tasks", projectId] });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
+     queryClient.invalidateQueries({ queryKey: ["riskScore", variables.id] });
     },
   });
 

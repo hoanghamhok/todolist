@@ -8,7 +8,7 @@
 #google login:
 [ React Client ]
         |
-        | 1. Click Login 
+        | 1. Click Login
         ↓
 [ Google OAuth Server ]
         |
