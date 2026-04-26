@@ -10,6 +10,8 @@ import GlobalSearch from "../../search/components/GlobalSearch";
 import { TaskDetailModal } from "../../tasks/components/TaskDetailModal";
 import type { Task } from "../../tasks/types";
 import { IoMdNotifications } from "react-icons/io";
+import { FaUser, FaUserShield } from "react-icons/fa";
+import { FiLogOut } from "react-icons/fi";
 
 const HomeNavbar = () => {
   const { user, logout } = useAuth();
@@ -218,24 +220,19 @@ const HomeNavbar = () => {
               <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg p-2">
                 <button
                   onClick={() => navigate("/profile")}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 rounded"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-100 rounded"
                 >
-                  👤 Profile
-                </button>
-
-                <button
-                  onClick={() => navigate("/settings")}
-                  className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 rounded"
-                >
-                  ⚙️ Settings
+                  <FaUser className="text-base" />
+                  <span>Profile</span>
                 </button>
 
                 {user.role === "SUPER_ADMIN" && (
                   <button
                     onClick={() => navigate("/admin")}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-slate-100 rounded"
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm hover:bg-slate-100 rounded"
                   >
-                    🛡️ Admin
+                    <FaUserShield className="text-base" />
+                    <span>Admin</span>
                   </button>
                 )}
 
@@ -243,9 +240,10 @@ const HomeNavbar = () => {
 
                 <button
                   onClick={logout}
-                  className="w-full text-left px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-500 hover:bg-red-50 rounded"
                 >
-                  🚪 Logout
+                  <FiLogOut className="text-base" />
+                  <span>Logout</span>
                 </button>
               </div>
             )}
