@@ -164,6 +164,14 @@ const Navbar = ({ onToggleSidebar }: NavbarProps) => {
                               <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
                                 <span className="text-amber-600 dark:text-amber-400 text-sm">📨</span>
                               </div>
+                            ) : n.type === 'TASK_EXPIRING' ? (
+                              <div className="w-8 h-8 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                                <span className="text-red-600 dark:text-red-400 text-sm">⏰</span>
+                              </div>
+                            ) : n.type === 'TASK_HIGH_RISK' ? (
+                              <div className="w-8 h-8 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                                <span className="text-orange-600 dark:text-orange-400 text-sm">⚠️</span>
+                              </div>
                             ) : (
                               <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
                                 <span className="text-slate-500 dark:text-slate-400 text-sm">🔔</span>

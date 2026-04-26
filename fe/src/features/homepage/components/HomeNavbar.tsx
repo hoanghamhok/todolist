@@ -51,7 +51,7 @@ const HomeNavbar = () => {
     });
     window.location.reload();
   };
-
+  console.log(notifications)
   return (
     <header className="w-full h-16 sticky top-0 z-20 flex justify-between items-center px-10 bg-[#f7f9fb]">
       {/* Search */}
@@ -97,8 +97,8 @@ const HomeNavbar = () => {
                 notifications.map((n) => (
                   <div
                     key={n.id}
-                    className={`p-3 text-sm border-b hover:bg-slate-100 cursor-pointer ${
-                      !n.read ? "bg-indigo-50" : ""
+                    className={`p-3 text-sm border-b hover:bg-slate-50 transition-colors cursor-pointer ${
+                      !n.read ? "bg-indigo-50/50" : ""
                     }`}
                     onClick={() => {
                       if (!n.read) markRead.mutate(n.id);
@@ -107,8 +107,28 @@ const HomeNavbar = () => {
                       }
                     }}
                   >
-                    <div className="flex justify-between items-start gap-2">
-                      <span>{n.data.message}</span>
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 mt-0.5">
+                        {n.type === "INVITE_RECEIVED" ? (
+                          <span className="text-lg">📨</span>
+                        ) : n.type === "TASK_EXPIRING" ? (
+                          <span className="text-lg">⏰</span>
+                        ) : n.type === "TASK_HIGH_RISK" ? (
+                          <span className="text-lg">⚠️</span>
+                        ) : (
+                          <span className="text-lg">🔔</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className={`${!n.read ? "font-medium text-slate-800" : "text-slate-600"}`}>
+                          {n.data.message}
+                        </p>
+                        {n.createdAt && (
+                          <p className="text-[10px] text-slate-400 mt-1">
+                            {new Date(n.createdAt).toLocaleString("vi-VN")}
+                          </p>
+                        )}
+                      </div>
                       <DeleteNotification notiId={n.id} />
                     </div>
                   </div>

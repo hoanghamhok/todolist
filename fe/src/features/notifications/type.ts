@@ -4,7 +4,9 @@ export type NotificationType =
   | "TASK_ASSIGNED"
   | "COMMENT_MENTION"
   | "COMMENT_REPLY"
-  | "TASK_COMMENT";
+  | "TASK_COMMENT"
+  | "TASK_EXPIRING"
+  | "TASK_HIGH_RISK";
 
 export interface Notification {
   id: string;

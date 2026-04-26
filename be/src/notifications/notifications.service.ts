@@ -40,4 +40,14 @@ export class NotificationsService {
             where:{ id: notiId },
         });
     }
+
+    async createNotification(userId: string, type: string, data: any) {
+        return await this.prisma.notification.create({
+            data: {
+                userId,
+                type,
+                data,
+            },
+        });
+    }
 }

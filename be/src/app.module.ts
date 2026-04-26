@@ -24,6 +24,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { TaskBlockModule } from './task-block/task-block.module';
 import { TaskDependencyModule } from './task-dependency/task-dependency.module';
 import { RiskPredictionModule } from './risk-prediction/risk-prediction.module';
+import { TaskRemindModule } from './task-remind/task-remind.module';
 
 @Module({
   imports: [
@@ -47,7 +48,8 @@ import { RiskPredictionModule } from './risk-prediction/risk-prediction.module';
     AnalyticsModule,
     TaskBlockModule,
     TaskDependencyModule,
-    RiskPredictionModule
+    RiskPredictionModule,
+    TaskRemindModule
   ],
   controllers: [NotificationsController],
   providers: [AppService, NotificationsService],
