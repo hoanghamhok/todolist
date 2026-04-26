@@ -26,3 +26,17 @@ export interface RecentActivity {
     metadata?: any;
     createdAt: string;
 }
+
+export interface RiskTask {
+    id: string;
+    title: string;
+    description?: string;
+    dueDate?: string;
+    riskScore: number;
+    assignees: {
+        user: {
+            fullName: string;
+            avatarUrl?: string;
+        };
+    }[];
+}

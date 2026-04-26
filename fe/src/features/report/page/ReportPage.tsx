@@ -5,6 +5,7 @@ import {
   useProjectStats,
   useMemberPerformance,
   useTaskCompletionTrend,
+  useHighRiskTasks,
 } from "../hooks/useAnalytics";
 import { useProjectsByUser } from "../../projects/hooks/useProjectsByUser";
 import { ProjectRecentActivity } from "../../activities/components/ProjectRecentActivity";
@@ -25,47 +26,6 @@ const shadow = {
   boxShadow: "0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04)",
 } as const;
 
-const RISK_ROWS: RiskRowProps[] = [
-  {
-    taskName: "API Gateway Authentication Fix",
-    category: "Infrastructure Component",
-    assigneeImg: "https://i.pravatar.cc/40?img=11",
-    assigneeName: "Alex Rivera",
-    deadline: "Oct 24, 2023",
-    deadlineSub: "Overdue 4 days",
-    deadlineColor: "text-red-500",
-    deadlineSubColor: "text-red-400",
-    statusLabel: "BLOCKED",
-    statusBg: "bg-red-100",
-    statusColor: "text-red-600",
-  },
-  {
-    taskName: "Database Migration - Stage 2",
-    category: "Backend Optimization",
-    assigneeImg: "https://i.pravatar.cc/40?img=5",
-    assigneeName: "Sarah Kim",
-    deadline: "Oct 29, 2023",
-    deadlineSub: "Due Tomorrow",
-    deadlineColor: "text-gray-800",
-    deadlineSubColor: "text-gray-400",
-    statusLabel: "STUCK",
-    statusBg: "bg-amber-100",
-    statusColor: "text-amber-700",
-  },
-  {
-    taskName: "UI Refresh - Profile Pages",
-    category: "Frontend Evolution",
-    assigneeImg: "https://i.pravatar.cc/40?img=9",
-    assigneeName: "James Rogers",
-    deadline: "Oct 22, 2023",
-    deadlineSub: "Overdue 6 days",
-    deadlineColor: "text-red-500",
-    deadlineSubColor: "text-red-400",
-    statusLabel: "CRITICAL",
-    statusBg: "bg-red-100",
-    statusColor: "text-red-600",
-  },
-];
 
 const FALLBACK_BAR = [
   { fullName: "Alex M.", completedTasks: 14 },
@@ -96,6 +56,7 @@ export default function DashboardContent() {
   const { data: stats } = useProjectStats(selectedProjectId);
   const { data: memberPerformance = [] } = useMemberPerformance(selectedProjectId);
   const { data: trend = [] } = useTaskCompletionTrend(selectedProjectId, selectedDays);
+  const { data: highRiskTasks = [] } = useHighRiskTasks(selectedProjectId);
 
   // ── Data Formatting ───────────────────────────────────────────────────────
   const lineData = trend.map((item) => ({
@@ -119,6 +80,45 @@ export default function DashboardContent() {
     : FALLBACK_BAR;
 
   const maxBar = Math.max(...barData.map((b) => b.completedTasks), 1);
+
+  const riskRows: RiskRowProps[] = highRiskTasks.map((task) => {
+    const riskScore = task.riskScore;
+    let statusLabel = "LOW RISK";
+    let statusBg = "bg-emerald-100";
+    let statusColor = "text-emerald-700";
+
+    if (riskScore > 0.7) {
+      statusLabel = "CRITICAL";
+      statusBg = "bg-red-100";
+      statusColor = "text-red-600";
+    } else if (riskScore > 0.4) {
+      statusLabel = "AT RISK";
+      statusBg = "bg-amber-100";
+      statusColor = "text-amber-700";
+    }
+
+    const dueDate = task.dueDate ? new Date(task.dueDate) : null;
+    const isOverdue = dueDate && dueDate < new Date();
+
+    const assignees = task.assignees.map((a) => ({
+      img: a.user.avatarUrl || `https://ui-avatars.com/api/?name=${a.user.fullName || 'U'}&background=random`,
+      name: a.user.fullName || "Unknown",
+    }));
+
+    return {
+      taskName: task.title,
+      category: task.description ? (task.description.length > 40 ? task.description.substring(0, 40) + "..." : task.description) : "No description",
+      assignees,
+      deadline: dueDate ? dueDate.toLocaleDateString("en-US", { month: 'short', day: 'numeric', year: 'numeric' }) : "No deadline",
+      deadlineSub: isOverdue ? "Overdue" : (dueDate ? "Ongoing" : "N/A"),
+      deadlineColor: isOverdue ? "text-red-500" : "text-gray-800",
+      deadlineSubColor: isOverdue ? "text-red-400" : "text-gray-400",
+      statusLabel,
+      statusBg,
+      statusColor,
+    };
+  });
+
 
   // ── Stat Cards Data ───────────────────────────────────────────────────────
   const statCards: StatCardProps[] = stats
@@ -220,7 +220,7 @@ export default function DashboardContent() {
               />
 
               <RiskTasksTable
-                riskRows={RISK_ROWS}
+                riskRows={riskRows}
                 shadow={shadow}
               />
             </div>

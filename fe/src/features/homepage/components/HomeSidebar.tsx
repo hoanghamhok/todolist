@@ -8,7 +8,8 @@ import {
   FaTasks, 
   FaCog,
   FaPlus,
-  FaPencilRuler
+  FaPencilRuler,
+  FaChartLine
 } from "react-icons/fa";
 
 const navItemBase =
@@ -48,7 +49,7 @@ const HomeSidebar = () => {
           <FaTh className="text-base" />
           <span>Dashboard</span>
         </NavLink>
-
+{/* 
         <NavLink
           to="/projects"
           className={({ isActive }) =>
@@ -67,7 +68,7 @@ const HomeSidebar = () => {
         >
           <FaTasks className="text-base" />
           <span>My Tasks</span>
-        </NavLink>
+        </NavLink> */}
 
         <NavLink
           to="/report"
@@ -75,8 +76,8 @@ const HomeSidebar = () => {
             `${navItemBase} ${isActive ? navItemActive : navItemInactive}`
           }
         >
-          <FaCog className="text-base" />
-          <span>Settings</span>
+          <FaChartLine className="text-base" />
+          <span>Report</span>
         </NavLink>
       </nav>
       

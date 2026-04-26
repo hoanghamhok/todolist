@@ -1,5 +1,3 @@
-import React from "react";
-
 export function BarCol({ pct, name }: { pct: number; name: string }) {
   return (
     <div className="flex flex-col items-center justify-end gap-2 h-full">

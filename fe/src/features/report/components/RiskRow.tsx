@@ -1,11 +1,12 @@
-import React from "react";
 import { Icon } from "./Icon";
 
 export interface RiskRowProps {
   taskName: string;
   category: string;
-  assigneeImg: string;
-  assigneeName: string;
+  assignees: {
+    img: string;
+    name: string;
+  }[];
   deadline: string;
   deadlineSub: string;
   deadlineColor: string;
@@ -20,7 +21,7 @@ const shadow = {
 } as const;
 
 export function RiskRow({
-  taskName, category, assigneeImg, assigneeName,
+  taskName, category, assignees,
   deadline, deadlineSub, deadlineColor, deadlineSubColor,
   statusLabel, statusBg, statusColor,
 }: RiskRowProps) {
@@ -31,14 +32,30 @@ export function RiskRow({
         <div className="text-xs text-gray-400 mt-0.5">{category}</div>
       </td>
       <td className="px-6 py-5">
-        <div className="flex items-center gap-2">
-          <img
-            src={assigneeImg}
-            className="w-8 h-8 rounded-full object-cover border-2 border-white flex-shrink-0"
-            style={shadow}
-            alt={assigneeName}
-          />
-          <span className="text-sm font-semibold text-gray-700">{assigneeName}</span>
+        <div className="flex items-center">
+          <div className="flex -space-x-2 overflow-hidden">
+            {assignees.map((a, idx) => (
+              <img
+                key={idx}
+                src={a.img}
+                className="inline-block h-8 w-8 rounded-full ring-2 ring-white object-cover"
+                style={shadow}
+                title={a.name}
+                alt={a.name}
+              />
+            ))}
+          </div>
+          {assignees.length === 1 && (
+             <span className="ml-3 text-sm font-semibold text-gray-700">{assignees[0].name}</span>
+          )}
+          {assignees.length > 1 && (
+            <span className="ml-3 text-xs font-medium text-gray-500">
+              {assignees.length} people
+            </span>
+          )}
+          {assignees.length === 0 && (
+            <span className="text-xs italic text-gray-400">Unassigned</span>
+          )}
         </div>
       </td>
       <td className="px-6 py-5">
@@ -60,3 +77,4 @@ export function RiskRow({
     </tr>
   );
 }
+

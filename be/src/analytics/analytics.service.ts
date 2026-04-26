@@ -1,9 +1,48 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RiskPredictionService } from '../risk-prediction/risk-prediction.service';
 
 @Injectable()
 export class AnalyticsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private riskPredictionService: RiskPredictionService,
+  ) {}
+
+  async getHighRiskTasks(projectId: string) {
+    const tasks = await this.prisma.task.findMany({
+      where: {
+        projectId,
+        completedAt: null, // Only ongoing tasks
+      },
+      include: {
+        assignees: {
+          include: {
+            user: {
+              select: { fullName: true, avatarUrl: true },
+            },
+          },
+        },
+      },
+    });
+
+    const tasksWithRisk = await Promise.all(
+      tasks.map(async (task) => {
+        const riskScore = await this.riskPredictionService.getRiskScore(task.id);
+        return {
+          ...task,
+          riskScore,
+        };
+      }),
+    );
+
+    // Sort by risk score descending and take top 5
+    return tasksWithRisk
+      .sort((a, b) => b.riskScore - a.riskScore)
+      .filter((t) => t.riskScore > 0.3) // Filter some low risk if needed, or just take top 5
+      .slice(0, 5);
+  }
+
 
   async getProjectStats(projectId: string) {
     // Verify project exists

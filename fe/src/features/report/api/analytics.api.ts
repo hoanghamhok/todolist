@@ -15,3 +15,7 @@ export const fetchTaskCompletionTrend = (projectId: string,days: number = 30) =>
 // Recent activity
 export const fetchRecentActivity = (projectId: string,limit: number = 10) =>
   api.get(`/analytics/projects/${projectId}/activity`, {params: { limit }});
+
+// High risk tasks
+export const fetchHighRiskTasks = (projectId: string) =>
+  api.get(`/analytics/projects/${projectId}/risk-tasks`);

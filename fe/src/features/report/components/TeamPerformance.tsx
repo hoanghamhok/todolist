@@ -1,4 +1,3 @@
-import React from "react";
 import { BarCol } from "./BarCol";
 
 interface TeamPerformanceProps {

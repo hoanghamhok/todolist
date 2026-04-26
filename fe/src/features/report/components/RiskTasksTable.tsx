@@ -1,4 +1,3 @@
-import React from "react";
 import { RiskRow } from "./RiskRow";
 import type { RiskRowProps } from "./RiskRow";
 

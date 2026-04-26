@@ -25,6 +25,11 @@ export class AnalyticsController {
     return this.analyticsService.getTaskCompletionTrend(projectId, days);
   }
 
+  @Get('projects/:projectId/risk-tasks')
+  async getHighRiskTasks(@Param('projectId') projectId: string) {
+    return this.analyticsService.getHighRiskTasks(projectId);
+  }
+
   @Get('projects/:projectId/activity')
   async getRecentActivity(
     @Param('projectId') projectId: string,
