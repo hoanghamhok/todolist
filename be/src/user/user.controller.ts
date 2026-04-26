@@ -3,6 +3,7 @@ import { ApiTags,ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './user.service';
 import { JwtAuthGuard } from '../auth/guard/jwt-auth.guard';
 import { ImageUploadInterceptor } from '../cloudinary/image-upload.interceptor';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -45,5 +46,19 @@ export class UsersController {
   @UseInterceptors(ImageUploadInterceptor())
   async uploadAvatar(@Request() req, @UploadedFile() file: Express.Multer.File) {
     return this.usersService.updateAvatar(req.user.userId, file);
+  }
+
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async updateProfile(@Request() req, @Body() updateProfileDto: UpdateProfileDto) {
+    return this.usersService.updateProfile(req.user.userId, updateProfileDto);
+  }
+
+  @Get('me/stats')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getUserStats(@Request() req) {
+    return this.usersService.getUserStats(req.user.userId);
   }
 }

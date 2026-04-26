@@ -1,4 +1,4 @@
-import { SystemRole } from './../../node_modules/.prisma/client/index.d';
+import { SystemRole } from '@prisma/client';
 import { Injectable, ConflictException, Delete, BadRequestException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
@@ -84,7 +84,7 @@ export class UsersService {
         });
     }
 
-async updateAvatar(userId: string, file: any) {
+    async updateAvatar(userId: string, file: any) {
         const user = await this.prisma.user.findUnique({
             where: { id: userId },
         });
@@ -113,5 +113,76 @@ async updateAvatar(userId: string, file: any) {
         };
     }
 
+    async updateProfile(userId: string, data: { fullName?: string, email?: string }) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+        });
+
+        if (!user) {
+            throw new BadRequestException('User not found');
+        }
+
+        if (data.email && data.email !== user.email) {
+            const existing = await this.prisma.user.findUnique({
+                where: { email: data.email },
+            });
+            if (existing) {
+                throw new ConflictException('Email already in use');
+            }
+        }
+
+        return this.prisma.user.update({
+            where: { id: userId },
+            data: {
+                fullName: data.fullName ?? user.fullName,
+                email: data.email ?? user.email,
+            },
+            select: {
+                id: true,
+                email: true,
+                username: true,
+                fullName: true,
+                avatarUrl: true,
+                role: true,
+                createdAt: true,
+            }
+        });
+    }
+
+    async getUserStats(userId: string) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: { createdAt: true }
+        });
+
+        if (!user) {
+            throw new BadRequestException('User not found');
+        }
+
+        const now = new Date();
+        const createdDate = new Date(user.createdAt);
+        const diffTime = Math.abs(now.getTime() - createdDate.getTime());
+        const daysSinceCreation = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        const completedTasksCount = await this.prisma.task.count({
+            where: {
+                assignees: { some: { userId } },
+                completedAt: { not: null }
+            }
+        });
+
+        const incompleteTasksCount = await this.prisma.task.count({
+            where: {
+                assignees: { some: { userId } },
+                completedAt: null
+            }
+        });
+
+        return {
+            daysSinceCreation,
+            completedTasksCount,
+            incompleteTasksCount
+        };
+    }
 }
 

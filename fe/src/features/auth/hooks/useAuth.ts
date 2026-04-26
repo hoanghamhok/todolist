@@ -15,6 +15,7 @@ type AuthState = {
   loginWithToken: (token: string) => Promise<void>;
   logout: () => void;
   updateAvatar: (file: File) => Promise<void>;
+  updateProfile: (data: { fullName?: string; email?: string }) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
 };
 
@@ -110,6 +111,16 @@ export const useAuth = create<AuthState>((set, get) => ({
     }
   },
 
+  updateProfile: async (data: { fullName?: string; email?: string }) => {
+    try {
+      const { data: updatedUser } = await userApi.updateProfile(data);
+      set({ user: updatedUser });
+    } catch (error) {
+      console.error('Update profile failed:', error);
+      throw error;
+    }
+  },
+
   changePassword: async (currentPassword: string, newPassword: string) => {
     try {
       await authApi.changePassword({ currentPassword, newPassword });
@@ -118,4 +129,4 @@ export const useAuth = create<AuthState>((set, get) => ({
       throw error;
     }
   },
-}));
+}));

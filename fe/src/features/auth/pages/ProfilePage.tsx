@@ -1,7 +1,9 @@
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { ChangePasswordModal } from '../components/ChangePasswordModal';
+import { EditProfileModal } from '../components/EditProfileModal';
+import { userApi } from '../user.api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -15,10 +17,10 @@ const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
 
 function validateImageFile(file: File): string | null {
   if (!ACCEPTED_TYPES.includes(file.type as (typeof ACCEPTED_TYPES)[number])) {
-    return 'Chỉ hỗ trợ các định dạng: JPG, JPEG, PNG, WebP';
+    return 'Only supported formats: JPG, JPEG, PNG, WebP';
   }
   if (file.size > MAX_FILE_SIZE_BYTES) {
-    return `Kích thước file không được vượt quá ${MAX_FILE_SIZE_MB}MB`;
+    return `File size must not exceed ${MAX_FILE_SIZE_MB}MB`;
   }
   return null;
 }
@@ -33,11 +35,11 @@ function formatDate(dateString: string): string {
 
 function getRoleLabel(role: string): string {
   const roles: Record<string, string> = {
-    SUPER_ADMIN: 'Quản trị viên',
-    ADMIN: 'Quản trị viên',
-    USER: 'Người dùng',
+    SUPER_ADMIN: 'Super Admin',
+    ADMIN: 'Admin',
+    USER: 'User',
   };
-  return roles[role] ?? 'Người dùng';
+  return roles[role] ?? 'User';
 }
 
 function getRoleBadgeClass(role: string): string {
@@ -201,7 +203,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({
         onKeyDown={handleKeyDown}
         role="button"
         tabIndex={0}
-        aria-label="Thay đổi ảnh đại diện"
+        aria-label="Change avatar"
         aria-disabled={uploading}
       >
         {imgError ? (
@@ -253,13 +255,10 @@ const ProfileSkeleton: React.FC = () => (
   <div className="p-page">
     <style>{CSS}</style>
     <div className="p-skeleton">
-      <div className="p-skeleton__cover" />
-      <div className="p-skeleton__body">
-        <div className="p-skeleton__avatar" />
-        <div className="p-skeleton__line p-skeleton__line--title" />
-        <div className="p-skeleton__line p-skeleton__line--sub" />
-        {[1, 2, 3, 4, 5].map(i => <div key={i} className="p-skeleton__line" />)}
-      </div>
+      <div className="p-skeleton__avatar" />
+      <div className="p-skeleton__line p-skeleton__line--title" />
+      <div className="p-skeleton__line p-skeleton__line--sub" />
+      {[1, 2, 3, 4, 5].map(i => <div key={i} className="p-skeleton__line" />)}
     </div>
   </div>
 );
@@ -297,7 +296,23 @@ export const ProfilePage: React.FC = () => {
   const [uploadState, setUploadState] = useState<UploadState>('idle');
   const [message, setMessage] = useState<string | null>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+  const [stats, setStats] = useState<{ daysSinceCreation: number, completedTasksCount: number, incompleteTasksCount: number } | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const { data } = await userApi.getStats();
+        setStats(data);
+      } catch (err) {
+        console.error('Failed to fetch user stats:', err);
+      }
+    };
+    if (user) {
+      fetchStats();
+    }
+  }, [user]);
 
   const showMessage = useCallback((state: UploadState, text: string, autoClear = false) => {
     setUploadState(state);
@@ -332,9 +347,9 @@ export const ProfilePage: React.FC = () => {
           <svg className="p-empty__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
             <circle cx="12" cy="8" r="4" /><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
           </svg>
-          <h2 className="p-empty__title">Chưa đăng nhập</h2>
-          <p className="p-empty__desc">Vui lòng đăng nhập để xem hồ sơ của bạn.</p>
-          <button className="p-empty__btn" onClick={() => navigate('/')}>Về trang chủ</button>
+          <h2 className="p-empty__title">Not Logged In</h2>
+          <p className="p-empty__desc">Please log in to view your profile.</p>
+          <button className="p-empty__btn" onClick={() => navigate('/')}>Home</button>
         </main>
       </>
     );
@@ -349,33 +364,33 @@ export const ProfilePage: React.FC = () => {
       <div className="p-page">
 
         {/* ── Sticky top nav ── */}
-        <nav className="p-topnav" aria-label="Điều hướng trang">
+        <nav className="p-topnav" aria-label="Navigation page">
           <button
             className="p-topnav__btn"
             onClick={() => navigate(-1)}
-            aria-label="Quay lại trang trước"
+            aria-label="Go back"
           >
             <IconArrowLeft />
-            <span>Quay lại</span>
+            <span>Back</span>
           </button>
 
           <ol className="p-breadcrumb" aria-label="Breadcrumb">
             <li>
               <button className="p-breadcrumb__link" onClick={() => navigate('/')}>
-                Trang chủ
+                Home
               </button>
             </li>
             <li aria-hidden="true" className="p-breadcrumb__sep">/</li>
-            <li aria-current="page" className="p-breadcrumb__current">Hồ sơ</li>
+            <li aria-current="page" className="p-breadcrumb__current">Profile</li>
           </ol>
 
           <button
             className="p-topnav__btn p-topnav__btn--home"
             onClick={() => navigate('/')}
-            aria-label="Về trang chủ"
+            aria-label="Home"
           >
             <IconHome />
-            <span>Trang chủ</span>
+            <span>Home</span>
           </button>
         </nav>
 
@@ -384,13 +399,6 @@ export const ProfilePage: React.FC = () => {
 
           {/* LEFT: profile card */}
           <main className="p-main">
-            {/* Indigo cover banner */}
-            <div className="p-cover" aria-hidden="true">
-              <div className="p-cover__glow-left" />
-              <div className="p-cover__glow-right" />
-              <div className="p-cover__dots" />
-            </div>
-
             <div className="p-card">
               {/* Hero: avatar + name */}
               <div className="p-card__hero">
@@ -422,13 +430,13 @@ export const ProfilePage: React.FC = () => {
               <hr className="p-divider" aria-hidden="true" />
 
               {/* Info fields */}
-              <section aria-label="Thông tin cá nhân">
-                <h2 className="p-section-title">Thông tin tài khoản</h2>
+              <section aria-label="Account Information">
+                <h2 className="p-section-title">Account Information</h2>
                 <dl className="p-fields">
-                  <ProfileField label="Tên người dùng" value={user.username} icon={<IconId />} />
+                  <ProfileField label="Username" value={user.username} icon={<IconId />} />
                   <ProfileField
-                    label="Họ và tên"
-                    value={user.fullName || <em className="p-field__empty">Chưa cập nhật</em>}
+                    label="Full Name"
+                    value={user.fullName || <em className="p-field__empty">Not Updated</em>}
                     icon={<IconUser />}
                   />
                   <ProfileField
@@ -436,10 +444,10 @@ export const ProfilePage: React.FC = () => {
                     value={<a href={`mailto:${user.email}`} className="p-field__link">{user.email}</a>}
                     icon={<IconMail />}
                   />
-                  <ProfileField label="Vai trò" value={getRoleLabel(user.role)} icon={<IconShield />} />
+                  <ProfileField label="Role" value={getRoleLabel(user.role)} icon={<IconShield />} />
                   {user.createdAt && (
                     <ProfileField
-                      label="Ngày tạo tài khoản"
+                      label="Day of joining"
                       value={formatDate(user.createdAt)}
                       icon={<IconCalendar />}
                     />
@@ -450,47 +458,47 @@ export const ProfilePage: React.FC = () => {
           </main>
 
           {/* RIGHT: sidebar */}
-          <aside className="p-sidebar" aria-label="Thao tác nhanh">
+          <aside className="p-sidebar" aria-label="Quick actions">
 
             {/* Stats widget */}
             <div className="p-widget">
-              <h2 className="p-widget__title">Tổng quan</h2>
+              <h2 className="p-widget__title">Overview</h2>
               <div className="p-stats">
                 <div className="p-stat">
-                  <span className="p-stat__num">0</span>
-                  <span className="p-stat__lbl">Hoạt động</span>
+                  <span className="p-stat__num">{stats?.daysSinceCreation ?? '—'}</span>
+                  <span className="p-stat__lbl">Days since creation</span>
                 </div>
                 <div className="p-stat p-stat--mid">
-                  <span className="p-stat__num">—</span>
-                  <span className="p-stat__lbl">Cấp độ</span>
+                  <span className="p-stat__num">{stats?.completedTasksCount ?? '—'}</span>
+                  <span className="p-stat__lbl">Completed</span>
                 </div>
                 <div className="p-stat">
-                  <span className="p-stat__num">0</span>
-                  <span className="p-stat__lbl">Thông báo</span>
+                  <span className="p-stat__num">{stats?.incompleteTasksCount ?? '—'}</span>
+                  <span className="p-stat__lbl">Incomplete</span>
                 </div>
               </div>
             </div>
 
             {/* Quick actions */}
             <div className="p-widget">
-              <h2 className="p-widget__title">Cài đặt</h2>
+              <h2 className="p-widget__title">Setting</h2>
               <div className="p-actions">
                 <QuickAction
+                  icon={<IconUser />}
+                  label="Edit profile"
+                  desc="Update name and email"
+                  onClick={() => setIsEditProfileModalOpen(true)}
+                />
+                <QuickAction
                   icon={<IconKey />}
-                  label="Đổi mật khẩu"
-                  desc="Cập nhật mật khẩu bảo mật"
+                  label="Change password"
+                  desc="Update password"
                   onClick={() => setIsPasswordModalOpen(true)}
                 />
                 <QuickAction
-                  icon={<IconBell />}
-                  label="Thông báo"
-                  desc="Quản lý cài đặt thông báo"
-                  onClick={() => navigate('/settings/notifications')}
-                />
-                <QuickAction
                   icon={<IconLogout />}
-                  label="Đăng xuất"
-                  desc="Thoát khỏi tài khoản"
+                  label="Logout"
+                  desc="Exit account"
                   danger
                   onClick={() => logout()}
                 />
@@ -503,8 +511,8 @@ export const ProfilePage: React.FC = () => {
                 <IconCamera />
               </div>
               <p className="p-hint-card__text">
-                Nhấn vào ảnh đại diện để thay đổi.
-                Hỗ trợ JPG, PNG, WebP · tối đa {MAX_FILE_SIZE_MB}MB.
+                Click avatar to change.
+                Support JPG, PNG, WebP · max {MAX_FILE_SIZE_MB}MB.
               </p>
             </div>
           </aside>
@@ -514,7 +522,15 @@ export const ProfilePage: React.FC = () => {
       <ChangePasswordModal
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}
-        onSuccess={() => showMessage('success', 'Mật khẩu đã được thay đổi!', true)}
+        onSuccess={() => showMessage('success', 'Password changed successfully!', true)}
+      />
+
+      <EditProfileModal
+        isOpen={isEditProfileModalOpen}
+        onClose={() => setIsEditProfileModalOpen(false)}
+        onSuccess={() => {
+          showMessage('success', 'Profile updated successfully!', true);
+        }}
       />
     </>
   );
@@ -591,52 +607,19 @@ const CSS = `
   padding: 2rem 1.5rem 0;
 }
 
-/* ── Cover banner ── */
-.p-cover {
-  height: 130px;
-  border-radius: 16px 16px 0 0;
-  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 55%, #818cf8 100%);
-  position: relative;
-  overflow: hidden;
-}
-.p-cover__glow-left {
-  position: absolute;
-  top: -20px; left: -20px;
-  width: 160px; height: 160px;
-  border-radius: 50%;
-  background: rgba(255,255,255,.12);
-  filter: blur(24px);
-}
-.p-cover__glow-right {
-  position: absolute;
-  bottom: -30px; right: 10%;
-  width: 200px; height: 100px;
-  border-radius: 50%;
-  background: rgba(255,255,255,.09);
-  filter: blur(30px);
-}
-.p-cover__dots {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(255,255,255,.18) 1px, transparent 1px);
-  background-size: 22px 22px;
-  opacity: .5;
-}
-
 /* ── Main card ── */
 .p-card {
   background: #fff;
-  border-radius: 0 0 16px 16px;
-  padding: 0 2rem 2rem;
+  border-radius: 16px;
+  padding: 2rem;
   box-shadow: 0 1px 3px rgba(0,0,0,.05), 0 8px 24px rgba(0,0,0,.06);
 }
 
 .p-card__hero {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 1.25rem;
-  transform: translateY(-32px);
-  margin-bottom: calc(1.25rem - 32px);
+  margin-bottom: 1.5rem;
 }
 
 .p-card__identity { flex: 1; min-width: 0; padding-bottom: .2rem; }
@@ -952,12 +935,12 @@ const CSS = `
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 4px 20px rgba(0,0,0,.07);
+  background: #fff;
+  padding: 2rem;
 }
-.p-skeleton__cover   { height: 120px; background: #e5e5e5; }
-.p-skeleton__body    { background: #fff; padding: 1.5rem 2rem 2rem; }
 .p-skeleton__avatar  {
   width: 88px; height: 88px; border-radius: 50%;
-  background: #e5e5e5; margin-top: -44px;
+  background: #e5e5e5;
   border: 4px solid #fff; margin-bottom: 1rem;
   animation: shimmer 1.4s infinite;
 }
@@ -983,8 +966,7 @@ const CSS = `
   }
   .p-breadcrumb { display: none; }
   .p-topnav { padding: .6rem 1rem; }
-  .p-card { padding: 0 1.25rem 1.5rem; }
-  .p-cover { height: 100px; border-radius: 12px 12px 0 0; }
+  .p-card { padding: 1.25rem 1.25rem 1.5rem; }
   .p-card__name { font-size: 1.2rem; }
   .p-avatar__img, .p-avatar, .p-avatar__initials { width: 80px; height: 80px; }
 }

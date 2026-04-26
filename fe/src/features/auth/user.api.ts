@@ -12,8 +12,11 @@ export const userApi = {
     });
   },
 
-  updateProfile: (data: { fullName?: string; username?: string }) =>
+  updateProfile: (data: { fullName?: string; email?: string }) =>
     api.patch('/users/me', data),
+
+  getStats: () =>
+    api.get('/users/me/stats'),
 
   getProfile: () =>
     api.get('/users/me'),
